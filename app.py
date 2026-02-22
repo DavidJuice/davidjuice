@@ -464,7 +464,6 @@ def chat():
         with client.messages.stream(
             model="claude-opus-4-6",
             max_tokens=1024,
-            thinking={"type": "adaptive"},
             system=system,
             messages=messages,
         ) as stream:
