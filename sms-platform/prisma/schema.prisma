@@ -1,0 +1,256 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── AUTH ─────────────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  passwordHash  String?
+  image         String?
+  role          UserRole  @default(MEMBER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts        Account[]
+  sessions        Session[]
+  contacts        Contact[]
+  contactGroups   ContactGroup[]
+  campaigns       Campaign[]
+  templates       MessageTemplate[]
+  phoneNumbers    PhoneNumber[]
+  auditLogs       AuditLog[]
+}
+
+enum UserRole {
+  ADMIN
+  MEMBER
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── CONTACTS ─────────────────────────────────────────────────────────────────
+
+model Contact {
+  id            String    @id @default(cuid())
+  ownerId       String
+  phone         String
+  name          String
+  customMessage String?   @db.Text
+  language      String?
+  consentSource String?
+  consentAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  owner          User                 @relation(fields: [ownerId], references: [id])
+  groupMembers   ContactGroupMember[]
+  messageRecords MessageRecord[]
+
+  @@unique([ownerId, phone])
+}
+
+model ContactGroup {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner     User                 @relation(fields: [ownerId], references: [id])
+  members   ContactGroupMember[]
+  campaigns Campaign[]
+}
+
+model ContactGroupMember {
+  contactId     String
+  groupId       String
+  customMessage String?  @db.Text
+  assignedAt    DateTime @default(now())
+
+  contact Contact      @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  group   ContactGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@id([contactId, groupId])
+}
+
+model Blacklist {
+  id        String   @id @default(cuid())
+  phone     String   @unique
+  reason    String?
+  createdAt DateTime @default(now())
+}
+
+// ─── PHONE NUMBERS ────────────────────────────────────────────────────────────
+
+model PhoneNumber {
+  id               String   @id @default(cuid())
+  number           String   @unique
+  friendlyName     String?
+  twilioSid        String   @unique
+  assignedToId     String?
+  forwardingNumber String?
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  assignedTo      User?            @relation(fields: [assignedToId], references: [id])
+  campaigns       Campaign[]
+  inboundMessages InboundMessage[]
+}
+
+// ─── CAMPAIGNS ────────────────────────────────────────────────────────────────
+
+model Campaign {
+  id             String         @id @default(cuid())
+  name           String
+  status         CampaignStatus @default(DRAFT)
+  message        String?        @db.Text
+  includeOptOut  Boolean        @default(true)
+  optOutFooter   String?        @db.Text
+  phoneNumberId  String
+  contactGroupId String?
+  templateId     String?
+  scheduledAt    DateTime?
+  startedAt      DateTime?
+  completedAt    DateTime?
+  totalContacts  Int            @default(0)
+  sentCount      Int            @default(0)
+  deliveredCount Int            @default(0)
+  failedCount    Int            @default(0)
+  bullJobId      String?
+  createdById    String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  createdBy    User             @relation(fields: [createdById], references: [id])
+  phoneNumber  PhoneNumber      @relation(fields: [phoneNumberId], references: [id])
+  contactGroup ContactGroup?    @relation(fields: [contactGroupId], references: [id])
+  template     MessageTemplate? @relation(fields: [templateId], references: [id])
+  messages     MessageRecord[]
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  QUEUED
+  SENDING
+  PAUSED
+  COMPLETED
+  CANCELLED
+  FAILED
+}
+
+model MessageRecord {
+  id           String        @id @default(cuid())
+  campaignId   String
+  contactId    String
+  phone        String
+  message      String        @db.Text
+  status       MessageStatus @default(PENDING)
+  twilioSid    String?
+  errorCode    String?
+  errorMessage String?
+  sentAt       DateTime?
+  deliveredAt  DateTime?
+  failedAt     DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  contact  Contact  @relation(fields: [contactId], references: [id])
+}
+
+enum MessageStatus {
+  PENDING
+  QUEUED
+  SENT
+  DELIVERED
+  FAILED
+  UNDELIVERED
+}
+
+// ─── TEMPLATES ────────────────────────────────────────────────────────────────
+
+model MessageTemplate {
+  id        String   @id @default(cuid())
+  name      String
+  body      String   @db.Text
+  ownerId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner     User       @relation(fields: [ownerId], references: [id])
+  campaigns Campaign[]
+}
+
+// ─── INBOUND ──────────────────────────────────────────────────────────────────
+
+model InboundMessage {
+  id            String   @id @default(cuid())
+  twilioSid     String   @unique
+  from          String
+  to            String
+  body          String   @db.Text
+  isRead        Boolean  @default(false)
+  phoneNumberId String?
+  createdAt     DateTime @default(now())
+
+  phoneNumber PhoneNumber? @relation(fields: [phoneNumberId], references: [id])
+}
+
+// ─── AUDIT LOG ────────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  target    String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+}
