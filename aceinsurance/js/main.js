@@ -129,3 +129,77 @@ document.addEventListener('DOMContentLoaded', function() {
 
 /* Make applyLanguage available to inline onclick handlers in HTML */
 window.applyLanguage = applyLanguage;
+
+/* ── Services Showcase: scroll-driven split-panel animation ──── */
+
+function initServicesShowcase() {
+  var wrapper = document.querySelector('.services-showcase');
+  if (!wrapper) return;
+
+  var viewport   = wrapper.querySelector('.showcase-viewport');
+  var slides     = Array.from(wrapper.querySelectorAll('.showcase-slide'));
+  var dots       = Array.from(wrapper.querySelectorAll('.showcase-dot'));
+  var counter    = wrapper.querySelector('.showcase-counter-current');
+  var scrollHint = wrapper.querySelector('.showcase-scroll-hint');
+  var numSlides  = slides.length;
+  var activeIndex = 0;
+
+  /* On mobile, skip sticky scroll — CSS handles the layout */
+  var isMobile = window.innerWidth < 768;
+  if (isMobile) {
+    /* Make all slides visible on mobile */
+    slides.forEach(function(s) { s.classList.add('is-active'); });
+    return;
+  }
+
+  function pad(n) {
+    return String(n + 1).padStart(2, '0');
+  }
+
+  function setSlide(index) {
+    if (index === activeIndex) return;
+
+    /* Remove active from old slide */
+    slides[activeIndex].classList.remove('is-active');
+    if (dots[activeIndex]) dots[activeIndex].classList.remove('is-active');
+
+    activeIndex = index;
+
+    /* Activate new slide */
+    slides[activeIndex].classList.add('is-active');
+    if (dots[activeIndex]) dots[activeIndex].classList.add('is-active');
+
+    /* Update counter */
+    if (counter) counter.textContent = pad(activeIndex);
+
+    /* Hide scroll hint after first scroll */
+    if (scrollHint && activeIndex > 0) scrollHint.style.display = 'none';
+  }
+
+  /* Dot navigation: click scrolls to that slide's position */
+  dots.forEach(function(dot, i) {
+    dot.addEventListener('click', function() {
+      window.scrollTo({
+        top: wrapper.offsetTop + i * window.innerHeight,
+        behavior: 'smooth'
+      });
+    });
+  });
+
+  /* Scroll handler: calculate which slide is current */
+  window.addEventListener('scroll', function() {
+    var scrolled = window.scrollY - wrapper.offsetTop;
+    var vh = window.innerHeight;
+
+    /* Each service occupies 1 × vh of scroll distance */
+    var index = Math.floor(scrolled / vh);
+    index = Math.max(0, Math.min(numSlides - 1, index));
+
+    setSlide(index);
+  }, { passive: true });
+}
+
+/* Add to existing DOMContentLoaded */
+document.addEventListener('DOMContentLoaded', function() {
+  initServicesShowcase();
+});

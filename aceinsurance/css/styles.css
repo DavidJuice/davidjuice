@@ -838,3 +838,274 @@ h1, h2, h3, h4 {
   .service-detail { flex-direction: column; }
   .contact-form   { padding: var(--space-lg); }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   SCROLL-DRIVEN SERVICES SHOWCASE
+   Left panel enters from left, right panel from right.
+   They meet at the gold center seam — no overlap.
+   ══════════════════════════════════════════════════════════════ */
+
+/* Outer wrapper — 7 services × 100vh = 700vh of scroll space */
+.services-showcase {
+  position: relative;
+  height: calc(7 * 100vh);
+}
+
+/* Sticky viewport — pins to top and stays for the entire scroll range */
+.showcase-viewport {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--color-navy);
+}
+
+/* Gold center seam where the two panels meet */
+.showcase-viewport::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--color-gold);
+  transform: translateX(-50%);
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Each slide is stacked full-size inside the viewport */
+.showcase-slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  pointer-events: none;
+  z-index: 1;
+}
+.showcase-slide.is-active {
+  pointer-events: auto;
+  z-index: 2;
+}
+
+/* ── Shared panel styles ── */
+.showcase-panel {
+  width: 50%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-xl) var(--space-xl);
+  transition: transform 0.65s cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+/* ── LEFT panel: navy background, enters from the LEFT ── */
+.showcase-panel--left {
+  left: 0;
+  background: var(--color-navy);
+  color: var(--color-white);
+  align-items: center;
+  text-align: center;
+  transform: translateX(-100%);
+  overflow: hidden;
+}
+
+/* ── RIGHT panel: white background, enters from the RIGHT ── */
+.showcase-panel--right {
+  right: 0;
+  background: var(--color-white);
+  transform: translateX(100%);
+}
+
+/* Active slide: both panels slide to center and click together */
+.showcase-slide.is-active .showcase-panel--left  { transform: translateX(0); }
+.showcase-slide.is-active .showcase-panel--right { transform: translateX(0); }
+
+/* ── Left panel interior ── */
+.showcase-panel-number {
+  font-size: 7rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.07);
+  line-height: 1;
+  position: absolute;
+  top: var(--space-lg);
+  left: var(--space-lg);
+  user-select: none;
+}
+
+.showcase-panel-icon {
+  width: 88px;
+  height: 88px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(201, 168, 76, 0.4);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-lg);
+  color: var(--color-gold);
+  flex-shrink: 0;
+}
+.showcase-panel-icon svg { width: 44px; height: 44px; }
+
+.showcase-panel-title {
+  color: var(--color-white);
+  font-size: var(--font-size-h2);
+  line-height: 1.2;
+  max-width: 280px;
+}
+
+/* ── Right panel interior ── */
+.showcase-eyebrow {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-gold);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-md);
+}
+
+.showcase-panel--right h3 {
+  font-size: var(--font-size-h2);
+  color: var(--color-navy);
+  margin-bottom: var(--space-md);
+  line-height: 1.2;
+}
+
+.showcase-panel--right p {
+  color: var(--color-gray);
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--space-lg);
+  max-width: 420px;
+  line-height: 1.7;
+}
+
+.showcase-panel--right .showcase-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+/* ── Progress dots (right edge) ── */
+.showcase-dots {
+  position: absolute;
+  right: 1.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 20;
+}
+
+.showcase-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+}
+
+.showcase-dot:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.showcase-dot.is-active {
+  background: var(--color-gold);
+  border-color: var(--color-gold);
+  transform: scale(1.5);
+}
+
+/* ── Slide counter (bottom center) ── */
+.showcase-counter {
+  position: absolute;
+  bottom: var(--space-lg);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: var(--font-size-sm);
+  pointer-events: none;
+}
+
+.showcase-counter-current {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-white);
+  line-height: 1;
+  min-width: 2ch;
+  display: inline-block;
+  transition: opacity 0.2s ease;
+}
+
+/* Scroll hint arrow on first slide */
+.showcase-scroll-hint {
+  position: absolute;
+  bottom: var(--space-lg);
+  right: var(--space-xl);
+  color: rgba(255, 255, 255, 0.45);
+  font-size: var(--font-size-sm);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  z-index: 20;
+  animation: hint-bounce 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes hint-bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.45; }
+  50%       { transform: translateY(4px); opacity: 0.8; }
+}
+
+/* ── Mobile fallback: disable sticky, stack panels ── */
+@media (max-width: 767px) {
+  .services-showcase {
+    height: auto;
+  }
+  .showcase-viewport {
+    position: relative;
+    height: auto;
+    overflow: visible;
+    background: transparent;
+  }
+  .showcase-viewport::after { display: none; }
+  .showcase-dots,
+  .showcase-counter,
+  .showcase-scroll-hint { display: none; }
+
+  .showcase-slide {
+    position: relative;
+    pointer-events: auto;
+    flex-direction: column;
+    margin-bottom: 2px; /* thin gap between services */
+  }
+
+  .showcase-panel {
+    width: 100%;
+    position: relative;
+    transform: none !important;
+    transition: none;
+    padding: var(--space-xl) var(--space-lg);
+  }
+  .showcase-panel--left {
+    order: 1;
+    min-height: 220px;
+    align-items: flex-start;
+    text-align: left;
+  }
+  .showcase-panel--right {
+    order: 2;
+  }
+  .showcase-panel-number { font-size: 4rem; }
+  .showcase-panel-title  { font-size: var(--font-size-h3); }
+  .showcase-panel--right h3 { font-size: var(--font-size-h3); }
+}
