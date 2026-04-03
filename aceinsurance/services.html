@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Insurance services from Ace Insurance & Retirement Services — Auto, Home, Business, Life, Health/ACA, Long-Term Care, Medicare & Retirement Planning in Washington State.">
+  <title>Services | Ace Insurance & Retirement Services</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- NAV -->
+<header class="site-header">
+  <nav class="navbar">
+    <a href="index.html" class="nav-logo" aria-label="Ace Insurance Home">
+      <div class="nav-logo-text">Ace Insurance<span data-i18n="nav.home">&amp; Retirement Services</span></div>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks" role="list">
+      <li><a href="index.html"     data-i18n="nav.home">Home</a></li>
+      <li><a href="about.html"     data-i18n="nav.about">About Us</a></li>
+      <li><a href="services.html"  data-i18n="nav.services">Services</a></li>
+      <li><a href="locations.html" data-i18n="nav.locations">Locations</a></li>
+      <li><a href="contact.html"   data-i18n="nav.contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language selector">
+      <button class="lang-btn active" data-lang="en" onclick="applyLanguage('en')">EN</button>
+      <span aria-hidden="true">|</span>
+      <button class="lang-btn" data-lang="ko" onclick="applyLanguage('ko')">한국어</button>
+    </div>
+  </nav>
+</header>
+
+<!-- PAGE HERO -->
+<section class="page-hero">
+  <div class="container">
+    <h1 data-i18n="services.page_title">Our Services</h1>
+    <p data-i18n="services.page_sub">Comprehensive insurance and retirement planning solutions</p>
+  </div>
+</section>
+
+<!-- INTRO -->
+<section class="section">
+  <div class="container" style="max-width:780px;text-align:center;">
+    <p style="font-size:var(--font-size-lg);color:var(--color-gray);" data-i18n="services.intro">As an independent agency, we represent multiple top-rated insurance companies so we can find the right coverage at the right price for you.</p>
+  </div>
+</section>
+
+<!-- SERVICES DETAIL LIST -->
+<section class="section section--shaded" style="padding-top:0;">
+  <div class="container" style="display:flex;flex-direction:column;gap:var(--space-lg);">
+
+    <!-- Auto -->
+    <article class="service-detail" id="auto">
+      <div class="service-icon" aria-hidden="true">
+        <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path d="M13 16H7m0 0V9l3-6h7l2 6h1a1 1 0 011 1v4a1 1 0 01-1 1h-1m-6 0H7"/></svg>
+      </div>
+      <div class="service-detail-body">
+        <h3 data-i18n="services.auto_title">Auto Insurance</h3>
+        <p data-i18n="services.auto_p1">Whether you drive a sedan, SUV, truck, or commercial vehicle, we will find the right auto insurance policy to protect you on the road.</p>
+        <p data-i18n="services.auto_p2">Coverage options include liability, collision, comprehensive, uninsured/underinsured motorist, medical payments, and roadside assistance.</p>
+        <a href="contact.html" class="btn btn-blue" style="margin-top:.5rem;" data-i18n="hero.cta_quote">Get a Free Quote</a>
+      </div>
+    </article>
+
+    <!-- Home -->
+    <article class="service-detail" id="home">
+      <div class="service-icon" aria-hidden="true">
+        <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      </div>
+      <div class="service-detail-body">
+        <h3 data-i18n="services.home_title">Home Insurance</h3>
+        <p data-i18n="services.home_p1">Your home is likely your most valuable asset. Our homeowners insurance policies protect your dwelling, personal property, and liability.</p>
+        <p data-i18n="services.home_p2">We also offer renters insurance, condo insurance, and landlord policies for investment properties.</p>
+        <a href="contact.html" class="btn btn-blue" style="margin-top:.5rem;" data-i18n="hero.cta_quote">Get a Free Quote</a>
+      </div>
+    </article>
+
+    <!-- Business -->
+    <article class="service-detail" id="business">
+      <div class="service-icon" aria-hidden="true">
+        <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+      </div>
+      <div class="service-detail-body">
+        <h3 data-i18n="services.biz_title">Business Insurance</h3>
+        <p data-i18n="services.biz_p1">Protect your business from the unexpected. We offer general liability, commercial property, business owner policies (BOP), workers' compensation, and commercial auto.</p>
+        <p data-i18n="services.biz_p2">Whether you are a sole proprietor or a growing small business, we will tailor a policy to your specific industry and risk profile.</p>
+        <a href="contact.html" class="btn btn-blue" style="margin-top:.5rem;" data-i18n="hero.cta_quote">Get a Free Quote</a>
+      </div>
+    </article>
+
+    <!-- Life -->
+    <article class="service-detail" id="life">
+      <div class="service-icon" aria-hidden="true">
+        <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+      </div>
+      <div class="service-detail-body">
+        <h3 data-i18n="services.life_title">Life Insurance</h3>
+        <p data-i18n="services.life_p1">Life insurance is the foundation of a solid financial plan. We offer term life, whole life, universal life, and indexed universal life policies.</p>
+        <p data-i18n="services.life_p2">We will help you determine the right type and amount of coverage to protect your family and meet your long-term financial goals.</p>
+        <a href="contact.html" class="btn btn-blue" style="margin-top:.5rem;" data-i18n="hero.cta_quote">Get a Free Quote</a>
+      </div>
+    </article>
+
+    <!-- Health -->
+    <article class="service-detail" id="health">
+      <div class="service-icon" aria-hidden="true">
+        <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div class="service-detail-body">
+        <h3 data-i18n="services.health_title">Health Insurance</h3>
+        <p data-i18n="services.health_p1">We assist individuals, families, and small businesses with health insurance enrollment, including ACA / ObamaCare marketplace plans, short-term health plans, and group health coverage.</p>
+        <p data-i18n="services.health_p2">Our agents are certified to guide you through open enrollment and special enrollment periods to find the most cost-effective plan.</p>
+        <a href="contact.html" class="btn btn-blue" style="margin-top:.5rem;" data-i18n="hero.cta_quote">Get a Free Quote</a>
+      </div>
+    </article>
+
+    <!-- Long-Term Care -->
+    <article class="service-detail" id="ltc">
+      <div class="service-icon" aria-hidden="true">
+        <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      </div>
+      <div class="service-detail-body">
+        <h3 data-i18n="services.ltc_title">Long-Term Care Insurance</h3>
+        <p data-i18n="services.ltc_p1">Long-term care insurance helps cover the cost of assisted living, nursing home care, or in-home care services — costs that are not covered by health insurance or Medicare.</p>
+        <p data-i18n="services.ltc_p2">Planning ahead while you are healthy can protect your savings and give your family peace of mind.</p>
+        <a href="contact.html" class="btn btn-blue" style="margin-top:.5rem;" data-i18n="hero.cta_quote">Get a Free Quote</a>
+      </div>
+    </article>
+
+    <!-- Medicare & Retirement -->
+    <article class="service-detail" id="medicare">
+      <div class="service-icon" aria-hidden="true">
+        <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      </div>
+      <div class="service-detail-body">
+        <h3 data-i18n="services.medicare_title">Medicare &amp; Retirement Planning</h3>
+        <p data-i18n="services.medicare_p1">Navigating Medicare can be complex. We provide clear, unbiased guidance on Medicare Supplement (Medigap), Medicare Advantage, and Part D prescription drug plans.</p>
+        <p data-i18n="services.medicare_p2">We also offer retirement income planning to help you make the most of your Social Security, IRA, and annuity options.</p>
+        <a href="contact.html" class="btn btn-blue" style="margin-top:.5rem;" data-i18n="hero.cta_quote">Get a Free Quote</a>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- CTA BANNER -->
+<section class="cta-banner">
+  <div class="container">
+    <h2 data-i18n="services.cta_title">Questions About Coverage?</h2>
+    <p data-i18n="services.cta_sub">We are here to help — in English and Korean. Contact us today for a free, no-obligation consultation.</p>
+    <span class="cta-phone"><a href="tel:+14256786901">(425) 678-6901</a></span>
+    <a href="contact.html" class="btn btn-primary" data-i18n="cta_banner.or">or send us a message</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-col">
+      <div class="footer-logo-text">Ace Insurance<span>&amp; Retirement Services, Inc.</span></div>
+      <p data-i18n="footer.tagline">Your trusted insurance partner in Washington State</p>
+    </div>
+    <div class="footer-col">
+      <h4 data-i18n="footer.quick_links">Quick Links</h4>
+      <ul>
+        <li><a href="index.html"     data-i18n="nav.home">Home</a></li>
+        <li><a href="about.html"     data-i18n="nav.about">About Us</a></li>
+        <li><a href="services.html"  data-i18n="nav.services">Services</a></li>
+        <li><a href="locations.html" data-i18n="nav.locations">Locations</a></li>
+        <li><a href="contact.html"   data-i18n="nav.contact">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4 data-i18n="footer.contact_us">Contact Us</h4>
+      <p><a href="tel:+14256786901">(425) 678-6901</a></p>
+      <p data-i18n="footer.hours">Mon – Fri: 9:00 AM – 6:00 PM</p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p data-i18n="footer.copyright">© 2025 Ace Insurance & Retirement Services, Inc. All rights reserved.</p>
+  </div>
+</footer>
+
+<a href="#" class="back-to-top" id="backToTop" aria-label="Back to top">
+  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+</a>
+
+<script src="js/translations.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
