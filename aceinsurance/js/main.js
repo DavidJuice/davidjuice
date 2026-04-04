@@ -219,3 +219,24 @@ function initGlowTracking() {
 document.addEventListener('DOMContentLoaded', function() {
   initGlowTracking();
 });
+
+/* ── Scroll-reveal entrance animations ───────────────────────── */
+
+function initScrollReveal() {
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.reveal').forEach(function(el) {
+    observer.observe(el);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  initScrollReveal();
+});

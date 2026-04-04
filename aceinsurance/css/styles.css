@@ -1128,7 +1128,7 @@ h1, h2, h3, h4 {
   inset: 0;
   background: radial-gradient(
     600px circle at var(--gx) var(--gy),
-    rgba(58, 134, 200, 0.18),
+    rgba(201, 168, 76, 0.22),
     transparent 55%
   );
   pointer-events: none;   /* clicks always pass through */
@@ -1144,3 +1144,37 @@ h1, h2, h3, h4 {
 /* Hero already uses ::before for bg image — glow via ::after works fine */
 /* CTA banner and page-hero have no existing pseudo-elements — safe */
 /* Showcase panel--left has no existing pseudo-elements — safe */
+
+/* ══════════════════════════════════════════════════════════════
+   SCROLL REVEAL
+   Add class "reveal" to any element you want to animate in.
+   Optional: data-delay="1" through "4" for stagger (×100ms).
+   Elements fade up from 44 px below their final position.
+   Fires once via IntersectionObserver (initScrollReveal in JS).
+   ══════════════════════════════════════════════════════════════ */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(44px);
+  transition:
+    opacity  0.72s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.72s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal[data-delay="1"] { transition-delay: 0.10s; }
+.reveal[data-delay="2"] { transition-delay: 0.20s; }
+.reveal[data-delay="3"] { transition-delay: 0.30s; }
+.reveal[data-delay="4"] { transition-delay: 0.40s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
