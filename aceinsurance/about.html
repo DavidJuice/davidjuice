@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="About Ace Insurance & Retirement Services — Founded by Danny Kim in 2013. Serving the Korean-American community in Lynnwood, Federal Way, and Tacoma, WA.">
+  <title>About Us | Ace Insurance & Retirement Services</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- NAV -->
+<header class="site-header">
+  <nav class="navbar">
+    <a href="index.html" class="nav-logo" aria-label="Ace Insurance Home">
+      <div class="nav-logo-text">Ace Insurance<span data-i18n="nav.home">&amp; Retirement Services</span></div>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks" role="list">
+      <li><a href="index.html"     data-i18n="nav.home">Home</a></li>
+      <li><a href="about.html"     data-i18n="nav.about">About Us</a></li>
+      <li><a href="services.html"  data-i18n="nav.services">Services</a></li>
+      <li><a href="locations.html" data-i18n="nav.locations">Locations</a></li>
+      <li><a href="contact.html"   data-i18n="nav.contact">Contact</a></li>
+    </ul>
+    <div class="lang-toggle" role="group" aria-label="Language selector">
+      <button class="lang-btn active" data-lang="en" onclick="applyLanguage('en')">EN</button>
+      <span aria-hidden="true">|</span>
+      <button class="lang-btn" data-lang="ko" onclick="applyLanguage('ko')">한국어</button>
+    </div>
+  </nav>
+</header>
+
+<!-- PAGE HERO -->
+<section class="page-hero glow-track">
+  <div class="container">
+    <h1 data-i18n="about.page_title">About Us</h1>
+    <p data-i18n="about.page_sub">Your trusted insurance partner since 2013</p>
+  </div>
+</section>
+
+<!-- FOUNDER STORY -->
+<section class="section">
+  <div class="container">
+    <div class="about-snippet">
+      <div class="about-snippet-text reveal">
+        <h2 data-i18n="about.story_title">Our Story</h2>
+        <div class="divider" style="margin-left:0;"></div>
+        <p data-i18n="about.story_p1">Ace Insurance & Retirement Services, Inc. was founded in 2013 by Danny Kim with a clear mission: to provide honest, affordable insurance and retirement solutions to the Korean-American and multicultural communities in Washington State.</p>
+        <p data-i18n="about.story_p2">Starting from a single office, we have grown to serve clients across Lynnwood, Federal Way, Tacoma, and beyond. Our independence means we work for you — not for one insurance company. We compare quotes across multiple A-rated carriers to find the right fit for your needs and budget.</p>
+        <p data-i18n="about.story_p3">We offer consultations by video call, text, email, or in-person — whatever is most convenient for you. Our team speaks both English and Korean fluently.</p>
+        <a href="contact.html" class="btn btn-primary" style="margin-top:1.5rem;" data-i18n="hero.cta_quote">Get a Free Quote</a>
+      </div>
+      <div class="about-photo reveal" data-delay="1">
+        <!-- Replace with real photo: <img src="images/danny-kim.jpg" alt="Danny Kim, Founder of Ace Insurance"> -->
+        <div class="about-photo-placeholder">
+          <div>
+            <p style="font-size:1.25rem;" data-i18n="about.founder_label">Danny Kim</p>
+            <p style="font-size:.9rem;font-weight:400;opacity:.75;margin-top:.5rem;" data-i18n="about.founder_title">Founder &amp; Principal Agent</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMMUNITY -->
+<section class="section section--shaded">
+  <div class="container" style="max-width:800px;">
+    <h2 class="section-title" data-i18n="about.community_title">Our Community Commitment</h2>
+    <div class="divider"></div>
+    <p style="color:var(--color-gray);margin-bottom:1rem;text-align:center;" data-i18n="about.community_p1">We are proud to serve the Korean-American community and all multicultural families in Western Washington. Insurance can be confusing — navigating it in a second language is even harder. That is why we provide fully bilingual service in English and Korean, ensuring every client understands their coverage completely.</p>
+    <p style="color:var(--color-gray);text-align:center;" data-i18n="about.community_p2">We believe everyone deserves access to quality insurance and sound retirement planning, regardless of background or language.</p>
+  </div>
+</section>
+
+<!-- VALUES -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title" data-i18n="about.values_title">Our Values</h2>
+    <div class="divider"></div>
+    <div class="values-grid">
+      <div class="value-item reveal">
+        <div class="value-icon" aria-hidden="true">
+          <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        </div>
+        <h3 data-i18n="about.val1_title">Trust</h3>
+        <p data-i18n="about.val1_desc">We give you honest advice, even when it means recommending a lower-priced option. Your trust is our most valued asset.</p>
+      </div>
+      <div class="value-item reveal" data-delay="1">
+        <div class="value-icon" aria-hidden="true">
+          <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+        </div>
+        <h3 data-i18n="about.val2_title">Experience</h3>
+        <p data-i18n="about.val2_desc">Over 10 years serving Washington State families and businesses. We know the local market inside and out.</p>
+      </div>
+      <div class="value-item reveal" data-delay="2">
+        <div class="value-icon" aria-hidden="true">
+          <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+        <h3 data-i18n="about.val3_title">Community</h3>
+        <p data-i18n="about.val3_desc">We are part of the communities we serve. Giving back and building lasting relationships is at the core of what we do.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BANNER -->
+<section class="cta-banner glow-track">
+  <div class="container">
+    <h2 data-i18n="cta_banner.title">Ready to Get Covered?</h2>
+    <p data-i18n="cta_banner.subtitle">Call us today for a free, no-obligation quote. We speak English and Korean.</p>
+    <span class="cta-phone"><a href="tel:+14256786901">(425) 678-6901</a></span>
+    <a href="contact.html" class="btn btn-primary" data-i18n="cta_banner.or">or send us a message</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-col">
+      <div class="footer-logo-text">Ace Insurance<span>&amp; Retirement Services, Inc.</span></div>
+      <p data-i18n="footer.tagline">Your trusted insurance partner in Washington State</p>
+    </div>
+    <div class="footer-col">
+      <h4 data-i18n="footer.quick_links">Quick Links</h4>
+      <ul>
+        <li><a href="index.html"     data-i18n="nav.home">Home</a></li>
+        <li><a href="about.html"     data-i18n="nav.about">About Us</a></li>
+        <li><a href="services.html"  data-i18n="nav.services">Services</a></li>
+        <li><a href="locations.html" data-i18n="nav.locations">Locations</a></li>
+        <li><a href="contact.html"   data-i18n="nav.contact">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4 data-i18n="footer.contact_us">Contact Us</h4>
+      <p><a href="tel:+14256786901">(425) 678-6901</a></p>
+      <p data-i18n="footer.hours">Mon – Fri: 9:00 AM – 6:00 PM</p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p data-i18n="footer.copyright">© 2025 Ace Insurance & Retirement Services, Inc. All rights reserved.</p>
+  </div>
+</footer>
+
+<a href="#" class="back-to-top" id="backToTop" aria-label="Back to top">
+  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+</a>
+
+<script src="js/translations.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
