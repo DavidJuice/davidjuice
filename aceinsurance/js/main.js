@@ -240,3 +240,25 @@ function initScrollReveal() {
 document.addEventListener('DOMContentLoaded', function() {
   initScrollReveal();
 });
+
+/* ── Parallax floating artifacts ─────────────────────────────── */
+
+function initParallaxArtifacts() {
+  var artifacts = document.querySelectorAll('.artifact');
+  if (!artifacts.length) return;
+
+  function onScroll() {
+    var scrollY = window.scrollY;
+    artifacts.forEach(function(el) {
+      var speed = parseFloat(el.dataset.speed) || 0.3;
+      el.style.transform = 'translateY(' + (scrollY * speed) + 'px)';
+    });
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll(); /* set initial positions */
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  initParallaxArtifacts();
+});
