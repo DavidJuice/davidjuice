@@ -1109,3 +1109,38 @@ h1, h2, h3, h4 {
   .showcase-panel-title  { font-size: var(--font-size-h3); }
   .showcase-panel--right h3 { font-size: var(--font-size-h3); }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   CURSOR-FOLLOWING GRADIENT GLOW
+   Add class "glow-track" to any dark-background section.
+   JS sets --gx / --gy via mousemove; CSS draws a soft radial
+   highlight that follows the cursor — fades in on hover.
+   ══════════════════════════════════════════════════════════════ */
+
+.glow-track {
+  --gx: 50%;
+  --gy: 50%;
+}
+
+.glow-track::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    600px circle at var(--gx) var(--gy),
+    rgba(58, 134, 200, 0.18),
+    transparent 55%
+  );
+  pointer-events: none;   /* clicks always pass through */
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 2;
+}
+
+.glow-track:hover::after {
+  opacity: 1;
+}
+
+/* Hero already uses ::before for bg image — glow via ::after works fine */
+/* CTA banner and page-hero have no existing pseudo-elements — safe */
+/* Showcase panel--left has no existing pseudo-elements — safe */

@@ -203,3 +203,19 @@ function initServicesShowcase() {
 document.addEventListener('DOMContentLoaded', function() {
   initServicesShowcase();
 });
+
+/* ── Cursor-following gradient glow ─────────────────────────── */
+
+function initGlowTracking() {
+  document.querySelectorAll('.glow-track').forEach(function(el) {
+    el.addEventListener('mousemove', function(e) {
+      var rect = el.getBoundingClientRect();
+      el.style.setProperty('--gx', (e.clientX - rect.left) + 'px');
+      el.style.setProperty('--gy', (e.clientY - rect.top)  + 'px');
+    }, { passive: true });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  initGlowTracking();
+});
