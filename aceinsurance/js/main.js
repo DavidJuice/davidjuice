@@ -262,3 +262,130 @@ function initParallaxArtifacts() {
 document.addEventListener('DOMContentLoaded', function() {
   initParallaxArtifacts();
 });
+
+/* ══════════════════════════════════════════════════════════════
+   PREMIUM INTERACTIONS — Sapphire Nightfall Whisper
+   Custom cursor · Scroll progress · Word reveal · Magnetic CTA
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Custom cursor ───────────────────────────────────────────── */
+function initCustomCursor() {
+  var dot  = document.querySelector('.cursor-dot');
+  var ring = document.querySelector('.cursor-ring');
+  if (!dot || !ring) return;
+
+  var mx = window.innerWidth / 2, my = window.innerHeight / 2;
+  var rx = mx, ry = my;
+
+  /* Dot follows exactly */
+  document.addEventListener('mousemove', function(e) {
+    mx = e.clientX; my = e.clientY;
+    dot.style.left = mx + 'px';
+    dot.style.top  = my + 'px';
+  }, { passive: true });
+
+  /* Ring follows with lerp */
+  (function lerpRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px';
+    ring.style.top  = ry + 'px';
+    requestAnimationFrame(lerpRing);
+  })();
+
+  /* Hover state on interactive elements */
+  document.querySelectorAll('a, button, .btn, .showcase-dot, .nav-toggle, input, select, textarea').forEach(function(el) {
+    el.addEventListener('mouseenter', function() { document.body.classList.add('cursor-hover'); });
+    el.addEventListener('mouseleave', function() { document.body.classList.remove('cursor-hover'); });
+  });
+
+  /* Hide on leave */
+  document.addEventListener('mouseleave', function() {
+    dot.style.opacity = '0'; ring.style.opacity = '0';
+  });
+  document.addEventListener('mouseenter', function() {
+    dot.style.opacity = '1'; ring.style.opacity = '1';
+  });
+}
+
+/* ── Scroll progress bar ─────────────────────────────────────── */
+function initScrollProgress() {
+  var bar = document.querySelector('.scroll-progress');
+  if (!bar) return;
+
+  window.addEventListener('scroll', function() {
+    var pct = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+    bar.style.transform = 'scaleX(' + Math.min(pct, 1) + ')';
+  }, { passive: true });
+}
+
+/* ── Hero word-by-word entrance animation ────────────────────── */
+function initHeroTextReveal() {
+  var h1 = document.querySelector('.hero h1');
+  if (!h1) return;
+
+  /* Split into word spans, preserving italic <em> */
+  var html = h1.innerHTML;
+  /* Wrap each text-node word in a span */
+  h1.innerHTML = html.replace(/(<[^>]+>)|([^<\s]+)/g, function(match, tag, word) {
+    if (tag)  return tag; /* preserve tags */
+    if (word) return '<span class="hw" style="display:inline-block;opacity:0;transform:translateY(24px);transition:opacity 0.7s cubic-bezier(0.16,1,0.3,1),transform 0.7s cubic-bezier(0.16,1,0.3,1)">' + word + '</span> ';
+    return match;
+  });
+
+  /* Stagger the reveal */
+  var words = h1.querySelectorAll('.hw');
+  words.forEach(function(w, i) {
+    setTimeout(function() {
+      w.style.opacity  = '1';
+      w.style.transform = 'translateY(0)';
+    }, 120 + i * 80);
+  });
+
+  /* Also fade in eyebrow + p */
+  var eyebrow = document.querySelector('.hero-eyebrow');
+  var sub     = document.querySelector('.hero p');
+  var cta     = document.querySelector('.hero-cta');
+  var scroll  = document.querySelector('.hero-scroll');
+  [eyebrow, sub, cta, scroll].forEach(function(el, i) {
+    if (!el) return;
+    el.style.opacity   = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1)';
+    setTimeout(function() {
+      el.style.opacity   = '1';
+      el.style.transform = 'translateY(0)';
+    }, 500 + i * 160);
+  });
+}
+
+/* ── Magnetic CTA button ─────────────────────────────────────── */
+function initMagneticButtons() {
+  document.querySelectorAll('.btn-primary, .btn-outline').forEach(function(btn) {
+    btn.addEventListener('mousemove', function(e) {
+      var rect = btn.getBoundingClientRect();
+      var cx = rect.left + rect.width / 2;
+      var cy = rect.top  + rect.height / 2;
+      var dx = (e.clientX - cx) * 0.30;
+      var dy = (e.clientY - cy) * 0.30;
+      btn.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) translateY(-2px)';
+    });
+    btn.addEventListener('mouseleave', function() {
+      btn.style.transform = '';
+    });
+  });
+}
+
+/* ── Section background parallax (subtle) ────────────────────── */
+function initSectionParallax() {
+  var sections = document.querySelectorAll('.hero::before, .page-hero, .cta-banner');
+  /* handled via CSS radial gradients — no JS needed */
+}
+
+/* ── Boot all premium features ───────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function() {
+  initCustomCursor();
+  initScrollProgress();
+  initHeroTextReveal();
+  initMagneticButtons();
+});
