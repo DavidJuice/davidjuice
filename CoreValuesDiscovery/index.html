@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>마음의 핵심가치 발견하기</title>
+  <style>
+    :root {
+      --primary: #6c63ff;
+      --primary-light: #ede9ff;
+      --primary-dark: #4b44cc;
+      --accent: #ff6584;
+      --text: #2d2d2d;
+      --text-light: #6b7280;
+      --bg: #f8f7ff;
+      --card: #ffffff;
+      --border: #e5e7eb;
+      --selected-bg: #ede9ff;
+      --selected-border: #6c63ff;
+      --shadow: 0 4px 24px rgba(108,99,255,0.10);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', 'Apple SD Gothic Neo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ─── Header ─── */
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, #a78bfa 100%);
+      color: white;
+      padding: 28px 20px 22px;
+      text-align: center;
+      box-shadow: 0 2px 12px rgba(108,99,255,0.25);
+    }
+    header h1 { font-size: 1.45rem; font-weight: 700; letter-spacing: -0.5px; }
+    header p  { font-size: 0.88rem; opacity: 0.88; margin-top: 6px; }
+
+    /* ─── Screens ─── */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ─── Welcome ─── */
+    #welcome {
+      max-width: 560px;
+      margin: 40px auto;
+      padding: 20px;
+      text-align: center;
+    }
+    .welcome-icon { font-size: 4rem; margin-bottom: 16px; }
+    #welcome h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 12px; color: var(--primary-dark); }
+    #welcome p  { font-size: 0.95rem; color: var(--text-light); line-height: 1.75; margin-bottom: 10px; }
+    .welcome-note {
+      background: var(--primary-light);
+      border-left: 4px solid var(--primary);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin: 20px 0;
+      font-size: 0.9rem;
+      color: var(--primary-dark);
+      text-align: left;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), #a78bfa);
+      color: white;
+      border: none;
+      padding: 14px 36px;
+      border-radius: 50px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(108,99,255,0.35);
+      transition: transform .15s, box-shadow .15s;
+      margin-top: 8px;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(108,99,255,0.4); }
+    .btn-primary:active { transform: translateY(0); }
+
+    /* ─── Quiz ─── */
+    #quiz { max-width: 700px; margin: 0 auto; padding: 20px; }
+
+    .progress-wrap { margin-bottom: 20px; }
+    .progress-label {
+      display: flex; justify-content: space-between;
+      font-size: 0.82rem; color: var(--text-light); margin-bottom: 6px;
+    }
+    .progress-bar {
+      height: 7px; background: var(--border); border-radius: 9999px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), #a78bfa);
+      border-radius: 9999px;
+      transition: width .4s ease;
+    }
+
+    .value-card {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 22px 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+    .value-header {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+    }
+    .value-badge {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .value-name { font-size: 1.1rem; font-weight: 700; color: var(--primary-dark); }
+    .value-category { font-size: 0.8rem; color: var(--text-light); margin-top: 2px; }
+
+    .pains-label {
+      font-size: 0.82rem; font-weight: 600;
+      color: var(--text-light); margin-bottom: 10px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .pain-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .pain-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all .18s;
+      background: var(--bg);
+      user-select: none;
+    }
+    .pain-item:hover { border-color: var(--primary); background: #f5f3ff; }
+    .pain-item.selected {
+      border-color: var(--selected-border);
+      background: var(--selected-bg);
+    }
+    .pain-check {
+      width: 20px; height: 20px; flex-shrink: 0;
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin-top: 1px;
+      transition: all .18s;
+      background: white;
+    }
+    .pain-item.selected .pain-check {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+    .pain-check svg { display: none; }
+    .pain-item.selected .pain-check svg { display: block; }
+    .pain-text { font-size: 0.92rem; line-height: 1.55; color: var(--text); }
+
+    .quiz-nav {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 24px;
+    }
+    .btn-secondary {
+      background: var(--card); color: var(--primary);
+      border: 1.5px solid var(--primary);
+      padding: 11px 28px; border-radius: 50px;
+      font-size: 0.95rem; font-weight: 600; cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-secondary:hover { background: var(--primary-light); }
+    .btn-secondary:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .selection-hint {
+      font-size: 0.82rem; color: var(--text-light);
+      text-align: center; margin-top: 10px;
+    }
+    .selection-hint span { color: var(--primary); font-weight: 600; }
+
+    /* ─── Results ─── */
+    #results { max-width: 700px; margin: 0 auto; padding: 20px; }
+
+    .results-header {
+      text-align: center; margin-bottom: 28px;
+    }
+    .results-header .big-emoji { font-size: 3.5rem; margin-bottom: 10px; }
+    .results-header h2 { font-size: 1.35rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 8px; }
+    .results-header p { font-size: 0.9rem; color: var(--text-light); }
+
+    .top-values-section { margin-bottom: 28px; }
+    .section-title {
+      font-size: 0.85rem; font-weight: 700;
+      color: var(--text-light); text-transform: uppercase;
+      letter-spacing: 0.8px; margin-bottom: 14px;
+    }
+
+    .top-values-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .top-value-card {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 18px 16px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .top-value-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 4px;
+      background: linear-gradient(90deg, var(--primary), #a78bfa);
+    }
+    .top-value-card.rank-1::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .top-value-card.rank-2::before { background: linear-gradient(90deg, #6b7280, #9ca3af); }
+    .top-value-card.rank-3::before { background: linear-gradient(90deg, #b45309, #d97706); }
+
+    .tv-rank { font-size: 0.75rem; font-weight: 700; color: var(--text-light); margin-bottom: 6px; }
+    .tv-name { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .tv-category { font-size: 0.78rem; color: var(--text-light); margin-bottom: 10px; }
+    .tv-bar-wrap { background: var(--border); border-radius: 9999px; height: 6px; margin-bottom: 6px; }
+    .tv-bar { height: 100%; border-radius: 9999px; background: linear-gradient(90deg, var(--primary), #a78bfa); }
+    .top-value-card.rank-1 .tv-bar { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .top-value-card.rank-2 .tv-bar { background: linear-gradient(90deg, #6b7280, #9ca3af); }
+    .top-value-card.rank-3 .tv-bar { background: linear-gradient(90deg, #b45309, #d97706); }
+    .tv-count { font-size: 0.78rem; color: var(--text-light); }
+
+    .all-values-section { margin-bottom: 28px; }
+    .value-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
+    }
+    .vr-name { font-size: 0.9rem; font-weight: 600; flex: 0 0 160px; color: var(--text); }
+    .vr-bar-wrap { flex: 1; background: var(--border); border-radius: 9999px; height: 8px; }
+    .vr-bar { height: 100%; border-radius: 9999px; background: var(--primary); min-width: 2px; }
+    .vr-bar.zero { background: var(--border); }
+    .vr-count { font-size: 0.82rem; color: var(--text-light); flex: 0 0 32px; text-align: right; }
+
+    .reflection-box {
+      background: linear-gradient(135deg, #ede9ff, #f5f3ff);
+      border: 1.5px solid #c4b5fd;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .reflection-box h3 { font-size: 1rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 10px; }
+    .reflection-box p  { font-size: 0.88rem; color: var(--text); line-height: 1.7; }
+
+    .results-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn-outline {
+      background: var(--card); color: var(--text-light);
+      border: 1.5px solid var(--border);
+      padding: 11px 24px; border-radius: 50px;
+      font-size: 0.92rem; font-weight: 600; cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+    .no-selection-msg {
+      text-align: center; color: var(--text-light);
+      padding: 20px; font-size: 0.92rem;
+    }
+
+    @media (max-width: 480px) {
+      header h1 { font-size: 1.2rem; }
+      .top-values-grid { grid-template-columns: 1fr 1fr; }
+      .vr-name { flex: 0 0 120px; font-size: 0.82rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>마음의 핵심가치 발견하기</h1>
+  <p>주요 고통이나 상처를 통해 나의 가장 소중한 가치를 발견합니다</p>
+</header>
+
+<!-- ══════════════════ WELCOME SCREEN ══════════════════ -->
+<div id="welcome" class="screen active">
+  <div class="welcome-icon">💎</div>
+  <h2>당신의 핵심가치는 무엇인가요?</h2>
+  <p>
+    우리가 가장 깊이 상처받는 곳에<br/>
+    우리가 가장 소중히 여기는 가치가 숨어 있습니다.
+  </p>
+  <p>
+    아래 질문들을 읽으면서 <strong>공감되거나 경험한 고통</strong>을 선택하세요.<br/>
+    선택 결과를 분석해 당신의 <strong>마음의 핵심가치</strong>를 찾아드립니다.
+  </p>
+  <div class="welcome-note">
+    💡 <strong>사용법</strong><br/>
+    각 페이지에서 나의 이야기처럼 느껴지는 고통이나 상처를 모두 체크하세요.<br/>
+    솔직하게 선택할수록 더 정확한 결과를 얻을 수 있습니다.
+  </div>
+  <button class="btn-primary" onclick="startQuiz()">시작하기 →</button>
+</div>
+
+<!-- ══════════════════ QUIZ SCREEN ══════════════════ -->
+<div id="quiz" class="screen">
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span id="progress-text">1 / 31</span>
+      <span id="progress-pct">3%</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill" style="width:3%"></div>
+    </div>
+  </div>
+
+  <div id="card-container"></div>
+
+  <p class="selection-hint">공감되는 항목은 여러 개 선택 가능합니다. (<span id="selected-count">0</span>개 선택됨)</p>
+
+  <div class="quiz-nav">
+    <button class="btn-secondary" id="btn-prev" onclick="prevCard()" disabled>← 이전</button>
+    <button class="btn-primary" id="btn-next" onclick="nextCard()">다음 →</button>
+  </div>
+</div>
+
+<!-- ══════════════════ RESULTS SCREEN ══════════════════ -->
+<div id="results" class="screen">
+  <div class="results-header">
+    <div class="big-emoji">✨</div>
+    <h2>당신의 마음의 핵심가치</h2>
+    <p>공감된 고통을 분석하여 가장 소중한 가치를 찾았습니다</p>
+  </div>
+
+  <div class="top-values-section">
+    <div class="section-title">🏆 상위 핵심가치</div>
+    <div class="top-values-grid" id="top-values-grid"></div>
+  </div>
+
+  <div class="reflection-box" id="reflection-box"></div>
+
+  <div class="all-values-section">
+    <div class="section-title">📊 전체 가치 분포</div>
+    <div id="all-values-list"></div>
+  </div>
+
+  <div class="results-actions">
+    <button class="btn-outline" onclick="restartQuiz()">↺ 다시 하기</button>
+    <button class="btn-primary" onclick="window.print()">🖨 결과 인쇄</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  DATA  — 31 core values with Korean pains/wounds
+// ══════════════════════════════════════════════════════
+const VALUES = [
+  {
+    id: 1, name: "사랑", nameEn: "Love", category: "관계 가치",
+    emoji: "❤️",
+    pains: [
+      "나나 다른 사람이 고립되고 단절되는 것을 볼 때 마음이 아프다",
+      "다른 사람으로부터 거부당하거나 거절당한 경험이 있다",
+      "나의 애정과 관심이 간섭으로 오해받아 상처받은 적이 있다"
+    ]
+  },
+  {
+    id: 2, name: "화평과 조화", nameEn: "Peace & Harmony", category: "관계 가치",
+    emoji: "🕊️",
+    pains: [
+      "갈등과 반목 속에서 오는 고통을 깊이 느낀다",
+      "남들의 불화에 말려들어 오해받은 적이 있다",
+      "소외되거나 보조를 맞추지 못하는 사람을 도와주다가 망신당한 적이 있다"
+    ]
+  },
+  {
+    id: 3, name: "인내", nameEn: "Patience", category: "성품 가치",
+    emoji: "🏔️",
+    pains: [
+      "다른 사람의 과도한 요구로 시달린 적이 있다",
+      "스스로 일이 너무 많아 탈진된 경험이 있다",
+      "무시당하고 존중받지 못해 힘들었던 적이 있다"
+    ]
+  },
+  {
+    id: 4, name: "친절", nameEn: "Kindness", category: "관계 가치",
+    emoji: "🤝",
+    pains: [
+      "친절을 베풀었는데 오히려 더 요구하거나 적대적으로 대해 화가 난 적이 있다",
+      "도움을 줄 수 없거나 도움이 받아들여지지 않아 괴로운 적이 있다",
+      "선의가 오해받고 배신당한 경험이 있다"
+    ]
+  },
+  {
+    id: 5, name: "신실함", nameEn: "Faithfulness", category: "성품 가치",
+    emoji: "🌿",
+    pains: [
+      "사람들의 겉과 속이 달라 불신하게 된 적이 있다",
+      "한결같이 잘 대해 준 사람에게 배신당하고 뒤통수를 맞은 경험이 있다",
+      "사람들에게 실망해서 회피하고 거리를 두게 된 적이 있다"
+    ]
+  },
+  {
+    id: 6, name: "절제", nameEn: "Self-Control", category: "성품 가치",
+    emoji: "⚖️",
+    pains: [
+      "지나치게 조심하여 자기 행동이나 마음이 가짜처럼 느껴진 적이 있다",
+      "감정을 지나치게 억제하다 보니 진정성이 없어 보인다는 말을 들었다",
+      "진정 원하는 것이 무엇인지 몰라 불안정하게 느낀 적이 있다"
+    ]
+  },
+  {
+    id: 7, name: "믿음", nameEn: "Faith/Trust", category: "관계 가치",
+    emoji: "🔑",
+    pains: [
+      "믿을 만한 사람이 없어 소외되고 고립된 적이 있다",
+      "믿었던 사람에게 배신당한 경험이 있다",
+      "신의를 지키려다 상처받은 적이 있다"
+    ]
+  },
+  {
+    id: 8, name: "고통을 오랫동안 견딤", nameEn: "Long-suffering", category: "성품 가치",
+    emoji: "💪",
+    pains: [
+      "어려운 상황에서 오래 견디다가 좌절한 적이 있다",
+      "오래 참다 보니 자기도 모르게 공격적으로 변한 적이 있다",
+      "고통 속에서 견디지 못하는 사람들을 보면 안타깝고 답답하다"
+    ]
+  },
+  {
+    id: 9, name: "긍휼", nameEn: "Compassion", category: "관계 가치",
+    emoji: "🫶",
+    pains: [
+      "다른 사람의 어려움에 과민하게 반응하다 상처받은 적이 있다",
+      "주위의 어려운 사람이 방치되면 불편하고 마음이 쓰인다",
+      "지나치게 동정심이나 친절을 보이다가 오해를 받은 적이 있다"
+    ]
+  },
+  {
+    id: 10, name: "정의", nameEn: "Justice", category: "사회 가치",
+    emoji: "⚖️",
+    pains: [
+      "올바르게 행동하지 않는 사람을 보면 화가 난다",
+      "규칙을 어기거나 자기 멋대로 하는 사람을 지적하다가 왕따당한 적이 있다",
+      "불공평한 처사를 하는 사람에게 화가 나고 참기 어렵다"
+    ]
+  },
+  {
+    id: 11, name: "정직", nameEn: "Honesty", category: "성품 가치",
+    emoji: "🪞",
+    pains: [
+      "거짓말하는 사람을 보면 화를 못 참는다",
+      "고지식하다는 말을 많이 듣고 손해를 본 적이 있다",
+      "가식적인 사람을 보면 실망하고 멀어지고 싶다"
+    ]
+  },
+  {
+    id: 12, name: "나눔·관대함", nameEn: "Generosity", category: "관계 가치",
+    emoji: "🎁",
+    pains: [
+      "다른 사람에게 친절하지 않은 것을 보면 화가 난다",
+      "상대방의 호의를 거절하다가 오해받은 적이 있다",
+      "사람들이 인색하게 굴어서 상처받은 적이 있다"
+    ]
+  },
+  {
+    id: 13, name: "자비", nameEn: "Mercy", category: "관계 가치",
+    emoji: "🌸",
+    pains: [
+      "위협하고 학대하는 사람에게 화가 나고 맞서고 싶다",
+      "너무나 이기적인 사람은 피하고 싶다",
+      "다른 사람을 이용하거나 냉정한 사람들로부터 상처받은 적이 있다"
+    ]
+  },
+  {
+    id: 14, name: "한결같음", nameEn: "Consistency", category: "성품 가치",
+    emoji: "🧭",
+    pains: [
+      "한번 시작한 일은 포기하지 않아 손해보거나 욕먹은 적이 있다",
+      "사람들이 이랬다저랬다 하면 관계를 단절한 적이 있다",
+      "태도가 자주 바뀌는 사람을 용납하기 어렵다"
+    ]
+  },
+  {
+    id: 15, name: "온전함", nameEn: "Integrity", category: "성품 가치",
+    emoji: "💎",
+    pains: [
+      "가식적인 사람을 보면 화가 난다",
+      "거짓된 말이나 태도를 보이는 사람을 못 견딘다",
+      "자신의 원래 모습을 숨기고 피상적으로 대하는 것이 고통스럽다"
+    ]
+  },
+  {
+    id: 16, name: "겸손", nameEn: "Humility", category: "성품 가치",
+    emoji: "🌱",
+    pains: [
+      "지나치게 자랑하는 사람을 보면 불편하다",
+      "다른 사람들로부터 무시당하거나 함부로 취급받은 적이 있다",
+      "함부로 대하고 무시당해 사람들과 멀어진 적이 있다",
+      "다른 사람들에게 무시당하지 않기 위해 나를 내세운 적이 있다"
+    ]
+  },
+  {
+    id: 17, name: "진실성", nameEn: "Authenticity", category: "성품 가치",
+    emoji: "✨",
+    pains: [
+      "피상적으로 대하는 사람으로부터 상처받은 적이 있다",
+      "위기 상황만 넘기려는 사람에게 화가 난다",
+      "자신을 지나치게 방어하는 사람을 싫어한다",
+      "가식적인 말이나 태도를 보이는 사람을 못 견딘다"
+    ]
+  },
+  {
+    id: 18, name: "온유", nameEn: "Gentleness", category: "성품 가치",
+    emoji: "🌷",
+    pains: [
+      "다른 사람들에게 화내거나 함부로 대하는 사람을 보면 불편하다",
+      "자기 주장도 못하는 사람으로 여겨져 상처받은 적이 있다",
+      "남한테 져 주다 보니 원통하고 억울함을 느낀 적이 있다"
+    ]
+  },
+  {
+    id: 19, name: "공감적 돌봄", nameEn: "Empathetic Care", category: "관계 가치",
+    emoji: "💝",
+    pains: [
+      "상대방을 배려하지 않고 자기 마음대로 행동하는 사람들이 불편하다",
+      "남들에게 쓸데없는 관심이 많다는 말을 들을까 봐 두려워하고 상처받은 적이 있다",
+      "사람들을 오랫동안 챙겨 주다가 실망하고 마음이 굳어진 적이 있다"
+    ]
+  },
+  {
+    id: 20, name: "환대", nameEn: "Hospitality", category: "관계 가치",
+    emoji: "🏠",
+    pains: [
+      "남을 잘 대접하지 않고 인색한 사람을 보면 화가 나고 불편하다",
+      "너 자신이나 잘 챙기라는 조언에 상처받은 적이 있다",
+      "자신의 이익을 위해서 상대방에게 호의를 베푼다는 오해를 받은 적이 있다"
+    ]
+  },
+  {
+    id: 21, name: "명예로움", nameEn: "Honor", category: "사회 가치",
+    emoji: "🏅",
+    pains: [
+      "이기적인 욕심을 따르고 자기 만족만 추구하는 사람을 보면 불편하다",
+      "오랫동안 애쓴 일에 대해 무시받은 적이 있다",
+      "자기가 한 일을 인정받지 못하며 경멸당한 적이 있다",
+      "자신이 무가치한 것처럼 느껴지고 자부심이 손상당한 적이 있다"
+    ]
+  },
+  {
+    id: 22, name: "지혜로움", nameEn: "Wisdom", category: "사회 가치",
+    emoji: "🦉",
+    pains: [
+      "어리석게 행동하는 사람을 보면 불편하고 답답하다",
+      "깊게 생각하고 제안한 의견이 무시당하고 묵살당해 상처받은 적이 있다",
+      "현명한 판단과 행동이 인정받지 못하여 모욕당한 적이 있다"
+    ]
+  },
+  {
+    id: 23, name: "따뜻한 마음", nameEn: "Warm Heart", category: "관계 가치",
+    emoji: "☀️",
+    pains: [
+      "다른 사람을 피상적이고 차갑게 대하는 사람을 보면 불편하다",
+      "무관심한 태도나 행동으로 상처받은 적이 있다",
+      "자신의 배려가 받아들여지지 않아 실망하고 냉담해진 적이 있다"
+    ]
+  },
+  {
+    id: 24, name: "독립·자율성", nameEn: "Independence", category: "성품 가치",
+    emoji: "🦋",
+    pains: [
+      "남의 일에 참견하기 좋아하는 사람을 보면 화가 난다",
+      "계속 같이 있고 싶어 하고 사소한 일도 나누기 원하는 사람에게 불편감을 느낀다",
+      "남들과 보조를 맞추는 것이 힘들다",
+      "고립되고 외로운 느낌을 자주 받는다"
+    ]
+  },
+  {
+    id: 25, name: "적극적인 리더", nameEn: "Active Leader", category: "역할 가치",
+    emoji: "🚀",
+    pains: [
+      "게으르거나 소극적이고 수동적인 사람을 보면 불편하다",
+      "남들이 잘 따라 주지 않고 리더십을 거부하면 상처받는다",
+      "오랫동안 노력하다가 받아들여지지 않아 수동적이 된 적이 있다"
+    ]
+  },
+  {
+    id: 26, name: "용사", nameEn: "Warrior/Champion", category: "역할 가치",
+    emoji: "⚔️",
+    pains: [
+      "용기가 없고 비겁한 행동을 하는 사람을 보면 불편하고 화가 난다",
+      "남을 보호하고 앞서서 행동하다가 상처받은 적이 있다"
+    ]
+  },
+  {
+    id: 27, name: "목자", nameEn: "Shepherd", category: "역할 가치",
+    emoji: "🐑",
+    pains: [
+      "방황하거나 연약한 사람들이 방치되는 것을 보면 불편하다",
+      "양육을 받지 못해 성장하지 못하는 것을 보면 안타깝다",
+      "돌봄을 거부하고 반응이 없어 슬프고 상처받은 적이 있다"
+    ]
+  },
+  {
+    id: 28, name: "교사", nameEn: "Teacher", category: "역할 가치",
+    emoji: "📖",
+    pains: [
+      "오랜 가르침에도 변화가 없고 성장하지 않아 실망스럽다",
+      "도움이 필요한 사람이 지도받지 않으려고 할 때 화가 난다",
+      "열심히 가르치고 돌봤는데도 결과가 없어 무관심해진 적이 있다"
+    ]
+  },
+  {
+    id: 29, name: "연합하는 자", nameEn: "Unifier", category: "역할 가치",
+    emoji: "🤲",
+    pains: [
+      "분열시키고 편가르기를 하는 사람을 보면 화가 난다",
+      "다른 의견들을 조정하려는 시도가 좌절될 때 낙심한다",
+      "연합하려는 것이 딴 마음이 있는 것으로 취급받아 억울한 적이 있다"
+    ]
+  },
+  {
+    id: 30, name: "코치·격려자", nameEn: "Coach/Encourager", category: "역할 가치",
+    emoji: "🎯",
+    pains: [
+      "마음과 정성을 다했는데 거부하고 변화가 없을 때 상처받는다",
+      "선의와 조언을 받아들이지 않아 화가 난 적이 있다",
+      "동기 부여가 안 되고 주저앉아 있는 사람 때문에 실망한 적이 있다"
+    ]
+  },
+  {
+    id: 31, name: "변호사·대변자", nameEn: "Advocate", category: "역할 가치",
+    emoji: "⚖️",
+    pains: [
+      "다른 사람이 부당하게 손해를 당할 때 화가 난다",
+      "의견이나 주장이 잘못 전달되고 오해받아 고통당한 적이 있다",
+      "정당한 의견이 일방적으로 공격받고 무시당해 상처받은 적이 있다",
+      "다른 사람을 도와주다가 오히려 비방하거나 공격적인 사람으로 여겨진 적이 있다"
+    ]
+  }
+];
+
+// Reflection messages for top value combinations
+const REFLECTIONS = {
+  "관계 가치": "당신은 사람과의 연결을 깊이 소중히 여깁니다. 관계 속에서 받은 상처들은 바로 당신이 얼마나 진심으로 타인을 사랑하고 연결되길 원하는지를 보여줍니다. 이 사랑의 마음이 당신의 가장 큰 강점입니다.",
+  "성품 가치": "당신은 내면의 진실성과 인격을 매우 중요하게 여깁니다. 가식과 불일치에 받은 상처들은 당신이 진정한 자아와 올바른 인격을 얼마나 갈망하는지를 나타냅니다.",
+  "사회 가치": "당신은 더 나은 세상을 위한 정의와 공정함을 깊이 추구합니다. 불의와 불공정에 받은 상처들은 당신 안에 있는 강한 사명감의 표현입니다.",
+  "역할 가치": "당신은 삶의 특별한 역할을 통해 다른 사람들을 섬기고 영향을 미치길 원합니다. 그 역할 속에서 받은 상처들은 당신의 소명이 얼마나 진실한지를 말해줍니다."
+};
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+let currentIndex = 0;
+let selections = {}; // { valueId: Set of painIndices }
+
+VALUES.forEach(v => { selections[v.id] = new Set(); });
+
+// ══════════════════════════════════════════════════════
+//  QUIZ LOGIC
+// ══════════════════════════════════════════════════════
+function startQuiz() {
+  showScreen('quiz');
+  renderCard();
+}
+
+function renderCard() {
+  const v = VALUES[currentIndex];
+  const total = VALUES.length;
+  const pct = Math.round(((currentIndex + 1) / total) * 100);
+
+  document.getElementById('progress-text').textContent = `${currentIndex + 1} / ${total}`;
+  document.getElementById('progress-pct').textContent  = `${pct}%`;
+  document.getElementById('progress-fill').style.width = `${pct}%`;
+  document.getElementById('btn-prev').disabled = currentIndex === 0;
+  document.getElementById('btn-next').textContent =
+    currentIndex === total - 1 ? '결과 보기 ✨' : '다음 →';
+
+  const sel = selections[v.id];
+
+  const painItems = v.pains.map((p, i) => {
+    const checked = sel.has(i);
+    return `
+      <div class="pain-item ${checked ? 'selected' : ''}" onclick="togglePain(${v.id}, ${i}, this)">
+        <div class="pain-check">
+          <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
+            <path d="M1 4L4 7.5L10 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="pain-text">${p}</span>
+      </div>`;
+  }).join('');
+
+  document.getElementById('card-container').innerHTML = `
+    <div class="value-card">
+      <div class="value-header">
+        <span style="font-size:1.8rem">${v.emoji}</span>
+        <div>
+          <div class="value-badge">${v.category}</div>
+          <div class="value-name">${v.name}</div>
+          <div class="value-category">${v.nameEn}</div>
+        </div>
+      </div>
+      <div class="pains-label">이런 고통이나 상처를 경험했나요?</div>
+      <div class="pain-list">${painItems}</div>
+    </div>`;
+
+  updateSelectedCount();
+}
+
+function togglePain(valueId, painIndex, el) {
+  const sel = selections[valueId];
+  if (sel.has(painIndex)) {
+    sel.delete(painIndex);
+    el.classList.remove('selected');
+  } else {
+    sel.add(painIndex);
+    el.classList.add('selected');
+  }
+  updateSelectedCount();
+}
+
+function updateSelectedCount() {
+  const v = VALUES[currentIndex];
+  document.getElementById('selected-count').textContent = selections[v.id].size;
+}
+
+function nextCard() {
+  if (currentIndex < VALUES.length - 1) {
+    currentIndex++;
+    renderCard();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else {
+    showResults();
+  }
+}
+
+function prevCard() {
+  if (currentIndex > 0) {
+    currentIndex--;
+    renderCard();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  RESULTS
+// ══════════════════════════════════════════════════════
+function showResults() {
+  showScreen('results');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // Calculate scores
+  const scores = VALUES.map(v => ({
+    ...v,
+    score: selections[v.id].size,
+    maxScore: v.pains.length
+  })).sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+
+  const maxScore = Math.max(...scores.map(s => s.score), 1);
+
+  // Top values (score > 0, max 6)
+  const topValues = scores.filter(s => s.score > 0).slice(0, 6);
+
+  // Top values grid
+  const topGrid = document.getElementById('top-values-grid');
+  if (topValues.length === 0) {
+    topGrid.innerHTML = '<div class="no-selection-msg">선택된 항목이 없습니다. 다시 시도해 보세요.</div>';
+  } else {
+    topGrid.innerHTML = topValues.map((v, i) => {
+      const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : '';
+      const rankLabel = i === 0 ? '🥇 1위' : i === 1 ? '🥈 2위' : i === 2 ? '🥉 3위' : `${i+1}위`;
+      const barPct = Math.round((v.score / maxScore) * 100);
+      return `
+        <div class="top-value-card ${rankClass}">
+          <div class="tv-rank">${rankLabel}</div>
+          <div style="font-size:1.5rem;margin-bottom:4px">${v.emoji}</div>
+          <div class="tv-name">${v.name}</div>
+          <div class="tv-category">${v.category}</div>
+          <div class="tv-bar-wrap"><div class="tv-bar" style="width:${barPct}%"></div></div>
+          <div class="tv-count">${v.score}개 공감 (총 ${v.maxScore}개 중)</div>
+        </div>`;
+    }).join('');
+  }
+
+  // Reflection
+  const topCat = topValues.length > 0
+    ? topValues.reduce((acc, v) => {
+        acc[v.category] = (acc[v.category] || 0) + v.score;
+        return acc;
+      }, {})
+    : {};
+  const dominant = Object.entries(topCat).sort((a,b) => b[1]-a[1])[0];
+  const reflection = dominant ? REFLECTIONS[dominant[0]] : '';
+
+  const topName = topValues[0]?.name || '';
+  document.getElementById('reflection-box').innerHTML = `
+    <h3>💌 당신에게 드리는 메시지</h3>
+    <p>${reflection || '모든 가치는 소중합니다. 다양한 고통의 경험이 당신의 독특한 마음의 지도를 만들어 갑니다.'}</p>
+    ${topName ? `<p style="margin-top:10px;font-weight:600;color:#4b44cc">
+      "${topName}" — 이것이 당신의 마음이 가장 소중히 여기는 가치입니다.
+    </p>` : ''}`;
+
+  // All values bar chart
+  const allList = document.getElementById('all-values-list');
+  allList.innerHTML = scores.map(v => {
+    const barPct = Math.round((v.score / maxScore) * 100);
+    return `
+      <div class="value-row">
+        <div class="vr-name">${v.emoji} ${v.name}</div>
+        <div class="vr-bar-wrap">
+          <div class="vr-bar ${v.score === 0 ? 'zero' : ''}" style="width:${barPct || 1}%"></div>
+        </div>
+        <div class="vr-count">${v.score}</div>
+      </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function restartQuiz() {
+  currentIndex = 0;
+  VALUES.forEach(v => { selections[v.id] = new Set(); });
+  showScreen('welcome');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
