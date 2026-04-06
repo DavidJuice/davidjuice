@@ -1010,274 +1010,191 @@ h1, h2, h3, h4 {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   SCROLL-DRIVEN SERVICES SHOWCASE
-   Left panel enters from left, right panel from right.
-   They meet at the gold center seam — no overlap.
+   SERVICES STACKED CARDS — Vikoone-style
+   Full-viewport cards slide up from below as the user scrolls.
+   Each new card covers the previous one completely.
    ══════════════════════════════════════════════════════════════ */
 
-/* Outer wrapper — 7 services × 100vh = 700vh of scroll space */
-.services-showcase {
+/* Outer wrapper creates 7 × 100vh of scroll space */
+.svc-stack {
   position: relative;
   height: calc(7 * 100vh);
 }
 
-/* Sticky viewport — pins to top and stays for the entire scroll range */
-.showcase-viewport {
+/* Sticky frame pins in place for the entire scroll range */
+.svc-sticky {
   position: sticky;
   top: 0;
   height: 100vh;
   overflow: hidden;
-  background: var(--color-navy);
 }
 
-/* Gold center seam where the two panels meet */
-.showcase-viewport::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: var(--color-gold);
-  transform: translateX(-50%);
-  z-index: 10;
-  pointer-events: none;
-}
-
-/* Each slide is stacked full-size inside the viewport */
-.showcase-slide {
+/* Each card: full-viewport layer, starts below the screen */
+.svc-card {
   position: absolute;
   inset: 0;
   display: flex;
-  pointer-events: none;
-  z-index: 1;
-}
-.showcase-slide.is-active {
-  pointer-events: auto;
-  z-index: 2;
-}
-
-/* ── Shared panel styles ── */
-.showcase-panel {
-  width: 50%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: var(--space-xl) var(--space-xl);
-  transition: transform 0.65s cubic-bezier(0.77, 0, 0.175, 1);
-}
-
-/* ── LEFT panel: navy background, enters from the LEFT ── */
-.showcase-panel--left {
-  left: 0;
-  background: var(--color-navy);
-  color: var(--color-white);
   align-items: center;
-  text-align: center;
-  transform: translateX(-100%);
+  padding: 0 var(--space-xl);
+  will-change: transform;
+  transform: translateY(100%);
   overflow: hidden;
 }
+/* First card is already visible on entry */
+.svc-card:first-child { transform: translateY(0); }
 
-/* ── RIGHT panel: white background, enters from the RIGHT ── */
-.showcase-panel--right {
-  right: 0;
-  background: var(--color-white);
-  transform: translateX(100%);
-}
+/* Unique dark gradient per service card */
+.svc-card[data-svc="0"] { background: linear-gradient(135deg, #0d1625 0%, #06213d 100%); }
+.svc-card[data-svc="1"] { background: linear-gradient(135deg, #0a1a20 0%, #162d35 100%); }
+.svc-card[data-svc="2"] { background: linear-gradient(135deg, #070f22 0%, #06294a 100%); }
+.svc-card[data-svc="3"] { background: linear-gradient(135deg, #0d1625 0%, #1c1040 100%); }
+.svc-card[data-svc="4"] { background: linear-gradient(135deg, #071822 0%, #0d3040 100%); }
+.svc-card[data-svc="5"] { background: linear-gradient(135deg, #0a1020 0%, #1e2c50 100%); }
+.svc-card[data-svc="6"] { background: linear-gradient(135deg, #080e20 0%, #06366a 100%); }
 
-/* Active slide: both panels slide to center and click together */
-.showcase-slide.is-active .showcase-panel--left  { transform: translateX(0); }
-.showcase-slide.is-active .showcase-panel--right { transform: translateX(0); }
-
-/* ── Left panel interior ── */
-.showcase-panel-number {
-  font-size: 7rem;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.07);
-  line-height: 1;
+/* Decorative ghost number — large, very faint, bottom-right */
+.svc-bg-num {
   position: absolute;
-  top: var(--space-lg);
-  left: var(--space-lg);
+  right: -0.05em;
+  bottom: -0.1em;
+  font-family: var(--font-display);
+  font-size: clamp(12rem, 30vw, 22rem);
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.04);
+  pointer-events: none;
   user-select: none;
+  line-height: 1;
 }
 
-.showcase-panel-icon {
-  width: 88px;
-  height: 88px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(201, 168, 76, 0.4);
+/* Content area */
+.svc-card-body {
+  position: relative;
+  z-index: 1;
+  max-width: 680px;
+}
+
+/* Eyebrow label */
+.svc-eyebrow {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  margin-bottom: var(--space-md);
+}
+
+/* Icon circle */
+.svc-icon {
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(168, 196, 236, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: var(--space-lg);
   color: var(--color-gold);
+  backdrop-filter: blur(8px);
   flex-shrink: 0;
 }
-.showcase-panel-icon svg { width: 44px; height: 44px; }
+.svc-icon svg { width: 48px; height: 48px; }
 
-.showcase-panel-title {
-  color: var(--color-white);
-  font-size: var(--font-size-h2);
-  line-height: 1.2;
-  max-width: 280px;
-}
-
-/* ── Right panel interior ── */
-.showcase-eyebrow {
-  font-size: var(--font-size-sm);
-  font-weight: 700;
-  color: var(--color-gold);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+/* Service title — Cormorant Garamond italic */
+.svc-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 6vw, 5.5rem);
+  font-weight: 300;
+  font-style: italic;
+  color: var(--color-text);
+  line-height: 1.05;
   margin-bottom: var(--space-md);
 }
 
-.showcase-panel--right h3 {
-  font-size: var(--font-size-h2);
-  color: var(--color-navy);
-  margin-bottom: var(--space-md);
-  line-height: 1.2;
-}
-
-.showcase-panel--right p {
-  color: var(--color-gray);
+/* Description */
+.svc-desc {
   font-size: var(--font-size-lg);
-  margin-bottom: var(--space-lg);
-  max-width: 420px;
+  color: rgba(214, 228, 245, 0.65);
+  max-width: 480px;
   line-height: 1.7;
+  margin-bottom: var(--space-lg);
 }
 
-.showcase-panel--right .showcase-btns {
+/* CTA button row */
+.svc-btns {
   display: flex;
-  flex-wrap: wrap;
   gap: var(--space-sm);
+  flex-wrap: wrap;
 }
 
-/* ── Progress dots (right edge) ── */
-.showcase-dots {
+/* Progress dots — right edge */
+.svc-dots {
   position: absolute;
-  right: 1.25rem;
+  right: 1.5rem;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.6rem;
   z-index: 20;
 }
-
-.showcase-dot {
-  width: 9px;
-  height: 9px;
+.svc-dot {
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.25);
-  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.2);
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
   cursor: pointer;
   padding: 0;
-  transition: background 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+  transition: background 0.3s, transform 0.3s, border-color 0.3s;
 }
-
-.showcase-dot:hover {
-  background: rgba(255, 255, 255, 0.5);
-}
-
-.showcase-dot.is-active {
+.svc-dot.is-active {
   background: var(--color-gold);
   border-color: var(--color-gold);
-  transform: scale(1.5);
+  transform: scale(1.55);
 }
+.svc-dot:hover:not(.is-active) { background: rgba(255, 255, 255, 0.45); }
 
-/* ── Slide counter (bottom center) ── */
-.showcase-counter {
+/* Counter — bottom left */
+.svc-counter {
   position: absolute;
   bottom: var(--space-lg);
-  left: 50%;
-  transform: translateX(-50%);
+  left: var(--space-xl);
   z-index: 20;
   display: flex;
   align-items: baseline;
-  gap: 0.3rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: var(--font-size-sm);
+  gap: 0.2rem;
   pointer-events: none;
 }
-
-.showcase-counter-current {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--color-white);
+.svc-counter-n {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: var(--color-text);
   line-height: 1;
-  min-width: 2ch;
-  display: inline-block;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s;
 }
-
-/* Scroll hint arrow on first slide */
-.showcase-scroll-hint {
-  position: absolute;
-  bottom: var(--space-lg);
-  right: var(--space-xl);
-  color: rgba(255, 255, 255, 0.45);
+.svc-counter-sep {
   font-size: var(--font-size-sm);
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  z-index: 20;
-  animation: hint-bounce 2s ease-in-out infinite;
-  pointer-events: none;
+  color: rgba(214, 228, 245, 0.4);
 }
 
-@keyframes hint-bounce {
-  0%, 100% { transform: translateY(0); opacity: 0.45; }
-  50%       { transform: translateY(4px); opacity: 0.8; }
-}
-
-/* ── Mobile fallback: disable sticky, stack panels ── */
+/* ── Mobile fallback: disable sticky, stack cards vertically ── */
 @media (max-width: 767px) {
-  .services-showcase {
-    height: auto;
-  }
-  .showcase-viewport {
-    position: relative;
-    height: auto;
-    overflow: visible;
-    background: transparent;
-  }
-  .showcase-viewport::after { display: none; }
-  .showcase-dots,
-  .showcase-counter,
-  .showcase-scroll-hint { display: none; }
-
-  .showcase-slide {
-    position: relative;
-    pointer-events: auto;
-    flex-direction: column;
-    margin-bottom: 2px; /* thin gap between services */
-  }
-
-  .showcase-panel {
-    width: 100%;
+  .svc-stack { height: auto; }
+  .svc-sticky { position: relative; height: auto; overflow: visible; }
+  .svc-dots, .svc-counter { display: none; }
+  .svc-card {
     position: relative;
     transform: none !important;
-    transition: none;
+    height: auto;
+    min-height: 85vh;
     padding: var(--space-xl) var(--space-lg);
   }
-  .showcase-panel--left {
-    order: 1;
-    min-height: 220px;
-    align-items: flex-start;
-    text-align: left;
-  }
-  .showcase-panel--right {
-    order: 2;
-  }
-  .showcase-panel-number { font-size: 4rem; }
-  .showcase-panel-title  { font-size: var(--font-size-h3); }
-  .showcase-panel--right h3 { font-size: var(--font-size-h3); }
+  .svc-card + .svc-card { border-top: 1px solid rgba(255, 255, 255, 0.06); }
+  .svc-bg-num { font-size: 8rem; }
+  .svc-title { font-size: clamp(2.4rem, 8vw, 3.5rem); }
 }
 
 /* ══════════════════════════════════════════════════════════════
