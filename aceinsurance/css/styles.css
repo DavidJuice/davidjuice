@@ -1043,14 +1043,14 @@ h1, h2, h3, h4 {
 /* First card is already visible on entry */
 .svc-card:first-child { transform: translateY(0); }
 
-/* Unique dark gradient per service card */
-.svc-card[data-svc="0"] { background: linear-gradient(135deg, #0d1625 0%, #06213d 100%); }
-.svc-card[data-svc="1"] { background: linear-gradient(135deg, #0a1a20 0%, #162d35 100%); }
-.svc-card[data-svc="2"] { background: linear-gradient(135deg, #070f22 0%, #06294a 100%); }
-.svc-card[data-svc="3"] { background: linear-gradient(135deg, #0d1625 0%, #1c1040 100%); }
-.svc-card[data-svc="4"] { background: linear-gradient(135deg, #071822 0%, #0d3040 100%); }
-.svc-card[data-svc="5"] { background: linear-gradient(135deg, #0a1020 0%, #1e2c50 100%); }
-.svc-card[data-svc="6"] { background: linear-gradient(135deg, #080e20 0%, #06366a 100%); }
+/* Unique light sky blue gradient per service card */
+.svc-card[data-svc="0"] { background: linear-gradient(150deg, #edf4fb 0%, #e6f0f9 100%); }
+.svc-card[data-svc="1"] { background: linear-gradient(150deg, #e8f1f9 0%, #edf5fd 100%); }
+.svc-card[data-svc="2"] { background: linear-gradient(150deg, #edf4fb 0%, #e3eef8 100%); }
+.svc-card[data-svc="3"] { background: linear-gradient(150deg, #e6f1fb 0%, #edf4fb 100%); }
+.svc-card[data-svc="4"] { background: linear-gradient(150deg, #eaf3fb 0%, #e5f0f9 100%); }
+.svc-card[data-svc="5"] { background: linear-gradient(150deg, #ecf4fb 0%, #e8f1f9 100%); }
+.svc-card[data-svc="6"] { background: linear-gradient(150deg, #e8f0f9 0%, #edf5fd 100%); }
 
 /* Decorative ghost number — large, very faint, bottom-right */
 .svc-bg-num {
@@ -1060,7 +1060,7 @@ h1, h2, h3, h4 {
   font-family: var(--font-display);
   font-size: clamp(12rem, 30vw, 22rem);
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.04);
+  color: rgba(4, 116, 196, 0.07);
   pointer-events: none;
   user-select: none;
   line-height: 1;
@@ -1089,8 +1089,8 @@ h1, h2, h3, h4 {
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(168, 196, 236, 0.15);
+  background: rgba(4, 116, 196, 0.08);
+  border: 1px solid rgba(4, 116, 196, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1107,7 +1107,7 @@ h1, h2, h3, h4 {
   font-size: clamp(2.8rem, 6vw, 5.5rem);
   font-weight: 300;
   font-style: italic;
-  color: var(--color-text);
+  color: #06457F;
   line-height: 1.05;
   margin-bottom: var(--space-md);
 }
@@ -1115,7 +1115,7 @@ h1, h2, h3, h4 {
 /* Description */
 .svc-desc {
   font-size: var(--font-size-lg);
-  color: rgba(214, 228, 245, 0.65);
+  color: rgba(6, 69, 127, 0.65);
   max-width: 480px;
   line-height: 1.7;
   margin-bottom: var(--space-lg);
@@ -1143,8 +1143,8 @@ h1, h2, h3, h4 {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  background: rgba(6, 69, 127, 0.2);
+  border: 1.5px solid rgba(6, 69, 127, 0.35);
   cursor: pointer;
   padding: 0;
   transition: background 0.3s, transform 0.3s, border-color 0.3s;
@@ -1154,7 +1154,7 @@ h1, h2, h3, h4 {
   border-color: var(--color-gold);
   transform: scale(1.55);
 }
-.svc-dot:hover:not(.is-active) { background: rgba(255, 255, 255, 0.45); }
+.svc-dot:hover:not(.is-active) { background: rgba(6, 69, 127, 0.4); }
 
 /* Counter — bottom left */
 .svc-counter {
@@ -1171,13 +1171,13 @@ h1, h2, h3, h4 {
   font-family: var(--font-display);
   font-size: 2.5rem;
   font-weight: 300;
-  color: var(--color-text);
+  color: #06457F;
   line-height: 1;
   transition: opacity 0.2s;
 }
 .svc-counter-sep {
   font-size: var(--font-size-sm);
-  color: rgba(214, 228, 245, 0.4);
+  color: rgba(6, 69, 127, 0.4);
 }
 
 /* ── Mobile fallback: disable sticky, stack cards vertically ── */
