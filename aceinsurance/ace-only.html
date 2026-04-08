@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Ace Only — Staff Portal | Ace Insurance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+
+  <style>
+    /* ── Password overlay ─────────────────────────────────────── */
+    #ace-gate {
+      position: fixed;
+      inset: 0;
+      background: var(--color-deeper);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    #ace-gate .gate-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(168,196,236,0.18);
+      border-radius: 20px;
+      padding: 3rem 2.5rem;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      backdrop-filter: blur(16px);
+    }
+
+    #ace-gate .gate-logo {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--color-periwinkle);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    #ace-gate h2 {
+      font-size: 1.6rem;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+
+    #ace-gate p {
+      color: rgba(168,196,236,0.7);
+      font-size: 0.9rem;
+      margin-bottom: 2rem;
+    }
+
+    #ace-gate input[type="password"] {
+      width: 100%;
+      padding: 0.85rem 1.1rem;
+      background: rgba(255,255,255,0.07);
+      border: 1.5px solid rgba(168,196,236,0.25);
+      border-radius: 10px;
+      font-size: 1rem;
+      font-family: inherit;
+      color: #fff;
+      outline: none;
+      margin-bottom: 1rem;
+      transition: border-color 0.2s;
+    }
+
+    #ace-gate input[type="password"]::placeholder { color: rgba(168,196,236,0.4); }
+    #ace-gate input[type="password"]:focus { border-color: var(--color-periwinkle); }
+
+    #gate-error {
+      display: none;
+      color: #f5a0a0;
+      font-size: 0.85rem;
+      margin-bottom: 0.75rem;
+    }
+
+    #ace-gate .gate-btn {
+      width: 100%;
+      padding: 0.85rem;
+      background: var(--color-sapphire);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: inherit;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    #ace-gate .gate-btn:hover { background: var(--color-deep); transform: translateY(-1px); }
+
+    /* ── Staff content ──────────────────────────────────────────── */
+    #ace-content { display: none; }
+
+    .staff-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .staff-card {
+      background: #fff;
+      border: 1px solid var(--color-gray-border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      box-shadow: var(--shadow);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+
+    .staff-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+
+    .staff-card h3 {
+      font-size: 1.05rem;
+      color: var(--color-navy);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .staff-card p {
+      font-size: 0.875rem;
+      color: var(--color-gray);
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+
+    .staff-card .card-links a {
+      display: block;
+      font-size: 0.875rem;
+      color: var(--color-sapphire);
+      font-weight: 500;
+      padding: 0.3rem 0;
+      border-bottom: 1px solid var(--color-gray-border);
+    }
+
+    .staff-card .card-links a:last-child { border-bottom: none; }
+    .staff-card .card-links a:hover { color: var(--color-deep); }
+
+    .staff-badge {
+      display: inline-block;
+      background: var(--color-gold);
+      color: var(--color-navy);
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 0.15rem 0.5rem;
+      border-radius: 100px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .logout-btn {
+      font-size: 0.8rem;
+      color: var(--color-gray);
+      cursor: pointer;
+      background: none;
+      border: none;
+      text-decoration: underline;
+      padding: 0;
+      font-family: inherit;
+    }
+    .logout-btn:hover { color: var(--color-navy); }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════
+     PASSWORD GATE
+     IMPORTANT: Change ACE_STAFF_PASS below to set the password.
+     Keep this page out of public navigation — it is only linked
+     from the footer at 35% opacity.
+════════════════════════════════════════════════════════════ -->
+<div id="ace-gate">
+  <div class="gate-card">
+    <div class="gate-logo">Ace Insurance</div>
+    <h2>Staff Portal</h2>
+    <p>Enter the staff access code to continue.</p>
+
+    <div id="gate-error">Incorrect password. Please try again.</div>
+
+    <input type="password" id="gate-pw" placeholder="Password" autocomplete="current-password">
+    <button class="gate-btn" id="gate-submit">Enter</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     STAFF CONTENT (hidden until authenticated)
+════════════════════════════════════════════════════════════ -->
+<div id="ace-content">
+
+  <!-- NAV -->
+  <header class="site-header">
+    <nav class="navbar">
+      <a href="index.html" class="nav-logo" aria-label="Ace Insurance Home">
+        <div class="nav-logo-text">Ace Insurance<span>&amp; Retirement Services</span></div>
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="navLinks" role="list">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="locations.html">Locations</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- PAGE HERO -->
+  <section class="page-hero glow-track">
+    <div class="container">
+      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+        <h1 style="margin-bottom:0;">Ace Only <span class="staff-badge">Staff</span></h1>
+        <button class="logout-btn" id="logoutBtn" style="color:rgba(214,228,245,0.6);">Log out</button>
+      </div>
+      <p>Internal resources — for Ace Insurance staff only.</p>
+    </div>
+  </section>
+
+  <!-- STAFF RESOURCES -->
+  <section class="section">
+    <div class="container">
+
+      <div class="staff-grid">
+
+        <!-- Carrier Portals -->
+        <div class="staff-card reveal">
+          <h3>
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            Carrier Portals
+          </h3>
+          <p>Log in to carrier agent portals to submit applications, check claims, and manage policies.</p>
+          <div class="card-links">
+            <a href="#" target="_blank" rel="noopener">Carrier Portal 1 — add link</a>
+            <a href="#" target="_blank" rel="noopener">Carrier Portal 2 — add link</a>
+            <a href="#" target="_blank" rel="noopener">Carrier Portal 3 — add link</a>
+          </div>
+        </div>
+
+        <!-- Rate Sheets -->
+        <div class="staff-card reveal" data-delay="1">
+          <h3>
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Rate Sheets
+          </h3>
+          <p>Current rate guides and underwriting manuals for each product line.</p>
+          <div class="card-links">
+            <a href="#" target="_blank" rel="noopener">Auto Rate Sheet — add link</a>
+            <a href="#" target="_blank" rel="noopener">Home Rate Sheet — add link</a>
+            <a href="#" target="_blank" rel="noopener">Life Rate Sheet — add link</a>
+            <a href="#" target="_blank" rel="noopener">Medicare Rate Sheet — add link</a>
+          </div>
+        </div>
+
+        <!-- Internal Forms -->
+        <div class="staff-card reveal" data-delay="2">
+          <h3>
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            Internal Forms
+          </h3>
+          <p>Applications, checklists, and compliance documents for agent use.</p>
+          <div class="card-links">
+            <a href="#" target="_blank" rel="noopener">New Client Intake Form — add link</a>
+            <a href="#" target="_blank" rel="noopener">E&amp;O Checklist — add link</a>
+            <a href="#" target="_blank" rel="noopener">Change Request Form — add link</a>
+          </div>
+        </div>
+
+        <!-- SMS Subscriber List -->
+        <div class="staff-card reveal" data-delay="3">
+          <h3>
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+            SMS Subscribers
+          </h3>
+          <p>View the list of clients who have opted in to receive SMS alerts.</p>
+          <div class="card-links">
+            <a href="#" target="_blank" rel="noopener">Open Google Sheet — add link</a>
+          </div>
+        </div>
+
+        <!-- Tools & Calculators -->
+        <div class="staff-card reveal" data-delay="4">
+          <h3>
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 7H7a2 2 0 00-2 2v6a2 2 0 002 2h2m0-10v10m0-10h6m0 10H9m6-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2m0-10v10"/></svg>
+            Tools &amp; Calculators
+          </h3>
+          <p>Quoting tools, commission calculators, and reference resources.</p>
+          <div class="card-links">
+            <a href="#" target="_blank" rel="noopener">Quote Comparison Tool — add link</a>
+            <a href="#" target="_blank" rel="noopener">Commission Schedule — add link</a>
+          </div>
+        </div>
+
+        <!-- Training -->
+        <div class="staff-card reveal" data-delay="5">
+          <h3>
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
+            Training &amp; Compliance
+          </h3>
+          <p>CE credits, licensing renewal, and state compliance resources.</p>
+          <div class="card-links">
+            <a href="https://www.insurance.wa.gov" target="_blank" rel="noopener">WA OIC — insurance.wa.gov</a>
+            <a href="#" target="_blank" rel="noopener">CE Course Portal — add link</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-col">
+        <div class="footer-logo-text">Ace Insurance<span>&amp; Retirement Services, Inc.</span></div>
+        <p>Your trusted insurance partner in Washington State</p>
+      </div>
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="locations.html">Locations</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact Us</h4>
+        <p><a href="tel:+14256786901">(425) 678-6901</a></p>
+        <p>Mon – Fri: 9:00 AM – 6:00 PM</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 Ace Insurance &amp; Retirement Services, Inc. — Staff Portal</p>
+    </div>
+  </footer>
+
+  <div class="site-grain"    aria-hidden="true"></div>
+  <div class="scroll-progress" aria-hidden="true"></div>
+  <div class="cursor-dot"    aria-hidden="true"></div>
+  <div class="cursor-ring"   aria-hidden="true"></div>
+
+</div><!-- /#ace-content -->
+
+<script src="js/translations.js"></script>
+<script src="js/main.js"></script>
+
+<script>
+  // ── STAFF PASSWORD ─────────────────────────────────────────────
+  // Change this value to update the staff access password.
+  // This is client-side only — suitable for low-security internal use.
+  var ACE_STAFF_PASS = 'ace2026staff';
+  // ──────────────────────────────────────────────────────────────
+
+  var SESSION_KEY = 'ace-staff-auth';
+
+  function unlock() {
+    document.getElementById('ace-gate').style.display   = 'none';
+    document.getElementById('ace-content').style.display = 'block';
+    try { sessionStorage.setItem(SESSION_KEY, '1'); } catch(e) {}
+  }
+
+  // Auto-unlock if already authenticated this session
+  try {
+    if (sessionStorage.getItem(SESSION_KEY) === '1') unlock();
+  } catch(e) {}
+
+  function attemptLogin() {
+    var pw  = document.getElementById('gate-pw').value;
+    var err = document.getElementById('gate-error');
+    if (pw === ACE_STAFF_PASS) {
+      err.style.display = 'none';
+      unlock();
+    } else {
+      err.style.display = 'block';
+      document.getElementById('gate-pw').value = '';
+      document.getElementById('gate-pw').focus();
+    }
+  }
+
+  document.getElementById('gate-submit').addEventListener('click', attemptLogin);
+
+  document.getElementById('gate-pw').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') attemptLogin();
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', function() {
+    try { sessionStorage.removeItem(SESSION_KEY); } catch(e) {}
+    document.getElementById('ace-content').style.display = 'none';
+    document.getElementById('ace-gate').style.display    = 'flex';
+    document.getElementById('gate-pw').focus();
+  });
+</script>
+
+</body>
+</html>

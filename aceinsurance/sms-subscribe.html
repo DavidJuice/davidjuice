@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Subscribe to SMS alerts from Ace Insurance & Retirement Services — get deals, offers, and important updates sent to your phone.">
+  <title>SMS Alerts | Ace Insurance & Retirement Services</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!--
+  ══════════════════════════════════════════════════════════════
+  GOOGLE reCAPTCHA v2 SETUP
+  ══════════════════════════════════════════════════════════════
+  1. Go to https://www.google.com/recaptcha/admin/create
+  2. Choose "reCAPTCHA v2 → I'm not a robot Checkbox"
+  3. Add your domain (e.g. aceinsuranceusa.com)
+  4. Copy the SITE KEY and replace YOUR_RECAPTCHA_SITE_KEY below
+     (also in the <div class="g-recaptcha" ...> tag further down)
+  ══════════════════════════════════════════════════════════════
+  -->
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: #dceef8;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      transition: background 0.6s ease;
+    }
+
+    body:hover { background: #cce4f5; }
+
+    .sms-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 2.5rem 2rem;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 8px 40px rgba(4, 116, 196, 0.12);
+    }
+
+    .sms-card h1 {
+      font-size: clamp(1.75rem, 5vw, 2.25rem);
+      font-weight: 800;
+      color: #1B2035;
+      line-height: 1.2;
+      margin-bottom: 0.75rem;
+    }
+
+    .sms-card .subtitle {
+      color: #5379AE;
+      font-size: 1rem;
+      line-height: 1.5;
+      margin-bottom: 2rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #1B2035;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      border: 1.5px solid #d0dce8;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-family: inherit;
+      color: #1B2035;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input::placeholder { color: #a0aec0; }
+
+    .form-group input:focus {
+      border-color: #0474C4;
+      box-shadow: 0 0 0 3px rgba(4, 116, 196, 0.12);
+    }
+
+    .recaptcha-wrap {
+      margin-bottom: 1.25rem;
+      border: 1.5px solid #d0dce8;
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .consent-text {
+      font-size: 0.82rem;
+      color: #5379AE;
+      line-height: 1.55;
+      text-align: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .consent-text strong { color: #1B2035; }
+
+    .btn-subscribe {
+      display: block;
+      width: 100%;
+      padding: 1rem;
+      background: #7c7fcc;
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: 700;
+      font-family: inherit;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      letter-spacing: 0.01em;
+    }
+
+    .btn-subscribe:hover { background: #6567b8; transform: translateY(-1px); }
+    .btn-subscribe:active { transform: translateY(0); }
+    .btn-subscribe:disabled { background: #b0b3d6; cursor: not-allowed; transform: none; }
+
+    .footer-links {
+      text-align: center;
+      margin-top: 1.25rem;
+      font-size: 0.85rem;
+      color: #5379AE;
+    }
+
+    .footer-links a {
+      color: #0474C4;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .footer-links a:hover { text-decoration: underline; }
+
+    .back-link {
+      margin-top: 1.5rem;
+      text-align: center;
+      font-size: 0.85rem;
+    }
+
+    .back-link a {
+      color: #0474C4;
+      text-decoration: none;
+    }
+
+    .back-link a:hover { text-decoration: underline; }
+
+    .status-msg {
+      display: none;
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .status-msg.success {
+      background: #e6f9f0;
+      color: #1a7a4a;
+      border: 1px solid #a8e6c8;
+    }
+
+    .status-msg.error {
+      background: #fff0f0;
+      color: #c0392b;
+      border: 1px solid #f5b7b1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sms-card">
+    <h1>Subscribe for SMS Offers</h1>
+    <p class="subtitle">Get deals, sales, and other marketing tips sent to your mobile.</p>
+
+    <!--
+    ══════════════════════════════════════════════════════════════
+    GOOGLE SHEETS SETUP
+    ══════════════════════════════════════════════════════════════
+    1. Create a Google Sheet with columns: Timestamp | Name | Phone
+    2. Go to https://script.google.com → New Project
+    3. Paste and deploy the Apps Script below (replace SPREADSHEET_ID):
+
+    -------------------------------------------------------
+    function doPost(e) {
+      var sheet = SpreadsheetApp.openById('YOUR_SPREADSHEET_ID').getActiveSheet();
+      var data  = JSON.parse(e.postData.contents);
+      sheet.appendRow([new Date(), data.name, data.phone]);
+      return ContentService
+        .createTextOutput(JSON.stringify({ result: 'success' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    -------------------------------------------------------
+
+    4. Deploy → New Deployment → Web App
+       - Execute as: Me
+       - Who has access: Anyone
+    5. Copy the deployment URL and replace APPS_SCRIPT_URL below
+    ══════════════════════════════════════════════════════════════
+    -->
+
+    <form id="smsForm" novalidate>
+
+      <div class="form-group">
+        <label for="sub-name">Name</label>
+        <input type="text" id="sub-name" name="name" placeholder="Name" required autocomplete="name">
+      </div>
+
+      <div class="form-group">
+        <label for="sub-phone">Phone Number</label>
+        <input type="tel" id="sub-phone" name="phone" placeholder="Phone Number" required autocomplete="tel">
+      </div>
+
+      <!-- reCAPTCHA v2 — replace YOUR_RECAPTCHA_SITE_KEY -->
+      <div class="recaptcha-wrap">
+        <div class="g-recaptcha" data-sitekey="YOUR_RECAPTCHA_SITE_KEY"></div>
+      </div>
+
+      <p class="consent-text">
+        By clicking "Subscribe", you agree to receive <strong>marketing and
+        promotional text messages</strong> from Ace Insurance and Retirement at
+        the number provided. Consent is not a condition of purchase.
+        Message and data rates may apply. Message frequency varies.
+        Reply <strong>STOP</strong> to cancel.
+      </p>
+
+      <button type="submit" class="btn-subscribe" id="subBtn">Subscribe</button>
+
+      <div class="status-msg" id="statusMsg"></div>
+    </form>
+
+    <div class="footer-links">
+      View our <a href="terms-of-service.html">Terms of Service</a> and <a href="privacy-policy.html">Privacy Policy</a>.
+    </div>
+  </div>
+
+  <div class="back-link">
+    <a href="index.html">&larr; Back to Home</a>
+  </div>
+
+  <script>
+    // ── Replace this with your deployed Google Apps Script web app URL ──
+    var APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_DEPLOYMENT_URL';
+
+    document.getElementById('smsForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      var name  = document.getElementById('sub-name').value.trim();
+      var phone = document.getElementById('sub-phone').value.trim();
+      var captcha = (typeof grecaptcha !== 'undefined') ? grecaptcha.getResponse() : '';
+      var statusMsg = document.getElementById('statusMsg');
+      var btn = document.getElementById('subBtn');
+
+      statusMsg.style.display = 'none';
+      statusMsg.className = 'status-msg';
+
+      if (!name || !phone) {
+        statusMsg.textContent = 'Please fill in your name and phone number.';
+        statusMsg.className = 'status-msg error';
+        statusMsg.style.display = 'block';
+        return;
+      }
+
+      if (!captcha) {
+        statusMsg.textContent = 'Please complete the reCAPTCHA check.';
+        statusMsg.className = 'status-msg error';
+        statusMsg.style.display = 'block';
+        return;
+      }
+
+      if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_DEPLOYMENT_URL') {
+        statusMsg.textContent = 'Form not yet connected. Please set up the Google Apps Script URL.';
+        statusMsg.className = 'status-msg error';
+        statusMsg.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Subscribing…';
+
+      fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, phone: phone })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.result === 'success') {
+          statusMsg.textContent = 'You\'re subscribed! Thank you, ' + name + '.';
+          statusMsg.className = 'status-msg success';
+          statusMsg.style.display = 'block';
+          document.getElementById('smsForm').reset();
+          if (typeof grecaptcha !== 'undefined') grecaptcha.reset();
+          btn.textContent = 'Subscribed!';
+        } else {
+          throw new Error('Unexpected response');
+        }
+      })
+      .catch(function() {
+        statusMsg.textContent = 'Something went wrong. Please try again or call (425) 678-6901.';
+        statusMsg.className = 'status-msg error';
+        statusMsg.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Subscribe';
+        if (typeof grecaptcha !== 'undefined') grecaptcha.reset();
+      });
+    });
+  </script>
+
+</body>
+</html>

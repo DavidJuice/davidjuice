@@ -78,6 +78,7 @@ body {
   line-height: 1.7;
   background: #FFFFFF;
   cursor: none; /* Custom cursor overrides default */
+  transition: background 0.6s ease;
 }
 
 img { max-width: 100%; height: auto; display: block; }

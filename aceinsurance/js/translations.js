@@ -151,7 +151,7 @@ const TRANSLATIONS = {
       directions:  "Get Directions",
       lynnwood:    "Lynnwood Office",
       federal_way: "Federal Way Office",
-      tacoma:      "Tacoma / Lakewood Office"
+      tacoma:      "Tacoma Office"
     },
 
     /* ── Contact Page ── */
@@ -173,7 +173,7 @@ const TRANSLATIONS = {
       office_any:    "Any Office",
       office_lw:     "Lynnwood",
       office_fw:     "Federal Way",
-      office_ta:     "Tacoma / Lakewood",
+      office_ta:     "Tacoma",
       service_label: "Service Interested In",
       service_any:   "Select a service",
       service_auto:  "Auto Insurance",
@@ -338,7 +338,7 @@ const TRANSLATIONS = {
       directions:  "길 찾기",
       lynnwood:    "린우드 지점",
       federal_way: "페더럴 웨이 지점",
-      tacoma:      "타코마 / 레이크우드 지점"
+      tacoma:      "타코마 지점"
     },
 
     /* ── Contact Page ── */
@@ -360,7 +360,7 @@ const TRANSLATIONS = {
       office_any:    "모든 지점",
       office_lw:     "린우드",
       office_fw:     "페더럴 웨이",
-      office_ta:     "타코마 / 레이크우드",
+      office_ta:     "타코마",
       service_label: "관심 서비스",
       service_any:   "서비스를 선택해주세요",
       service_auto:  "자동차 보험",

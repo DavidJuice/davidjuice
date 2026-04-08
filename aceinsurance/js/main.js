@@ -253,6 +253,20 @@ document.addEventListener('DOMContentLoaded', function() {
    Custom cursor · Scroll progress · Word reveal · Magnetic CTA
    ══════════════════════════════════════════════════════════════ */
 
+/* ── Cursor background tint ──────────────────────────────────── */
+function initCursorBg() {
+  document.addEventListener('mousemove', function() {
+    document.body.style.background = '#e8f3fb';
+  }, { passive: true });
+  document.addEventListener('mouseleave', function() {
+    document.body.style.background = '#ffffff';
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  initCursorBg();
+});
+
 /* ── Custom cursor ───────────────────────────────────────────── */
 function initCustomCursor() {
   var dot  = document.querySelector('.cursor-dot');
