@@ -228,9 +228,16 @@ export default function NewCampaignPage() {
             />
             <div className="flex justify-between mt-1">
               <p className="text-xs text-gray-400">
-                Supports Korean (한국어) and English
+                English · Korean (한국어) · Español · 中文
               </p>
-              <p className="text-xs text-gray-400">{message.length} chars</p>
+              <p className="text-xs text-gray-400">
+                {(() => {
+                  const hasUnicode = /[^\x00-\x7F]/.test(message);
+                  const limit = hasUnicode ? 70 : 160;
+                  const segs = message.length === 0 ? 0 : Math.ceil(message.length / limit);
+                  return `${message.length} chars · ${segs} segment${segs !== 1 ? "s" : ""}${hasUnicode ? " (Unicode/CJK/Korean)" : ""}`;
+                })()}
+              </p>
             </div>
           </div>
           {selectedGroupData && (

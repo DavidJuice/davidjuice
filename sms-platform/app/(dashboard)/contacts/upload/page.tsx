@@ -86,20 +86,38 @@ export default function UploadContactsPage() {
         Korean columns are also supported: <strong>전화번호</strong>, <strong>이름</strong>, <strong>메시지</strong>.
       </p>
 
-      {/* Download Template */}
-      <div className="mb-6 p-4 bg-blue-50 rounded-xl text-sm text-blue-800 flex items-start gap-3">
-        <span className="text-lg">📄</span>
-        <div>
-          <p className="font-medium">Excel template format</p>
-          <p className="mt-1 text-blue-700">
-            Columns: <code className="bg-blue-100 px-1 rounded">phone</code>{" "}
-            <code className="bg-blue-100 px-1 rounded">name</code>{" "}
-            <code className="bg-blue-100 px-1 rounded">message (optional)</code>{" "}
-            <code className="bg-blue-100 px-1 rounded">language (optional)</code>
-          </p>
-          <p className="mt-1 text-blue-600 text-xs">
-            Phone numbers can be US (+1), Korean (010-XXXX-XXXX), or E.164 format.
-          </p>
+      {/* Supported column formats */}
+      <div className="mb-6 p-4 bg-blue-50 rounded-xl text-sm text-blue-800">
+        <p className="font-medium mb-2">📄 Supported column headers (all languages)</p>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs">
+          <div>
+            <p className="font-semibold text-blue-700 mb-1">Phone column</p>
+            <p>🇺🇸 <code className="bg-blue-100 px-1 rounded">phone</code> / <code className="bg-blue-100 px-1 rounded">number</code></p>
+            <p>🇰🇷 <code className="bg-blue-100 px-1 rounded">전화번호</code> / <code className="bg-blue-100 px-1 rounded">휴대폰</code></p>
+            <p>🇪🇸 <code className="bg-blue-100 px-1 rounded">teléfono</code> / <code className="bg-blue-100 px-1 rounded">celular</code></p>
+            <p>🇨🇳 <code className="bg-blue-100 px-1 rounded">电话</code> / <code className="bg-blue-100 px-1 rounded">手机号</code></p>
+          </div>
+          <div>
+            <p className="font-semibold text-blue-700 mb-1">Name column</p>
+            <p>🇺🇸 <code className="bg-blue-100 px-1 rounded">name</code></p>
+            <p>🇰🇷 <code className="bg-blue-100 px-1 rounded">이름</code> / <code className="bg-blue-100 px-1 rounded">성함</code></p>
+            <p>🇪🇸 <code className="bg-blue-100 px-1 rounded">nombre</code></p>
+            <p>🇨🇳 <code className="bg-blue-100 px-1 rounded">姓名</code> / <code className="bg-blue-100 px-1 rounded">名字</code></p>
+          </div>
+          <div className="mt-2">
+            <p className="font-semibold text-blue-700 mb-1">Message column (optional)</p>
+            <p>🇺🇸 <code className="bg-blue-100 px-1 rounded">message</code></p>
+            <p>🇰🇷 <code className="bg-blue-100 px-1 rounded">메시지</code></p>
+            <p>🇪🇸 <code className="bg-blue-100 px-1 rounded">mensaje</code></p>
+            <p>🇨🇳 <code className="bg-blue-100 px-1 rounded">消息</code> / <code className="bg-blue-100 px-1 rounded">短信</code></p>
+          </div>
+          <div className="mt-2">
+            <p className="font-semibold text-blue-700 mb-1">Phone number formats</p>
+            <p>🇺🇸 <code className="bg-blue-100 px-1 rounded">2065551234</code> or <code className="bg-blue-100 px-1 rounded">+12065551234</code></p>
+            <p>🇰🇷 <code className="bg-blue-100 px-1 rounded">010-1234-5678</code></p>
+            <p>🇪🇸 <code className="bg-blue-100 px-1 rounded">+521234567890</code></p>
+            <p>🇨🇳 <code className="bg-blue-100 px-1 rounded">13812345678</code> or <code className="bg-blue-100 px-1 rounded">+8613812345678</code></p>
+          </div>
         </div>
       </div>
 
