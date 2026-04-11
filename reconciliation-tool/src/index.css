@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* Ace Insurance Brand Colors */
+  --color-navy: #111111;
+  --color-charcoal: #1C1C1C;
+  --color-charcoal-light: #2E2E2E;
+  --color-gold: #C9A84C;
+  --color-gold-dark: #A8872E;
+  --color-cream: #EDE8DF;
+  --color-cream-light: #F5F1EA;
+  --color-gray-light: #F0EBE3;
+  --color-gray: #6B7280;
+  --color-gray-border: #D4CFC6;
+
+  /* Semantic Colors */
+  --color-success: #22C55E;
+  --color-success-light: #F0FDF4;
+  --color-warning: #F59E0B;
+  --color-warning-light: #FFFBEB;
+  --color-error: #EF4444;
+  --color-error-light: #FEF2F2;
+  --color-info: #3B82F6;
+  --color-info-light: #EFF6FF;
+
+  /* Typography */
+  --font-primary: 'DM Sans', 'Noto Sans KR', system-ui, sans-serif;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.10);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-primary);
+  color: var(--color-navy);
+  background-color: var(--color-cream-light);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+}
