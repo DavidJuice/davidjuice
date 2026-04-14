@@ -19,11 +19,24 @@ export interface OCRWorkerResult {
 
 let worker: Tesseract.Worker | null = null;
 
+/**
+ * HIPAA COMPLIANCE: All Tesseract.js assets MUST be loaded from local paths.
+ * Without explicit langPath/corePath/workerPath, Tesseract.js defaults to
+ * downloading from jsDelivr CDN and tessdata.projectnaptha.com — this would
+ * leak user IP + timing metadata about PHI processing to third-party servers.
+ *
+ * All required files must be pre-bundled in /public/tesseract/:
+ *   - worker.min.js    (from tesseract.js npm package)
+ *   - tesseract-core-simd.wasm.js  (from tesseract.js-core npm package)
+ *   - eng.traineddata  (from tessdata repository)
+ */
 async function getWorker(): Promise<Tesseract.Worker> {
   if (!worker) {
     worker = await Tesseract.createWorker('eng', Tesseract.OEM.LSTM_ONLY, {
-      // Use local assets if available, fall back to CDN
       workerPath: '/tesseract/worker.min.js',
+      corePath: '/tesseract/tesseract-core-simd.wasm.js',
+      langPath: '/tesseract',
+      cacheMethod: 'none',
     });
   }
   return worker;
@@ -46,6 +59,7 @@ self.onmessage = async (e: MessageEvent<OCRWorkerMessage>) => {
 
         const result = await tesseractWorker.recognize(imageUrl);
 
+        // HIPAA: Immediately revoke object URL to free image data from memory
         URL.revokeObjectURL(imageUrl);
 
         const text = result.data.text;
@@ -53,7 +67,6 @@ self.onmessage = async (e: MessageEvent<OCRWorkerMessage>) => {
 
         results.push({ id: img.id, name: img.name, text, confidence });
 
-        // Report progress
         const progressMsg: OCRWorkerResult = {
           type: 'progress',
           imageId: img.id,
@@ -64,8 +77,9 @@ self.onmessage = async (e: MessageEvent<OCRWorkerMessage>) => {
           total: images.length,
         };
         self.postMessage(progressMsg);
-      } catch (err) {
-        // Report error for this image but continue with others
+      } catch {
+        // Report failure for this image but continue with others
+        // HIPAA: Do not log error details — may contain PHI file paths/names
         results.push({
           id: img.id,
           name: img.name,
@@ -91,10 +105,11 @@ self.onmessage = async (e: MessageEvent<OCRWorkerMessage>) => {
       results,
     };
     self.postMessage(completeMsg);
-  } catch (err) {
+  } catch {
+    // HIPAA: Generic error only — do not expose internal details
     const errorMsg: OCRWorkerResult = {
       type: 'error',
-      error: err instanceof Error ? err.message : 'OCR processing failed',
+      error: 'OCR processing failed. Ensure Tesseract assets are available locally.',
     };
     self.postMessage(errorMsg);
   }

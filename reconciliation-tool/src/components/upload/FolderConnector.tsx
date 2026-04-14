@@ -29,9 +29,10 @@ export function FolderConnector({ onFilesSelected, acceptedExtensions }: FolderC
         }
       }
     } catch (err) {
-      // User cancelled the picker
+      // User cancelled the picker — ignore AbortError
+      // HIPAA: Do not log error details (may contain file paths with PHI)
       if (err instanceof Error && err.name !== 'AbortError') {
-        console.error('Folder picker error:', err);
+        void err; // acknowledged but not logged
       }
     }
   }, [onFilesSelected, acceptedExtensions]);

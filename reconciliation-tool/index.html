@@ -2,6 +2,21 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!--
+      HIPAA Content Security Policy:
+      - default-src 'self': Block all external requests by default
+      - script-src 'self': Only allow scripts from same origin
+      - style-src 'self' 'unsafe-inline': Allow Tailwind inline styles
+      - img-src 'self' blob:: Allow local + blob: images (for OCR previews)
+      - worker-src 'self' blob:: Allow Web Workers (parse, OCR, reconcile)
+      - connect-src 'self': Block all outbound network requests
+      - font-src 'self': Only local fonts (no CDN)
+      - object-src 'none': Block plugins/embeds
+      - base-uri 'self': Prevent base tag hijacking
+      - form-action 'self': Restrict form submissions
+    -->
+    <meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' blob:; worker-src 'self' blob:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ace Insurance — Reconciliation Tool</title>
