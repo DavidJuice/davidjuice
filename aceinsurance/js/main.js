@@ -50,13 +50,13 @@ function applyLanguage(lang) {
     if (value !== null) el.title = value;
   });
 
-  // Highlight active language button
-  document.querySelectorAll('.lang-btn').forEach(function(btn) {
-    btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
-  });
+  // Sync dropdown selection
+  var sel = document.getElementById('langSelect');
+  if (sel) sel.value = lang;
 
   // Update html[lang] for SEO and screen readers
-  document.documentElement.lang = (lang === 'ko') ? 'ko' : 'en';
+  var langMap = { en: 'en', es: 'es', zh: 'zh-Hans', ko: 'ko', vi: 'vi' };
+  document.documentElement.lang = langMap[lang] || 'en';
 }
 
 /* ── On Page Load ───────────────────────────────────────────── */

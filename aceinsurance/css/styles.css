@@ -5,7 +5,7 @@
    ============================================================ */
 
 /* ── Google Font import ────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap');
 
 /* ── Design Tokens — Sapphire Nightfall Whisper ─────────────── */
 :root {
@@ -308,6 +308,37 @@ h1, h2, h3, h4 {
   background: var(--color-gold);
   border-color: var(--color-gold);
   color: var(--color-navy);
+}
+
+.lang-select {
+  background: transparent;
+  border: 1px solid rgba(168, 196, 236, 0.4);
+  border-radius: var(--radius-pill);
+  color: var(--color-white);
+  cursor: pointer;
+  font-family: var(--font-primary);
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.3rem 0.85rem 0.3rem 0.65rem;
+  transition: border-color var(--transition);
+}
+.lang-select:focus { outline: none; border-color: var(--color-gold); }
+.lang-select option { color: var(--color-navy); background: var(--color-white); }
+
+/* Chinese — switch to Noto Sans SC */
+html[lang="zh-Hans"] body,
+html[lang="zh-Hans"] h1,
+html[lang="zh-Hans"] h2,
+html[lang="zh-Hans"] h3,
+html[lang="zh-Hans"] h4,
+html[lang="zh-Hans"] p,
+html[lang="zh-Hans"] a,
+html[lang="zh-Hans"] button,
+html[lang="zh-Hans"] select,
+html[lang="zh-Hans"] input,
+html[lang="zh-Hans"] textarea,
+html[lang="zh-Hans"] label {
+  font-family: 'Noto Sans SC', 'DM Sans', system-ui, sans-serif;
 }
 
 /* Hamburger */
