@@ -8,6 +8,7 @@ interface FieldMapperProps {
   mappings: FieldMapping[];
   onMappingChange: (sourceColumn: string, canonicalField: string) => void;
   sampleData: Record<string, string>[];
+  canonicalFields?: { key: string; label: string; category: string }[];
 }
 
 export function FieldMapper({
@@ -15,6 +16,7 @@ export function FieldMapper({
   mappings,
   onMappingChange,
   sampleData,
+  canonicalFields = CANONICAL_FIELDS,
 }: FieldMapperProps) {
   const unmappedCount = mappings.filter(m => m.canonicalField === IGNORE_FIELD).length;
   const fuzzyCount = mappings.filter(m => !m.isManual && m.confidence > 0 && m.confidence < 1).length;
@@ -83,7 +85,7 @@ export function FieldMapper({
                       }`}
                     >
                       <option value={IGNORE_FIELD}>-- Ignore this column --</option>
-                      {CANONICAL_FIELDS.map(f => (
+                      {canonicalFields.map(f => (
                         <option key={f.key} value={f.key}>
                           {f.label} ({f.category})
                         </option>

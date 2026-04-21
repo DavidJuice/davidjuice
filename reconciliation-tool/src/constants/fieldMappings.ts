@@ -94,6 +94,10 @@ export const FIELD_ALIASES: Record<string, string[]> = {
     'mo premium', 'monthly amount', 'rate',
     'premium rate', 'payment amount',
   ],
+  mbi: [
+    'mbi', 'umid', 'medicare beneficiary identifier', 'medicare id',
+    'medicare number', 'hicn', 'medicare',
+  ],
 };
 
 export const IGNORE_FIELD = '__ignore__';

@@ -1,6 +1,4 @@
-import type { WizardStep } from '../../store/useAppStore';
-
-const STEPS: { step: WizardStep; label: string }[] = [
+const BOB_STEPS: { step: number; label: string }[] = [
   { step: 1, label: 'Upload Files' },
   { step: 2, label: 'Map Fields' },
   { step: 3, label: 'Configure' },
@@ -8,15 +6,16 @@ const STEPS: { step: WizardStep; label: string }[] = [
 ];
 
 interface WizardStepperProps {
-  currentStep: WizardStep;
-  onStepClick: (step: WizardStep) => void;
+  currentStep: number;
+  onStepClick: (step: number) => void;
   completedSteps: Set<number>;
+  steps?: { step: number; label: string }[];
 }
 
-export function WizardStepper({ currentStep, onStepClick, completedSteps }: WizardStepperProps) {
+export function WizardStepper({ currentStep, onStepClick, completedSteps, steps = BOB_STEPS }: WizardStepperProps) {
   return (
     <nav className="flex items-center gap-2 px-6 py-4">
-      {STEPS.map(({ step, label }, index) => {
+      {steps.map(({ step, label }, index) => {
         const isActive = step === currentStep;
         const isCompleted = completedSteps.has(step);
         const isClickable = isCompleted || step <= currentStep;

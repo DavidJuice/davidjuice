@@ -9,9 +9,16 @@ const LEARNED_MAPPINGS_KEY = 'ace-recon-learned-mappings';
  * 1. Check learned mappings from previous sessions (localStorage)
  * 2. Check exact match against known alias dictionary
  * 3. Fuzzy match using Levenshtein distance
+ *
+ * @param aliasDict Optional alias dictionary override (defaults to FIELD_ALIASES)
+ * @param learnedKey Optional localStorage key for learned mappings
  */
-export function autoMapFields(headers: string[]): FieldMapping[] {
-  const learned = loadLearnedMappings();
+export function autoMapFields(
+  headers: string[],
+  aliasDict: Record<string, string[]> = FIELD_ALIASES,
+  learnedKey: string = LEARNED_MAPPINGS_KEY,
+): FieldMapping[] {
+  const learned = loadLearnedMappings(learnedKey);
 
   return headers.map(header => {
     const normalized = normalizeHeader(header);
@@ -27,7 +34,7 @@ export function autoMapFields(headers: string[]): FieldMapping[] {
     }
 
     // Tier 2: Exact alias match
-    const exactMatch = findExactMatch(normalized);
+    const exactMatch = findExactMatch(normalized, aliasDict);
     if (exactMatch) {
       return {
         sourceColumn: header,
@@ -38,7 +45,7 @@ export function autoMapFields(headers: string[]): FieldMapping[] {
     }
 
     // Tier 3: Fuzzy match
-    const fuzzyResult = findFuzzyMatch(normalized);
+    const fuzzyResult = findFuzzyMatch(normalized, aliasDict);
     if (fuzzyResult) {
       return {
         sourceColumn: header,
@@ -61,11 +68,15 @@ export function autoMapFields(headers: string[]): FieldMapping[] {
 /**
  * Save a confirmed mapping to localStorage for future sessions.
  */
-export function saveLearning(sourceColumn: string, canonicalField: string): void {
-  const learned = loadLearnedMappings();
+export function saveLearning(
+  sourceColumn: string,
+  canonicalField: string,
+  learnedKey: string = LEARNED_MAPPINGS_KEY,
+): void {
+  const learned = loadLearnedMappings(learnedKey);
   learned[normalizeHeader(sourceColumn)] = canonicalField;
   try {
-    localStorage.setItem(LEARNED_MAPPINGS_KEY, JSON.stringify(learned));
+    localStorage.setItem(learnedKey, JSON.stringify(learned));
   } catch {
     // localStorage not available or full - silently ignore
   }
@@ -74,23 +85,26 @@ export function saveLearning(sourceColumn: string, canonicalField: string): void
 /**
  * Save all confirmed mappings at once.
  */
-export function saveAllLearnings(mappings: FieldMapping[]): void {
-  const learned = loadLearnedMappings();
+export function saveAllLearnings(
+  mappings: FieldMapping[],
+  learnedKey: string = LEARNED_MAPPINGS_KEY,
+): void {
+  const learned = loadLearnedMappings(learnedKey);
   for (const m of mappings) {
     if (m.canonicalField !== IGNORE_FIELD) {
       learned[normalizeHeader(m.sourceColumn)] = m.canonicalField;
     }
   }
   try {
-    localStorage.setItem(LEARNED_MAPPINGS_KEY, JSON.stringify(learned));
+    localStorage.setItem(learnedKey, JSON.stringify(learned));
   } catch {
     // silently ignore
   }
 }
 
-function loadLearnedMappings(): Record<string, string> {
+function loadLearnedMappings(key: string = LEARNED_MAPPINGS_KEY): Record<string, string> {
   try {
-    const stored = localStorage.getItem(LEARNED_MAPPINGS_KEY);
+    const stored = localStorage.getItem(key);
     return stored ? JSON.parse(stored) : {};
   } catch {
     return {};
@@ -105,8 +119,8 @@ function normalizeHeader(header: string): string {
     .trim();
 }
 
-function findExactMatch(normalized: string): string | null {
-  for (const [field, aliases] of Object.entries(FIELD_ALIASES)) {
+function findExactMatch(normalized: string, aliasDict: Record<string, string[]>): string | null {
+  for (const [field, aliases] of Object.entries(aliasDict)) {
     if (aliases.includes(normalized)) {
       return field;
     }
@@ -114,11 +128,11 @@ function findExactMatch(normalized: string): string | null {
   return null;
 }
 
-function findFuzzyMatch(normalized: string): { field: string; score: number } | null {
+function findFuzzyMatch(normalized: string, aliasDict: Record<string, string[]>): { field: string; score: number } | null {
   let bestField: string | null = null;
   let bestScore = 0;
 
-  for (const [field, aliases] of Object.entries(FIELD_ALIASES)) {
+  for (const [field, aliases] of Object.entries(aliasDict)) {
     for (const alias of aliases) {
       const score = similarity(normalized, alias);
       if (score > bestScore && score >= 0.7) {

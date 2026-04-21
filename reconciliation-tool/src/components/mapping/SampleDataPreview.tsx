@@ -6,9 +6,10 @@ interface SampleDataPreviewProps {
   mappings: FieldMapping[];
   rows: Record<string, string>[];
   sourceLabel: string;
+  canonicalFields?: { key: string; label: string; category: string }[];
 }
 
-export function SampleDataPreview({ mappings, rows, sourceLabel }: SampleDataPreviewProps) {
+export function SampleDataPreview({ mappings, rows, sourceLabel, canonicalFields = CANONICAL_FIELDS }: SampleDataPreviewProps) {
   const activeMappings = mappings.filter(m => m.canonicalField !== IGNORE_FIELD);
   const previewRows = rows.slice(0, 5);
 
@@ -26,7 +27,7 @@ export function SampleDataPreview({ mappings, rows, sourceLabel }: SampleDataPre
           <thead>
             <tr className="border-b border-gray-border/50 bg-cream-light/50">
               {activeMappings.map(m => {
-                const field = CANONICAL_FIELDS.find(f => f.key === m.canonicalField);
+                const field = canonicalFields.find(f => f.key === m.canonicalField);
                 return (
                   <th key={m.sourceColumn} className="whitespace-nowrap px-3 py-2 text-left font-medium text-gray">
                     {field?.label || m.canonicalField}

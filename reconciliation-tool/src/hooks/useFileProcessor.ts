@@ -1,11 +1,14 @@
 import { useCallback, useRef } from 'react';
 import { useAppStore } from '../store/useAppStore';
-import type { SourceType } from '../types';
+import type { SourceType, ParsedSource } from '../types';
 import type { ParseWorkerMessage, ParseWorkerResult } from '../workers/parseWorker';
 
-export function useFileProcessor() {
+type SetParsedSourceFn = (sourceType: SourceType, data: ParsedSource) => void;
+
+export function useFileProcessor(externalSetParsedSource?: SetParsedSourceFn) {
   const workerRef = useRef<Worker | null>(null);
-  const setParsedSource = useAppStore(s => s.setParsedSource);
+  const defaultSetParsedSource = useAppStore(s => s.setParsedSource);
+  const setParsedSource = externalSetParsedSource || defaultSetParsedSource;
 
   const getWorker = useCallback(() => {
     if (!workerRef.current) {

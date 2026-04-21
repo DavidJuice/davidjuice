@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { SourceType, ParsedSource, SourceMappings, UnifiedRecord } from '../types';
 import type { ReconciliationResult, MatchConfig } from '../types/reconciliation';
 
+export type AppMode = 'bob' | 'commissions';
 export type WizardStep = 1 | 2 | 3 | 4;
 
 interface FileEntry {
@@ -20,6 +21,10 @@ interface OCRProgress {
 }
 
 interface AppState {
+  // App mode
+  mode: AppMode;
+  setMode: (mode: AppMode) => void;
+
   // Wizard navigation
   currentStep: WizardStep;
   setStep: (step: WizardStep) => void;
@@ -77,6 +82,10 @@ const defaultMatchConfig: MatchConfig = {
 };
 
 export const useAppStore = create<AppState>()((set, get) => ({
+  // App mode
+  mode: 'bob',
+  setMode: (mode) => set({ mode }),
+
   // Wizard
   currentStep: 1,
   setStep: (step) => set({ currentStep: step }),

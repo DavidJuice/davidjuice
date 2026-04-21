@@ -3,7 +3,8 @@ export type SourceType =
   | 'ab_individual'
   | 'humana_bob'
   | 'uhc_bob'
-  | 'uhc_ocr';
+  | 'uhc_ocr'
+  | 'humana_commission';
 
 export interface UploadedFile {
   id: string;

@@ -77,6 +77,19 @@ export const SOURCE_CONFIGS: SourceConfig[] = [
     isImageSource: true,
     icon: '📸',
   },
+  {
+    type: 'humana_commission',
+    label: 'Humana Commission Statement',
+    description: 'Commission statement from Humana with payment amounts per member',
+    acceptedFormats: '.csv, .xlsx, .xls',
+    acceptedMimeTypes: [
+      'text/csv',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel',
+    ],
+    isImageSource: false,
+    icon: '💰',
+  },
 ];
 
 export function getSourceConfig(type: SourceType): SourceConfig {
