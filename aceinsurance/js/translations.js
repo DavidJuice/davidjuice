@@ -572,6 +572,193 @@ const TRANSLATIONS = {
       hours:        "Lun – Vie: 9:00 AM – 6:00 PM",
       copyright:    "© 2025 Ace Insurance & Retirement Services, Inc. Todos los derechos reservados."
     }
+  },
+
+
+  /* ============================================================
+     CHINESE SIMPLIFIED  /  简体中文
+     ============================================================ */
+  zh: {
+    nav: {
+      home:      "首页",
+      about:     "关于我们",
+      services:  "服务项目",
+      locations: "办公地点",
+      contact:   "联系我们"
+    },
+
+    hero: {
+      eyebrow:   "华盛顿州持牌保险代理机构",
+      title:     "守护您最在乎的一切",
+      subtitle:  "自2013年起，我们专注服务华盛顿州的韩裔及多元文化社区。诚实建议，实惠保障。",
+      cta_quote: "免费获取报价",
+      cta_learn: "了解服务"
+    },
+
+    trust: {
+      licensed:  "华盛顿州持牌机构",
+      since:     "自2013年起服务客户",
+      bilingual: "英语与韩语双语服务"
+    },
+
+    services_home: {
+      title:    "我们的保险服务",
+      subtitle: "为您的生活、家庭和事业量身定制全面的保障方案。",
+      learn:    "了解更多",
+      auto:        "汽车保险",
+      auto_desc:   "以具有竞争力的价格提供全面保险、碰撞险及责任险。",
+      home:        "房屋保险",
+      home_desc:   "保护您的住宅及财产免受火灾、盗窃、天气损害等侵害。",
+      business:    "商业保险",
+      business_desc: "通过综合责任险、商业财产险和工伤赔偿险，全面保护您的企业。",
+      life:        "人寿保险",
+      life_desc:   "通过定期、终身及万能人寿保险，为家人提供经济保障。",
+      health:      "医疗保险",
+      health_desc: "ACA / 奥巴马医改注册、团体医保及个人保险方案。",
+      ltc:         "长期护理保险",
+      ltc_desc:    "提前规划辅助生活、护理院或居家护理等长期护理费用。",
+      medicare:    "医疗保险与退休规划",
+      medicare_desc: "提供联邦医疗保险注册指导及退休规划，保障您的未来。"
+    },
+
+    about_home: {
+      title:   "关于 Ace Insurance",
+      text1:   "Ace Insurance & Retirement Services由Danny Kim于2013年创立，长期以来是华盛顿州家庭和企业值得信赖的保险合作伙伴。我们专注于以双语个性化服务，服务韩裔及多元文化社区。",
+      text2:   "作为独立代理机构，我们与多家顶级保险公司合作，为您找到性价比最高的保障方案——而非千篇一律的标准套餐。",
+      cta:     "了解我们的故事"
+    },
+
+    locations_home: {
+      title:   "我们的办公室",
+      phone:   "电话",
+      hours:   "周一至周五：上午9时 – 下午6时",
+      maps:    "获取导航"
+    },
+
+    cta_banner: {
+      title:    "准备好购买保险了吗？",
+      subtitle: "立即致电，获取免费、无义务报价。我们提供英语和韩语服务。",
+      or:       "或发送消息给我们"
+    },
+
+    /* ── About Page ── */
+    about: {
+      page_title:  "关于我们",
+      page_sub:    "自2013年起，您值得信赖的保险伙伴",
+      story_title: "我们的故事",
+      story_p1:    "Ace Insurance & Retirement Services, Inc.由Danny Kim于2013年创立，使命明确：为华盛顿州的韩裔及多元文化社区提供诚实、实惠的保险和退休解决方案。",
+      story_p2:    "从一间办公室起步，我们已发展至服务Lynnwood、Federal Way、Tacoma等地的客户。作为独立机构，我们为您工作，而非效忠于某一保险公司。我们比较多家A级保险公司的报价，为您的需求和预算找到最合适的方案。",
+      story_p3:    "我们提供视频通话、短信、电子邮件或当面咨询——以最方便您的方式为您服务。我们的团队精通英语和韩语。",
+      founder_label: "Danny Kim",
+      founder_title: "创始人兼首席保险代理人",
+      community_title: "我们的社区承诺",
+      community_p1: "我们很荣幸为华盛顿西部的韩裔社区及所有多元文化家庭提供服务。保险可能令人困惑——用第二语言理解则更具挑战。因此，我们提供完整的英韩双语服务，确保每位客户完全理解其保障内容。",
+      community_p2: "我们相信，无论背景或语言，每个人都应该享有高质量的保险和健全的退休规划。",
+      values_title: "我们的价值观",
+      val1_title:   "诚信",
+      val1_desc:    "我们给予您诚实的建议，即使这意味着推荐价格较低的选项。您的信任是我们最宝贵的资产。",
+      val2_title:   "经验",
+      val2_desc:    "超过10年服务华盛顿州家庭和企业的丰富经验。我们深入了解当地市场。",
+      val3_title:   "社区",
+      val3_desc:    "我们是所服务社区的一份子。回馈社区、建立长期关系是我们工作的核心。"
+    },
+
+    /* ── Services Page ── */
+    services: {
+      page_title:  "服务项目",
+      page_sub:    "全面的保险和退休规划解决方案",
+      intro:       "作为独立代理机构，我们代理多家顶级保险公司，可为您找到最合适价格的最优保障。",
+
+      auto_title:   "汽车保险",
+      auto_p1:      "无论您驾驶轿车、SUV、卡车还是商用车辆，我们都将为您找到最合适的汽车保险方案，保障您的行车安全。",
+      auto_p2:      "保障选项包括责任险、碰撞险、全险、无保险/保额不足驾驶人险、医疗费用险及道路救援。",
+
+      home_title:   "房屋保险",
+      home_p1:      "您的房屋可能是您最有价值的资产。我们的房主保险保障您的住宅、个人财产及责任。",
+      home_p2:      "我们还提供租客保险、共管公寓保险及投资性房产房东保险。",
+
+      biz_title:    "商业保险",
+      biz_p1:       "保护您的企业免受意外影响。我们提供综合责任险、商业财产险、商业业主保险(BOP)、工伤赔偿险和商用汽车险。",
+      biz_p2:       "无论您是个体经营者还是成长中的小企业，我们都将根据您的行业特点和风险状况定制保险方案。",
+
+      life_title:   "人寿保险",
+      life_p1:      "人寿保险是稳健财务规划的基础。我们提供定期寿险、终身寿险、万能寿险和指数型万能寿险。",
+      life_p2:      "我们将帮助您确定合适的保险类型和保额，以保护家人并实现长期财务目标。",
+
+      health_title: "医疗保险",
+      health_p1:    "我们协助个人、家庭和小企业参加医疗保险，包括ACA/奥巴马医改市场计划、短期医疗计划和团体医疗保险。",
+      health_p2:    "我们的持证代理人可全程指导您完成公开和特殊注册期的注册，帮您找到最具成本效益的方案。",
+
+      ltc_title:    "长期护理保险",
+      ltc_p1:       "长期护理保险有助于承担辅助生活机构、护理院或居家护理服务的费用——这些费用不在医疗保险或联邦医疗保险的保障范围内。",
+      ltc_p2:       "趁身体健康时提前规划，可以保护您的积蓄，让家人安心。",
+
+      medicare_title: "联邦医疗保险与退休规划",
+      medicare_p1:    "联邦医疗保险的体系较为复杂。我们提供关于Medicare补充险(Medigap)、Medicare Advantage及D部分处方药计划的清晰、客观指导。",
+      medicare_p2:    "我们还提供退休收入规划，帮助您充分利用社会安全福利、IRA及年金选项。",
+
+      cta_title: "对保障有疑问？",
+      cta_sub:   "我们以英语和韩语为您提供帮助。立即联系我们，获取免费咨询。"
+    },
+
+    /* ── Locations Page ── */
+    locations: {
+      page_title:  "办公地点",
+      page_sub:    "西雅图-塔科马大都市区的三个便利办公室",
+      phone_label: "电话",
+      hours_label: "营业时间",
+      hours_value: "周一至周五：上午9:00 – 下午6:00",
+      closed:      "周六及周日休息",
+      directions:  "获取导航",
+      lynnwood:    "Lynnwood 办公室",
+      federal_way: "Federal Way 办公室",
+      tacoma:      "Tacoma 办公室"
+    },
+
+    /* ── Contact Page ── */
+    contact: {
+      page_title:    "联系我们",
+      page_sub:      "我们随时准备为您提供帮助",
+      info_title:    "与我们联系",
+      phone_label:   "电话",
+      hours_label:   "办公时间",
+      hours_value:   "周一至周五：上午9:00 – 下午6:00",
+      form_title:    "给我们发消息",
+      name_label:    "全名",
+      name_ph:       "您的全名",
+      email_label:   "电子邮件",
+      email_ph:      "您的邮箱地址",
+      phone_fl:      "电话号码",
+      phone_ph:      "您的电话号码",
+      office_label:  "首选办公室",
+      office_any:    "任意办公室",
+      office_lw:     "Lynnwood",
+      office_fw:     "Federal Way",
+      office_ta:     "Tacoma",
+      service_label: "感兴趣的服务",
+      service_any:   "请选择服务",
+      service_auto:  "汽车保险",
+      service_home:  "房屋保险",
+      service_biz:   "商业保险",
+      service_life:  "人寿保险",
+      service_health:"医疗保险 / ACA",
+      service_ltc:   "长期护理保险",
+      service_med:   "联邦医疗保险与退休规划",
+      msg_label:     "留言",
+      msg_ph:        "请问有什么可以帮助您？",
+      submit:        "发送消息",
+      success:       "谢谢！我们将尽快与您联系。",
+      note:          "我们将在1个工作日内回复。所有咨询均严格保密。"
+    },
+
+    /* ── Footer ── */
+    footer: {
+      tagline:      "华盛顿州值得信赖的保险合作伙伴",
+      quick_links:  "快速链接",
+      contact_us:   "联系我们",
+      hours:        "周一至周五：上午9时 – 下午6时",
+      copyright:    "© 2025 Ace Insurance & Retirement Services, Inc. 版权所有。"
+    }
   }
 
 };
