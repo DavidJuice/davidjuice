@@ -36,10 +36,12 @@
       <li><a href="contact.html"   data-i18n="nav.contact">Contact</a></li>
     </ul>
 
-    <div class="lang-toggle" role="group" aria-label="Language selector">
-      <button class="lang-btn active" data-lang="en" onclick="applyLanguage('en')">EN</button>
-      <span aria-hidden="true">|</span>
-      <button class="lang-btn" data-lang="ko" onclick="applyLanguage('ko')">한국어</button>
+    <div class="lang-toggle">
+      <select id="langSelect" class="lang-select" onchange="applyLanguage(this.value)" aria-label="Select language">
+        <option value="en">EN</option>
+        <option value="es">ES</option>
+        <option value="ko">한국어</option>
+      </select>
     </div>
   </nav>
 </header>
