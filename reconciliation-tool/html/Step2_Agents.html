@@ -55,14 +55,28 @@ window.addEventListener('load', function () {
     var picked = getCheckedAgentBoxes().filter(function (b) { return b.checked; }).map(function (b) { return b.value; });
     if (!picked.length) return;
     RECON.state.selectedAgents = picked;
-    RECON.serverCall('getReconciliationCatalog')
-      .then(function (catalog) {
-        RECON.state.catalog = catalog;
-        RECON.renderChecks();
-        RECON.enableStep('step3', true);
-        document.getElementById('step3').scrollIntoView({ behavior: 'smooth' });
+    var checks = Object.keys(RECON.state.selectedChecks);
+    if (!checks.length) {
+      RECON.showError('Pick at least one reconciliation type.');
+      return;
+    }
+    document.getElementById('btn_step2_next').disabled = true;
+    document.getElementById('btn_step2_next').textContent = 'Starting…';
+    RECON.serverCall('startRun', [RECON.state.runId, RECON.state.selectedAgents, checks])
+      .then(function (res) {
+        document.getElementById('step2').classList.add('hidden');
+        document.getElementById('step4').classList.remove('hidden');
+        if (res && res.url) {
+          RECON.renderResult(res);
+        } else {
+          RECON.startProgressPolling();
+        }
       })
-      .catch(RECON.showError);
+      .catch(function (e) {
+        document.getElementById('btn_step2_next').disabled = false;
+        document.getElementById('btn_step2_next').textContent = 'Run reconciliation';
+        RECON.showError(e);
+      });
   });
 });
 </script>

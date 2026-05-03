@@ -66,14 +66,22 @@ function fuzzyBlockKey_(rec) {
 }
 
 function recordSimilarity_(a, b) {
-  // Weighted sim: last (35%) + first (25%) + dob exact (25%) + zip/MBI/policy bonuses (15%)
+  // Weighted sim: last 30% / first 20% / middle 10% (neutral if either blank) /
+  // dob exact 25% / id-bonus 15%.
   var ln = stringSim_(a.last_name, b.last_name);
   var fn = stringSim_(a.first_name, b.first_name);
+  var mnHave = !!(a.middle_name && b.middle_name);
+  var mn = mnHave ? stringSim_(a.middle_name, b.middle_name) : 0;
+  // When middle is absent on either side, redistribute its weight to first+last
+  // so the overall scale stays in [0,1] without penalizing the missing-middle case.
+  var lnW = mnHave ? 0.30 : 0.35;
+  var fnW = mnHave ? 0.20 : 0.25;
+  var mnW = mnHave ? 0.10 : 0.00;
   var dob = (a.dob && b.dob && a.dob === b.dob) ? 1 : 0;
   var bonus = 0;
   if (a.mbi && b.mbi && a.mbi === b.mbi) bonus = Math.max(bonus, 1);
   if (a.policy_number && b.policy_number && String(a.policy_number).toUpperCase() === String(b.policy_number).toUpperCase()) bonus = Math.max(bonus, 0.7);
-  return ln * 0.35 + fn * 0.25 + dob * 0.25 + bonus * 0.15;
+  return ln * lnW + fn * fnW + mn * mnW + dob * 0.25 + bonus * 0.15;
 }
 
 function stringSim_(a, b) {

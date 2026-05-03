@@ -1,0 +1,168 @@
+<script>
+RECON.startReconciliation = function () {
+  // Reset run state when entering the reconciliation tool.
+  RECON.state.uploads = {};
+  RECON.state.selectedChecks = {};
+  RECON.state.selectedAgents = [];
+  RECON.state.uploadValidation = {};
+
+  // Render checklist screen, hide deeper steps.
+  document.getElementById('step_checklist').classList.remove('hidden');
+  document.getElementById('step2').classList.add('hidden');
+  document.getElementById('step4').classList.add('hidden');
+
+  RECON.serverCall('beginNewRun')
+    .then(function (r) { RECON.state.runId = r.runId; })
+    .catch(RECON.showError);
+
+  RECON.serverCall('getReconciliationCatalog')
+    .then(function (catalog) {
+      RECON.state.catalog = catalog;
+      renderUploadZones();
+      renderRunOptions();
+    })
+    .catch(RECON.showError);
+};
+
+function knownSources() {
+  // Aggregate every required + optional source across all reconciliation types,
+  // plus the AB Customer file (used by rule 10 and Data Search later on).
+  var seen = {};
+  var order = [];
+  function add(src) { if (!seen[src]) { seen[src] = true; order.push(src); } }
+  add('ab_individual');
+  add('ab_policy');
+  add('ab_customer');
+  (RECON.state.catalog || []).forEach(function (t) {
+    (t.required_uploads || []).forEach(add);
+    (t.optional_uploads || []).forEach(add);
+  });
+  return order;
+}
+
+function prettySource(src) {
+  switch (src) {
+    case 'ab_individual': return 'AgencyBloc Individual Report';
+    case 'ab_policy':     return 'AgencyBloc Policy Report';
+    case 'ab_customer':   return 'AgencyBloc Customer Report';
+    case 'uhc_bob':       return 'UnitedHealthcare Book of Business';
+    case 'humana_bob':    return 'Humana Book of Business';
+  }
+  return src.replace(/_/g, ' ');
+}
+
+function renderUploadZones() {
+  var box = document.getElementById('checklist_uploads');
+  box.innerHTML = '';
+  knownSources().forEach(function (src) {
+    var z = document.createElement('div');
+    z.className = 'dropzone';
+    z.id = 'dz_' + src;
+    z.dataset.source = src;
+    z.innerHTML =
+      '<div class="label">' + escapeHtml(prettySource(src)) + '</div>' +
+      '<div class="muted">Drag a CSV here, or <a href="#" class="pickfile">click to choose</a></div>' +
+      '<div class="filename"></div>' +
+      '<div class="upload-error"></div>';
+    box.appendChild(z);
+    RECON.wireDropZone(z.id, src, function () {
+      // After upload completes, run server-side header validation (MBI gate, etc.)
+      RECON.serverCall('validateAndRecordUpload', [RECON.state.runId, src])
+        .then(function (result) {
+          RECON.state.uploadValidation[src] = result;
+          var errBox = z.querySelector('.upload-error');
+          if (result.errors && result.errors.length) {
+            z.classList.add('error');
+            z.classList.remove('done');
+            errBox.textContent = result.errors.join(' ');
+            // Mark upload as not-usable so the checklist won't tick.
+            RECON.state.uploads[src] = { fileName: (RECON.state.uploads[src] || {}).fileName, blocked: true };
+          } else {
+            z.classList.remove('error');
+            errBox.textContent = '';
+          }
+          renderRunOptions();
+        })
+        .catch(function (e) {
+          RECON.showError(e);
+          renderRunOptions();
+        });
+    });
+  });
+}
+
+function renderRunOptions() {
+  var box = document.getElementById('checklist_runs');
+  box.innerHTML = '';
+  var anySelected = false;
+  (RECON.state.catalog || []).forEach(function (t) {
+    var required = t.required_uploads || [];
+    var ready = required.every(function (src) {
+      var u = RECON.state.uploads[src];
+      return u && !u.blocked;
+    });
+
+    var row = document.createElement('div');
+    row.className = 'run-option' + (ready ? ' ready' : ' not-ready');
+    row.dataset.id = t.id;
+
+    var icon = ready ? '✓' : '—'; // ✓ or —
+    row.innerHTML =
+      '<div class="run-icon">' + icon + '</div>' +
+      '<div class="run-meta">' +
+        '<div class="run-title">' + escapeHtml(t.label) + '</div>' +
+        '<div class="run-desc">' + escapeHtml(t.description || '') + '</div>' +
+        '<div class="run-needs muted">Needs: ' + required.map(prettySource).join(', ') + '</div>' +
+      '</div>';
+
+    if (ready) {
+      row.addEventListener('click', function () {
+        var sel = !!RECON.state.selectedChecks[t.id];
+        sel = !sel;
+        if (sel) RECON.state.selectedChecks[t.id] = t;
+        else delete RECON.state.selectedChecks[t.id];
+        row.classList.toggle('selected', sel);
+        updateContinueButton();
+      });
+      if (RECON.state.selectedChecks[t.id]) {
+        row.classList.add('selected');
+        anySelected = true;
+      }
+    }
+    box.appendChild(row);
+  });
+  updateContinueButton();
+}
+
+function updateContinueButton() {
+  var anySelected = Object.keys(RECON.state.selectedChecks).length > 0;
+  document.getElementById('btn_continue_to_agents').disabled = !anySelected;
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+    return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' })[c];
+  });
+}
+
+window.addEventListener('load', function () {
+  document.getElementById('btn_continue_to_agents').addEventListener('click', function () {
+    document.getElementById('btn_continue_to_agents').disabled = true;
+    document.getElementById('btn_continue_to_agents').textContent = 'Loading agents…';
+    RECON.serverCall('listDetectedAgents', [RECON.state.runId])
+      .then(function (agents) {
+        RECON.state.agents = agents || [];
+        RECON.renderAgents();
+        document.getElementById('step_checklist').classList.add('hidden');
+        document.getElementById('step2').classList.remove('hidden');
+        document.getElementById('btn_continue_to_agents').textContent = 'Continue';
+        document.getElementById('btn_continue_to_agents').disabled = false;
+      })
+      .catch(function (e) {
+        RECON.showError(e);
+        document.getElementById('btn_continue_to_agents').disabled = false;
+        document.getElementById('btn_continue_to_agents').textContent = 'Continue';
+      });
+  });
+});
+</script>

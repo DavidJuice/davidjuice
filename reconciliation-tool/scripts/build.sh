@@ -26,6 +26,8 @@ fi
   echo "var EMBEDDED_RECONCILIATION_TYPES = $(cat "$CONFIG/reconciliation_types.json");"
   echo "var EMBEDDED_AGENTS = $(cat "$CONFIG/agents.json");"
   echo "var EMBEDDED_SETTINGS = $(cat "$CONFIG/settings.json");"
+  echo "var EMBEDDED_AB_ONLY_RULES = $(cat "$CONFIG/ab_only_rules.json");"
+  echo "var EMBEDDED_PLOG_SYNC = $(cat "$CONFIG/plog_sync.json");"
 } > "$SRC/99_Embedded_Config.gs"
 
 echo "Build complete. src/ is ready for 'clasp push'."

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "individual_types": {
+    "prospect":  { "allowed_statuses": ["NOT CONTACTED YET", "CONTACTED"] },
+    "lead":      { "allowed_statuses": ["APP SUBMITTED"] },
+    "client":    { "allowed_statuses": ["ENROLLED"] },
+    "x-client":  { "allowed_statuses": "*" }
+  },
+  "individual_type_aliases": {
+    "x client": "x-client",
+    "ex-client": "x-client",
+    "ex client": "x-client",
+    "former client": "x-client"
+  },
+  "policy_types_part_c":   ["PART C", "MAPD", "MEDICARE ADVANTAGE", "MA", "MA-PD"],
+  "policy_types_medsup":   ["MEDSUP", "MEDICARE SUPPLEMENT", "SUPPLEMENT", "MED SUP"],
+  "policy_types_pdp":      ["PDP", "PART D", "PRESCRIPTION DRUG"],
+  "policy_types_life":     ["LIFE", "LIFE INSURANCE"],
+  "active_status_values":   ["ACTIVE"],
+  "pending_status_values":  ["PENDING"],
+  "inactive_status_values": ["INACTIVE", "TERMINATED", "TERM", "CANCELED", "CANCELLED", "LAPSED"],
+  "humana_carrier_keys":    ["humana"],
+  "pending_max_days":       15
+}

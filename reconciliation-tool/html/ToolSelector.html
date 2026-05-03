@@ -1,0 +1,32 @@
+<script>
+window.RECON = window.RECON || {};
+
+RECON.showScreen = function (id) {
+  Array.prototype.forEach.call(document.querySelectorAll('.screen'), function (el) {
+    el.classList.toggle('hidden', el.id !== id);
+  });
+  window.scrollTo(0, 0);
+};
+
+window.addEventListener('load', function () {
+  // Tool cards on the selector screen
+  Array.prototype.forEach.call(document.querySelectorAll('.tool-card'), function (btn) {
+    btn.addEventListener('click', function () {
+      var target = btn.getAttribute('data-target');
+      RECON.showScreen(target);
+      if (target === 'screen_reconciliation' && RECON.startReconciliation) {
+        RECON.startReconciliation();
+      }
+    });
+  });
+
+  // Back-to-tools links inside each tool screen
+  Array.prototype.forEach.call(document.querySelectorAll('.link-back'), function (btn) {
+    btn.addEventListener('click', function () {
+      RECON.showScreen(btn.getAttribute('data-target'));
+    });
+  });
+
+  RECON.showScreen('screen_toolselector');
+});
+</script>

@@ -5,58 +5,102 @@
     <?!= include('Styles') ?>
   </head>
   <body>
-    <h1>Reconciliation</h1>
-    <p class="muted">Drag your CSV reports into the boxes. We never share them outside our company Drive.</p>
+    <h1>Insurance Ops Tools</h1>
 
-    <div id="step1" class="step">
-      <h2><span class="stepnum">1</span>Upload AgencyBloc reports</h2>
-      <div id="dz_ab_individual" class="dropzone" data-source="ab_individual">
-        <div class="label">AB Individual Report</div>
-        <div class="muted">Drag a CSV here, or <a href="#" class="pickfile">click to choose</a></div>
-        <div class="filename"></div>
+    <!-- Tool selector (always rendered first) -->
+    <div id="screen_toolselector" class="screen">
+      <p class="muted">Pick a tool. All work stays inside our company Drive.</p>
+      <div class="tool-grid">
+        <button class="tool-card" data-target="screen_reconciliation">
+          <div class="tool-title">Reconciliation</div>
+          <div class="tool-desc">Compare AgencyBloc against carrier Books of Business and run AB-only data-quality rules.</div>
+        </button>
+        <button class="tool-card" data-target="screen_datasearch">
+          <div class="tool-title">Data Search</div>
+          <div class="tool-desc">Search clients across age, gender, county, language, Medicaid, etc.</div>
+          <div class="tool-status">Configuration pending</div>
+        </button>
+        <button class="tool-card" data-target="screen_plogsync">
+          <div class="tool-title">Plog Sync</div>
+          <div class="tool-desc">Auto-update the Plog tracking sheet from AgencyBloc on a schedule.</div>
+          <div class="tool-status">Configuration pending</div>
+        </button>
       </div>
-      <div id="dz_ab_policy" class="dropzone" data-source="ab_policy">
-        <div class="label">AB Policy Report</div>
-        <div class="muted">Drag a CSV here, or <a href="#" class="pickfile">click to choose</a></div>
-        <div class="filename"></div>
-      </div>
-      <button id="btn_step1_next" disabled>Next: choose agents</button>
     </div>
 
-    <div id="step2" class="step disabled">
-      <h2><span class="stepnum">2</span>Choose agents</h2>
-      <p class="muted">We found these agents in your AB Individual report. Pick the ones to include.</p>
-      <input type="search" id="agent_search" placeholder="Search agents…" />
-      <div class="row" style="margin: 6px 0;">
-        <button class="secondary" id="agent_all">Select all</button>
-        <button class="secondary" id="agent_none">Deselect all</button>
+    <!-- Reconciliation tool -->
+    <div id="screen_reconciliation" class="screen hidden">
+      <button class="link-back" data-target="screen_toolselector">&larr; Back to tools</button>
+      <h2>Reconciliation</h2>
+
+      <div id="step_checklist" class="step">
+        <p class="muted">Drop in any reports you have. We'll show what you can run.</p>
+        <div id="checklist_uploads"></div>
+        <h3 style="margin-top: 14px;">What you can run</h3>
+        <div id="checklist_runs"></div>
+        <button id="btn_continue_to_agents" disabled>Continue</button>
       </div>
-      <div id="agent_list" class="agent-list"></div>
-      <button id="btn_step2_next" disabled style="margin-top: 8px;">Confirm</button>
+
+      <div id="step2" class="step hidden">
+        <h3>Choose agents</h3>
+        <p class="muted">Pick the ones to include.</p>
+        <input type="search" id="agent_search" placeholder="Search agents…" />
+        <div class="row" style="margin: 6px 0;">
+          <button class="secondary" id="agent_all">Select all</button>
+          <button class="secondary" id="agent_none">Deselect all</button>
+        </div>
+        <div id="agent_list" class="agent-list"></div>
+        <button id="btn_step2_next" disabled style="margin-top: 8px;">Run reconciliation</button>
+      </div>
+
+      <div id="step4" class="step hidden">
+        <h3>Progress</h3>
+        <div id="phase_label" class="muted">Waiting…</div>
+        <div class="progress-bar"><div id="bar"></div></div>
+        <div id="result" style="margin-top: 8px;"></div>
+      </div>
     </div>
 
-    <div id="step3" class="step disabled">
-      <h2><span class="stepnum">3</span>Choose checks</h2>
-      <p class="muted">Pick one or more. Some checks need extra carrier files.</p>
-      <div id="check_list"></div>
-      <div id="carrier_uploads"></div>
-      <button id="btn_run" disabled style="margin-top: 10px;">Run reconciliation</button>
+    <!-- Data Search tool (placeholder) -->
+    <div id="screen_datasearch" class="screen hidden">
+      <button class="link-back" data-target="screen_toolselector">&larr; Back to tools</button>
+      <h2>Data Search</h2>
+      <div class="banner-info">
+        <strong>Configuration pending.</strong>
+        <p>Before this tool can run, please send the admin: the AgencyBloc <em>Customer report</em>
+        column list and the output fields you want in the search results sheet.</p>
+        <p>Planned filters: age range, gender, county, ZIP, city, primary language, country, Medicaid.
+        Each search creates a fresh results Sheet so older searches stay intact.</p>
+      </div>
     </div>
 
-    <div id="step4" class="step disabled">
-      <h2><span class="stepnum">4</span>Progress</h2>
-      <div id="phase_label" class="muted">Waiting…</div>
-      <div class="progress-bar"><div id="bar"></div></div>
-      <div id="result" style="margin-top: 8px;"></div>
+    <!-- Plog Sync tool (placeholder) -->
+    <div id="screen_plogsync" class="screen hidden">
+      <button class="link-back" data-target="screen_toolselector">&larr; Back to tools</button>
+      <h2>Plog Sync</h2>
+      <div class="banner-info">
+        <strong>Configuration pending.</strong>
+        <p>This tool reads scheduled emails from AgencyBloc (sent to a Workspace mailbox) and
+        appends new events to the Plog tracking Sheet.</p>
+        <p>Before it can run, the admin needs to:</p>
+        <ol>
+          <li>Set up the AgencyBloc scheduled email reports.</li>
+          <li>Confirm the Plog Sheet column schema.</li>
+          <li>Provide the mapping from AB field changes to event types
+              (newborn / onboard / switch / renewal / cancel / transfer).</li>
+        </ol>
+        <p>Once configured, install the schedule from the Apps Script editor:
+        <code>installPlogSync()</code>.</p>
+      </div>
     </div>
 
     <div id="errors"></div>
 
     <?!= include('Client_Csv') ?>
     <?!= include('Client_Bridge') ?>
-    <?!= include('Step1_Upload_AB') ?>
+    <?!= include('ToolSelector') ?>
+    <?!= include('FileChecklist') ?>
     <?!= include('Step2_Agents') ?>
-    <?!= include('Step3_Checks') ?>
     <?!= include('Step4_Progress') ?>
   </body>
 </html>

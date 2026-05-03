@@ -1,15 +1,22 @@
 // Match-key fallback ladder + field comparison.
 //
-// matchAndCompare(left, right, matchKeys, compareFields, checkId, allowFuzzy)
+// matchAndCompare(left, right, matchKeys, compareFields, checkId, allowFuzzy, skipKeys)
 //   left, right       : arrays of canonical records
-//   matchKeys         : ordered array, e.g. ['member_id','policy_number','mbi','name_dob']
+//   matchKeys         : ordered array, e.g. ['mbi','member_id','policy_number','name_dob']
 //   compareFields     : canonical field names to diff once a match is established
 //   checkId           : reconciliation type id (stored on each exception)
 //   allowFuzzy        : if true and no exact key matches, try fuzzy
+//   skipKeys          : (optional) array of match keys to skip — e.g. ['policy_number']
+//                       for AB↔Humana, where the two sides intentionally differ
 //
 // Returns an array of exception objects.
 
-function matchAndCompare(left, right, matchKeys, compareFields, checkId, allowFuzzy) {
+function matchAndCompare(left, right, matchKeys, compareFields, checkId, allowFuzzy, skipKeys) {
+  if (skipKeys && skipKeys.length) {
+    var skip = {};
+    for (var s = 0; s < skipKeys.length; s++) skip[skipKeys[s]] = true;
+    matchKeys = matchKeys.filter(function (k) { return !skip[k]; });
+  }
   var indexes = {};
   for (var i = 0; i < matchKeys.length; i++) {
     var key = matchKeys[i];
@@ -121,6 +128,9 @@ function keyValue_(rec, key) {
     var ln = norm_(rec.last_name);
     var dob = rec.dob || '';
     if (!ln || !dob) return null;
+    // Middle name is intentionally NOT in the exact key — it's an optional
+    // field that varies between AB and carrier feeds. It contributes only to
+    // fuzzy similarity (see 41_Fuzzy.gs).
     return ln + '|' + fn + '|' + dob;
   }
   var v = rec[key];

@@ -3,25 +3,42 @@ var CANONICAL_FIELDS = [
   'member_id',
   'policy_number',
   'mbi',
+  'medicaid_number',
   'first_name',
+  'middle_name',
   'last_name',
   'dob',
   'agent_of_record',
+  'servicing_agent',
+  'signed_by',
   'effective_date',
   'term_date',
+  'app_submit_date',
+  'renewal_date',
   'plan_name',
+  'insurance_plan',
   'plan_year',
   'status',
+  'individual_type',
+  'policy_type',
   'premium',
   'event_date',
-  'carrier'
+  'carrier',
+  'carrier_normalized'
 ];
 
 var EXCEPTION_TYPES = {
-  ONLY_IN_AB:       'only_in_AB',
-  ONLY_IN_CARRIER:  'only_in_carrier',
-  FIELD_MISMATCH:   'field_mismatch',
-  FUZZY_REVIEW:     'fuzzy_review_needed'
+  ONLY_IN_AB:                 'only_in_AB',
+  ONLY_IN_CARRIER:            'only_in_carrier',
+  FIELD_MISMATCH:             'field_mismatch',
+  FUZZY_REVIEW:               'fuzzy_review_needed',
+  AB_RULE_VIOLATION:          'ab_rule_violation',
+  BOB_ACTIVE_AB_INACTIVE:     'bob_active_but_ab_inactive'
+};
+
+var SEVERITY = {
+  ERROR:   'error',
+  WARNING: 'warning'
 };
 
 var RUN_PHASES = [

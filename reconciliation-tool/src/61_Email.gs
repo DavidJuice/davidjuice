@@ -59,15 +59,27 @@ function emailPerAgent(runId, exceptions, agentsSelected, outputSheetUrl) {
 }
 
 function summarizeCounts_(rows) {
-  var c = { only_in_AB: 0, field_mismatch: 0, fuzzy_review_needed: 0 };
+  var c = { only_in_AB: 0, field_mismatch: 0, fuzzy_review_needed: 0,
+            ab_rule_violation_error: 0, ab_rule_violation_warning: 0,
+            bob_active_but_ab_inactive: 0 };
   for (var i = 0; i < rows.length; i++) {
-    c[rows[i].type] = (c[rows[i].type] || 0) + 1;
+    var row = rows[i];
+    if (row.type === EXCEPTION_TYPES.AB_RULE_VIOLATION) {
+      var sev = row.severity === SEVERITY.ERROR ? 'error' : 'warning';
+      c['ab_rule_violation_' + sev]++;
+    } else {
+      c[row.type] = (c[row.type] || 0) + 1;
+    }
   }
   return c;
 }
 
 function renderEmailHtml_(agent, runId, counts, url) {
-  var total = (counts.only_in_AB || 0) + (counts.field_mismatch || 0) + (counts.fuzzy_review_needed || 0);
+  var total = (counts.only_in_AB || 0) + (counts.field_mismatch || 0) +
+              (counts.fuzzy_review_needed || 0) +
+              (counts.ab_rule_violation_error || 0) +
+              (counts.ab_rule_violation_warning || 0) +
+              (counts.bob_active_but_ab_inactive || 0);
   return [
     '<p>Hi ' + escapeHtml_(agent) + ',</p>',
     '<p>Your reconciliation results are ready.</p>',
@@ -77,6 +89,9 @@ function renderEmailHtml_(agent, runId, counts, url) {
     '<li>Only in AgencyBloc: ' + (counts.only_in_AB || 0) + '</li>',
     '<li>Field mismatches: ' + (counts.field_mismatch || 0) + '</li>',
     '<li>Need fuzzy-match review: ' + (counts.fuzzy_review_needed || 0) + '</li>',
+    '<li>AB data-quality errors: ' + (counts.ab_rule_violation_error || 0) + '</li>',
+    '<li>AB data-quality warnings: ' + (counts.ab_rule_violation_warning || 0) + '</li>',
+    '<li>Carrier active but AB inactive: ' + (counts.bob_active_but_ab_inactive || 0) + '</li>',
     '</ul>',
     '<p>Details are in the attached CSV. The full results sheet (all agents) is here:<br>',
     '<a href="' + escapeHtml_(url || '') + '">' + escapeHtml_(url || '(no link)') + '</a></p>',

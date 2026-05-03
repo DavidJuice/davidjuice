@@ -2,7 +2,7 @@
 // Shared client helpers: server-call wrapper, drop-zone wiring, error display.
 window.RECON = window.RECON || {};
 
-RECON.state = { runId: null, uploads: {}, agents: [], selectedAgents: [], catalog: [], selectedChecks: {}, carrierFiles: {} };
+RECON.state = { runId: null, uploads: {}, uploadValidation: {}, agents: [], selectedAgents: [], catalog: [], selectedChecks: {}, carrierFiles: {} };
 
 RECON.showError = function (msg) {
   var box = document.getElementById('errors');
@@ -86,10 +86,6 @@ RECON.wireDropZone = function (zoneId, sourceKey, onDone) {
   fileInput.addEventListener('change', function () { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
 };
 
-// Initialize: get a fresh run id when the sidebar opens.
-window.addEventListener('load', function () {
-  RECON.serverCall('beginNewRun')
-    .then(function (r) { RECON.state.runId = r.runId; })
-    .catch(RECON.showError);
-});
+// Run id is acquired when the user opens the Reconciliation tool from the
+// selector — see FileChecklist.html (RECON.startReconciliation).
 </script>

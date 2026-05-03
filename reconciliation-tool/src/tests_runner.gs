@@ -29,7 +29,24 @@ function runAllTests() {
     'test_only_in_ab_and_carrier',
     'test_field_mismatch_detection',
     'test_email_filter_no_cross_agent',
-    'test_safelog_strips_phi'
+    'test_safelog_strips_phi',
+    // Phase 2
+    'test_match_key_priority_mbi_first',
+    'test_match_humana_skip_policy_number',
+    'test_name_dob_match_with_middle_name_optional',
+    'test_normalize_carrier_humana_wa',
+    'test_rule1_type_status_consistency',
+    'test_rule2_part_c_combinations',
+    'test_rule3_active_policy_requires_client',
+    'test_rule4_non_client_has_no_active',
+    'test_rule5_missing_signing_agents',
+    'test_rule6_id_identity_humana_vs_others',
+    'test_rule7_blank_identifiers',
+    'test_rule8_pending_too_long',
+    'test_rule9_date_ordering',
+    'test_rule10_backfill_from_active_policy',
+    'test_bob_source_of_truth_emits_when_ab_missing',
+    'test_mbi_gate_via_resolveAlias'
   ];
   fns.forEach(function (name) {
     var t0 = Date.now();

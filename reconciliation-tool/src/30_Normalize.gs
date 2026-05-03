@@ -34,10 +34,14 @@ function normalize(sourceKey, rawRows) {
       }
       var idx = headerIndex[canon];
       if (idx === undefined || idx < 0) {
-        rec[canon] = null;
+        rec[canon] = (spec && spec.constant_fallback !== undefined) ? spec.constant_fallback : null;
         continue;
       }
-      rec[canon] = coerce_(row[idx], spec);
+      var coerced = coerce_(row[idx], spec);
+      if ((coerced === null || coerced === '') && spec && spec.constant_fallback !== undefined) {
+        coerced = spec.constant_fallback;
+      }
+      rec[canon] = coerced;
     }
     out.push(rec);
   }
@@ -99,8 +103,25 @@ function coerce_(raw, spec) {
     if (spec.transform === 'uppercase') s = s.toUpperCase();
     else if (spec.transform === 'lowercase') s = s.toLowerCase();
     else if (spec.transform === 'trim')      { /* already trimmed */ }
+    else if (spec.transform === 'normalize_carrier') s = normalizeCarrierName_(s);
   }
   return s;
+}
+
+// Maps a free-text carrier string to a stable lowercase key used by
+// AB-only rule 6 and BoB-as-source-of-truth post-processing.
+function normalizeCarrierName_(s) {
+  var lc = String(s || '').trim().toLowerCase();
+  if (!lc) return '';
+  if (lc.indexOf('humana') === 0 || lc.indexOf('humana') !== -1) return 'humana';
+  if (lc === 'uhc' || lc.indexOf('united') !== -1) return 'uhc';
+  if (lc.indexOf('aetna') !== -1) return 'aetna';
+  if (lc.indexOf('anthem') !== -1) return 'anthem';
+  if (lc.indexOf('cigna') !== -1) return 'cigna';
+  if (lc.indexOf('wellcare') !== -1) return 'wellcare';
+  if (lc.indexOf('molina') !== -1) return 'molina';
+  if (lc.indexOf('kaiser') !== -1) return 'kaiser';
+  return lc;
 }
 
 // Returns ISO yyyy-MM-dd, or null if unparseable. Handles Date objects, common

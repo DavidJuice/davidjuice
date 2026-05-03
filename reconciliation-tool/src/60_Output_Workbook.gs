@@ -26,6 +26,8 @@ function buildOutputWorkbook(runId, exceptions, agentsSelected, checksSelected, 
   writeRunMetadata_(ss, runId, agentsSelected, checksSelected, runMeta);
   writeExceptionsAll_(ss, exceptions);
   writeCategoricalTabs_(ss, exceptions);
+  writeAbRuleViolationsTab_(ss, exceptions);
+  writeBobSourceOfTruthTab_(ss, exceptions);
   writePerAgentTabs_(ss, exceptions, agentsSelected);
   writeSummary_(ss, exceptions, checksSelected);
   writeDashboard_(ss, exceptions, agentsSelected, checksSelected);
@@ -88,6 +90,29 @@ function writeDashboard_(ss, exceptions, agentsSelected, checksSelected) {
     row++;
   }
 
+  // Rule violation breakdown
+  var ruleViolations = exceptions.filter(function (e) { return e.type === EXCEPTION_TYPES.AB_RULE_VIOLATION; });
+  if (ruleViolations.length) {
+    var byRule = countBy_(ruleViolations, function (e) { return e.rule_id || '(unknown)'; });
+    var bySev  = countBy_(ruleViolations, function (e) { return e.severity || '(unknown)'; });
+    row += 1;
+    sh.getRange(row, 1).setValue('AB-only rule violations').setFontWeight('bold');
+    row++;
+    sh.getRange(row, 1, 1, 2).setValues([['Severity', 'Count']]).setFontWeight('bold');
+    row++;
+    for (var sv in bySev) {
+      sh.getRange(row, 1, 1, 2).setValues([[sv, bySev[sv]]]);
+      row++;
+    }
+    row += 1;
+    sh.getRange(row, 1, 1, 2).setValues([['Rule ID', 'Count']]).setFontWeight('bold');
+    row++;
+    for (var rl in byRule) {
+      sh.getRange(row, 1, 1, 2).setValues([[rl, byRule[rl]]]);
+      row++;
+    }
+  }
+
   sh.autoResizeColumns(1, 2);
   sh.setFrozenRows(5);
 }
@@ -132,6 +157,66 @@ function writeCategoricalTabs_(ss, exceptions) {
     var rows = groups[name].map(exceptionToFlatRow_);
     writeFlatExceptions_(sh, rows);
   }
+}
+
+function writeAbRuleViolationsTab_(ss, exceptions) {
+  var rows = exceptions.filter(function (e) { return e.type === EXCEPTION_TYPES.AB_RULE_VIOLATION; });
+  var sh = ss.insertSheet('AB_Rule_Violations');
+  var header = [
+    'rule_id', 'severity', 'reason',
+    'member_id', 'policy_number', 'mbi',
+    'first_name', 'middle_name', 'last_name', 'dob',
+    'individual_type', 'status', 'policy_type',
+    'agent_of_record', 'servicing_agent', 'signed_by',
+    'app_submit_date', 'effective_date', 'renewal_date', 'term_date',
+    'suggested_value', 'source_row_index'
+  ];
+  sh.appendRow(header);
+  sh.setFrozenRows(1);
+  if (!rows.length) return;
+  var matrix = rows.map(function (e) {
+    var r = e.left || {};
+    return [
+      e.rule_id || '',
+      e.severity || '',
+      e.reason || '',
+      r.member_id || '', r.policy_number || '', r.mbi || '',
+      r.first_name || '', r.middle_name || '', r.last_name || '', r.dob || '',
+      r.individual_type || '', r.status || '', r.policy_type || '',
+      r.agent_of_record || '', r.servicing_agent || '', r.signed_by || '',
+      r.app_submit_date || '', r.effective_date || '', r.renewal_date || '', r.term_date || '',
+      e.suggested_value || '', r.__src_row || ''
+    ];
+  });
+  sh.getRange(2, 1, matrix.length, header.length).setValues(matrix);
+}
+
+function writeBobSourceOfTruthTab_(ss, exceptions) {
+  var rows = exceptions.filter(function (e) { return e.type === EXCEPTION_TYPES.BOB_ACTIVE_AB_INACTIVE; });
+  var sh = ss.insertSheet('BoB_Active_AB_Inactive');
+  var header = [
+    'check', 'severity', 'reason',
+    'carrier', 'member_id', 'policy_number', 'mbi',
+    'first_name', 'middle_name', 'last_name', 'dob',
+    'plan_name', 'effective_date', 'term_date',
+    'ab_individual_type', 'ab_individual_status', 'ab_agent_of_record'
+  ];
+  sh.appendRow(header);
+  sh.setFrozenRows(1);
+  if (!rows.length) return;
+  var matrix = rows.map(function (e) {
+    var bob = e.right || {};
+    var ab = e.left || {};
+    return [
+      e.check || '', e.severity || '', e.reason || '',
+      bob.carrier || bob.carrier_normalized || '',
+      bob.member_id || '', bob.policy_number || '', bob.mbi || '',
+      bob.first_name || '', bob.middle_name || '', bob.last_name || '', bob.dob || '',
+      bob.plan_name || '', bob.effective_date || '', bob.term_date || '',
+      ab.individual_type || '', ab.status || '', ab.agent_of_record || ''
+    ];
+  });
+  sh.getRange(2, 1, matrix.length, header.length).setValues(matrix);
 }
 
 function writePerAgentTabs_(ss, exceptions, agentsSelected) {
