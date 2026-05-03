@@ -59,6 +59,22 @@ If you close the sidebar mid-run, the tool keeps working in the background and e
 - **Add a new agent:** add a row to the `Agents` tab. No code change needed.
 - **Add a new carrier or check type:** edit `config/field_mappings.json` and `config/reconciliation_types.json`, then `npm run push`. No code change.
 - **Adjust retention or chunk sizes:** edit the `Settings` tab in the Master Control Sheet, or edit `config/settings.json` and re-push.
+- **Tune AB-only data-quality rule enums:** edit `config/ab_only_rules.json` (individual_type values, status values, policy product families, pending threshold) and re-push. No code change.
+
+### Plog Sync setup checklist
+
+Plog Sync ships as a scaffold. Before turning it on:
+
+1. **Confirm AgencyBloc supports scheduled email reports** with CSV attachments. (As of this writing this hasn't been verified for our account.) If it does:
+2. **Create a Workspace service mailbox** (e.g. `ops-feeds@yourdomain.com`) — Plog Sync will scan it via `GmailApp`.
+3. **Configure AB scheduled emails** to send the Individual + Policy + Customer reports to that mailbox on a 12-hour cadence (or whatever makes sense). Note the:
+   - sender address AB uses
+   - subject pattern AB uses
+   - report list and column headers
+4. **Fill in `config/plog_sync.json`** with `from`, `subject_substring`, `plog_sheet_id`, and the AB-delta → event mapping table (newborn / onboard / switch / renewal / cancel / transfer).
+5. **Install the trigger** by running `installPlogSync()` once from the Apps Script editor. Verify it shows up in `Triggers`.
+
+Until step 4 is filled in, `plogSyncTick()` no-ops with a `safeLog`.
 
 ### Updating
 

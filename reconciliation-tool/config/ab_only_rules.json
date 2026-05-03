@@ -1,10 +1,25 @@
 {
-  "version": 1,
+  "version": 2,
   "individual_types": {
     "prospect":  { "allowed_statuses": ["NOT CONTACTED YET", "CONTACTED"] },
     "lead":      { "allowed_statuses": ["APP SUBMITTED"] },
     "client":    { "allowed_statuses": ["ENROLLED"] },
-    "x-client":  { "allowed_statuses": "*" }
+    "x-client":  { "allowed_statuses": [
+      "AOR",
+      "DECEASED",
+      "MOVED",
+      "NON PAYMENT",
+      "NOT ELIGIBLE",
+      "TOO EXPENSIVE",
+      "TRANSITION TO GROUP",
+      "VOLUNTARY DISENROLLMENT",
+      "DISSATISFIED WITH SERVICE",
+      "DO NOT CONTACT",
+      "NO RESPONSE",
+      "NOT INTERESTED",
+      "SERVICING LOCATION TRANSFER",
+      "OTHER"
+    ] }
   },
   "individual_type_aliases": {
     "x client": "x-client",
@@ -18,7 +33,7 @@
   "policy_types_life":     ["LIFE", "LIFE INSURANCE"],
   "active_status_values":   ["ACTIVE"],
   "pending_status_values":  ["PENDING"],
-  "inactive_status_values": ["INACTIVE", "TERMINATED", "TERM", "CANCELED", "CANCELLED", "LAPSED"],
+  "inactive_status_values": ["INACTIVE", "TERMINATED", "TERM", "CANCELED", "CANCELLED", "LAPSED", "REJECTED"],
   "humana_carrier_keys":    ["humana"],
   "pending_max_days":       15
 }
