@@ -1,0 +1,5 @@
+Subscriber ID,Contract Number,HICN/MBI,Member First Name,Member Last Name,Date of Birth,Plan Effective Date,Plan Name,Member Status,Writing Agent
+U-1001,U-P-1,1AA1AA1AA11,Jane,Doe,1955-01-15,2025-01-01,UHC PPO Gold,ACTIVE,Alice Smith
+U-1002,U-P-2,2BB2BB2BB22,John,Roe,1948-07-04,2024-06-01,UHC HMO Silver,TERMINATED,Bob Jones
+U-1003,U-P-3,5EE5EE5EE55,Lisa,Kim,1957-09-12,2025-01-15,UHC PPO Bronze,ACTIVE,David Hall
+U-9999,U-P-99,9XX9XX9XX99,Drew,New,1960-04-04,2025-04-01,UHC PPO Gold,ACTIVE,Bob Jones

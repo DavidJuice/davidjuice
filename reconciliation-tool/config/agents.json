@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "note": "This is the seed list. Production list lives in the 'Agents' tab of the Master Control Sheet and is editable in-place.",
+  "agents": [
+    { "name": "REPLACE_ME_AGENT_1", "email": "agent1@example.com", "branch": "Branch A", "active": true },
+    { "name": "REPLACE_ME_AGENT_2", "email": "agent2@example.com", "branch": "Branch A", "active": true },
+    { "name": "REPLACE_ME_AGENT_3", "email": "agent3@example.com", "branch": "Branch B", "active": true },
+    { "name": "REPLACE_ME_AGENT_4", "email": "agent4@example.com", "branch": "Branch B", "active": true },
+    { "name": "REPLACE_ME_AGENT_5", "email": "agent5@example.com", "branch": "Branch C", "active": true }
+  ]
+}

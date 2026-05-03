@@ -1,0 +1,11 @@
+node_modules/
+.clasp.json
+src/*.html
+src/99_Embedded_Config.gs
+.DS_Store
+fixtures/*.csv
+!fixtures/README.md
+!fixtures/ab_individual_sample.csv
+!fixtures/ab_policy_sample.csv
+!fixtures/uhc_bob_sample.csv
+!fixtures/humana_bob_sample.csv

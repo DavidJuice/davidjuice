@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "types": [
+    {
+      "id": "ab_internal",
+      "label": "AgencyBloc internal consistency (Individual ↔ Policy)",
+      "description": "Find clients in the Individual report missing from the Policy report and vice versa, and surface mismatches in agent, plan, status, or effective date.",
+      "left": "ab_individual",
+      "right": "ab_policy",
+      "required_uploads": ["ab_individual", "ab_policy"],
+      "match_keys": ["member_id", "policy_number", "mbi", "name_dob"],
+      "compare_fields": ["agent_of_record", "plan_name", "status", "effective_date", "term_date"],
+      "allow_fuzzy": false
+    },
+    {
+      "id": "ab_vs_uhc",
+      "label": "AgencyBloc ↔ United Healthcare Book of Business",
+      "description": "Compare AgencyBloc Individual data against UHC's Book of Business. Surfaces policies missing from either side and field mismatches.",
+      "left": "ab_individual",
+      "right": "uhc_bob",
+      "required_uploads": ["ab_individual", "uhc_bob"],
+      "match_keys": ["member_id", "policy_number", "mbi", "name_dob"],
+      "compare_fields": ["plan_name", "status", "effective_date", "term_date", "agent_of_record"],
+      "allow_fuzzy": true
+    },
+    {
+      "id": "ab_vs_humana",
+      "label": "AgencyBloc ↔ Humana Book of Business",
+      "description": "Compare AgencyBloc Individual data against Humana's Book of Business. Humana's per-policy event history is collapsed to the latest event per policy before comparison.",
+      "left": "ab_individual",
+      "right": "humana_bob",
+      "required_uploads": ["ab_individual", "humana_bob"],
+      "match_keys": ["policy_number", "member_id", "mbi", "name_dob"],
+      "compare_fields": ["plan_name", "status", "effective_date", "term_date", "agent_of_record"],
+      "allow_fuzzy": true
+    }
+  ]
+}

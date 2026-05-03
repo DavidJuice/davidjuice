@@ -1,0 +1,111 @@
+<script>
+RECON.renderChecks = function () {
+  var list = document.getElementById('check_list');
+  list.innerHTML = '';
+  RECON.state.catalog.forEach(function (t) {
+    var card = document.createElement('div');
+    card.className = 'check-card';
+    card.dataset.id = t.id;
+    card.innerHTML =
+      '<div class="title">' + escapeHtml(t.label) + '</div>' +
+      '<div class="desc">' + escapeHtml(t.description || '') + '</div>';
+    card.addEventListener('click', function () {
+      var sel = !!RECON.state.selectedChecks[t.id];
+      sel = !sel;
+      if (sel) RECON.state.selectedChecks[t.id] = t;
+      else delete RECON.state.selectedChecks[t.id];
+      card.classList.toggle('selected', sel);
+      renderCarrierUploads();
+      updateRunButton();
+    });
+    list.appendChild(card);
+  });
+  renderCarrierUploads();
+  updateRunButton();
+};
+
+function renderCarrierUploads() {
+  var box = document.getElementById('carrier_uploads');
+  var needed = {};
+  Object.keys(RECON.state.selectedChecks).forEach(function (id) {
+    var t = RECON.state.selectedChecks[id];
+    (t.required_uploads || []).forEach(function (src) {
+      if (src === 'ab_individual' || src === 'ab_policy') return;
+      needed[src] = t.label;
+    });
+  });
+  // Add a drop zone for each needed carrier source not yet uploaded.
+  var existingZones = {};
+  Array.prototype.forEach.call(box.querySelectorAll('.dropzone'), function (z) { existingZones[z.dataset.source] = z; });
+  Object.keys(needed).forEach(function (src) {
+    if (existingZones[src]) return;
+    var z = document.createElement('div');
+    z.className = 'dropzone';
+    z.id = 'dz_' + src;
+    z.dataset.source = src;
+    z.innerHTML =
+      '<div class="label">' + escapeHtml(prettyName(src)) + '</div>' +
+      '<div class="muted">Drag the carrier CSV here, or <a href="#" class="pickfile">click to choose</a></div>' +
+      '<div class="filename"></div>';
+    box.appendChild(z);
+    RECON.wireDropZone(z.id, src, function () {
+      RECON.state.carrierFiles[src] = true;
+      updateRunButton();
+    });
+  });
+  // Remove zones for sources no longer needed.
+  Object.keys(existingZones).forEach(function (src) {
+    if (!needed[src]) {
+      box.removeChild(existingZones[src]);
+      delete RECON.state.carrierFiles[src];
+      delete RECON.state.uploads[src];
+    }
+  });
+}
+
+function updateRunButton() {
+  var anyCheck = Object.keys(RECON.state.selectedChecks).length > 0;
+  var allFilesPresent = true;
+  Object.keys(RECON.state.selectedChecks).forEach(function (id) {
+    (RECON.state.selectedChecks[id].required_uploads || []).forEach(function (src) {
+      if (!RECON.state.uploads[src]) allFilesPresent = false;
+    });
+  });
+  document.getElementById('btn_run').disabled = !(anyCheck && allFilesPresent);
+}
+
+function prettyName(src) {
+  return src.replace(/_/g, ' ').replace(/\bbob\b/i, 'Book of Business').replace(/\b([a-z])/g, function (m) { return m.toUpperCase(); });
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+    return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' })[c];
+  });
+}
+
+window.addEventListener('load', function () {
+  document.getElementById('btn_run').addEventListener('click', function () {
+    var checks = Object.keys(RECON.state.selectedChecks);
+    if (!checks.length) return;
+    document.getElementById('btn_run').disabled = true;
+    document.getElementById('btn_run').textContent = 'Starting…';
+    RECON.serverCall('startRun', [RECON.state.runId, RECON.state.selectedAgents, checks])
+      .then(function (res) {
+        RECON.enableStep('step4', true);
+        document.getElementById('step4').scrollIntoView({ behavior: 'smooth' });
+        if (res && res.url) {
+          // ran inline — show result immediately
+          RECON.renderResult(res);
+        } else {
+          RECON.startProgressPolling();
+        }
+      })
+      .catch(function (e) {
+        document.getElementById('btn_run').disabled = false;
+        document.getElementById('btn_run').textContent = 'Run reconciliation';
+        RECON.showError(e);
+      });
+  });
+});
+</script>

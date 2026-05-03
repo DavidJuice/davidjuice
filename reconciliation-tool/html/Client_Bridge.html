@@ -1,0 +1,95 @@
+<script>
+// Shared client helpers: server-call wrapper, drop-zone wiring, error display.
+window.RECON = window.RECON || {};
+
+RECON.state = { runId: null, uploads: {}, agents: [], selectedAgents: [], catalog: [], selectedChecks: {}, carrierFiles: {} };
+
+RECON.showError = function (msg) {
+  var box = document.getElementById('errors');
+  var el = document.createElement('div');
+  el.className = 'err';
+  el.textContent = String(msg && msg.message || msg);
+  box.appendChild(el);
+  setTimeout(function () { try { box.removeChild(el); } catch (e) {} }, 8000);
+};
+
+RECON.enableStep = function (id, enable) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  if (enable) el.classList.remove('disabled'); else el.classList.add('disabled');
+};
+
+RECON.serverCall = function (fn, args) {
+  return new Promise(function (resolve, reject) {
+    var runner = google.script.run
+      .withSuccessHandler(resolve)
+      .withFailureHandler(reject);
+    runner[fn].apply(runner, args || []);
+  });
+};
+
+RECON.wireDropZone = function (zoneId, sourceKey, onDone) {
+  var zone = document.getElementById(zoneId);
+  if (!zone) return;
+  var pick = zone.querySelector('.pickfile');
+  var fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = '.csv,text/csv';
+  fileInput.style.display = 'none';
+  document.body.appendChild(fileInput);
+
+  function handleFile(file) {
+    if (!file) return;
+    var nameLc = file.name.toLowerCase();
+    if (nameLc.indexOf('.csv') === -1) {
+      RECON.showError('Only CSV files are supported.');
+      zone.classList.add('error');
+      return;
+    }
+    if (file.size > 50 * 1024 * 1024) {
+      RECON.showError('File too large. Max 50 MB.');
+      zone.classList.add('error');
+      return;
+    }
+    zone.classList.remove('error');
+    zone.classList.add('over');
+    zone.querySelector('.filename').textContent = file.name + ' — uploading…';
+    RECON.uploadCsv({
+      file: file,
+      sourceKey: sourceKey,
+      runId: RECON.state.runId,
+      onProgress: function (p) {
+        zone.querySelector('.filename').textContent = file.name + ' — ' + p.rows + ' rows';
+      },
+      onDone: function () {
+        zone.classList.remove('over');
+        zone.classList.add('done');
+        zone.querySelector('.filename').textContent = file.name + ' — uploaded';
+        RECON.state.uploads[sourceKey] = { fileName: file.name };
+        if (onDone) onDone();
+      },
+      onError: function (err) {
+        zone.classList.remove('over');
+        zone.classList.add('error');
+        RECON.showError(err);
+      }
+    });
+  }
+
+  zone.addEventListener('dragover', function (e) { e.preventDefault(); zone.classList.add('over'); });
+  zone.addEventListener('dragleave', function () { zone.classList.remove('over'); });
+  zone.addEventListener('drop', function (e) {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+  });
+  if (pick) pick.addEventListener('click', function (e) { e.preventDefault(); fileInput.click(); });
+  fileInput.addEventListener('change', function () { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
+};
+
+// Initialize: get a fresh run id when the sidebar opens.
+window.addEventListener('load', function () {
+  RECON.serverCall('beginNewRun')
+    .then(function (r) { RECON.state.runId = r.runId; })
+    .catch(RECON.showError);
+});
+</script>

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "chunk_size": 2000,
+  "fuzzy_threshold": 0.85,
+  "fuzzy_max_block_size": 500,
+  "retention_days": 60,
+  "single_shot_threshold_seconds": 240,
+  "execution_budget_seconds": 240,
+  "output_folder_name": "Runs",
+  "archive_folder_name": "Archive",
+  "logs_folder_name": "Logs",
+  "config_folder_name": "Config"
+}

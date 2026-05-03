@@ -1,0 +1,36 @@
+<script>
+RECON.startProgressPolling = function () {
+  var phase = document.getElementById('phase_label');
+  var bar = document.getElementById('bar');
+  function tick() {
+    RECON.serverCall('getRunStatus', [RECON.state.runId])
+      .then(function (s) {
+        phase.textContent = 'Phase: ' + (s.phase || 'unknown');
+        bar.style.width = (s.percent || 0) + '%';
+        if (s.status === 'completed') {
+          RECON.renderResult({ url: s.outputUrl, exceptions: null });
+        } else if (s.status === 'failed') {
+          RECON.showError('Run failed: ' + (s.errors || []).join(' / '));
+        } else {
+          setTimeout(tick, 2000);
+        }
+      })
+      .catch(function (e) {
+        RECON.showError(e);
+      });
+  }
+  tick();
+};
+
+RECON.renderResult = function (res) {
+  document.getElementById('phase_label').textContent = 'Done';
+  document.getElementById('bar').style.width = '100%';
+  var div = document.getElementById('result');
+  div.innerHTML = '';
+  var ok = document.createElement('div');
+  ok.className = 'ok';
+  ok.innerHTML = 'Reconciliation finished. Each selected agent has received an email with their CSV.<br><br>' +
+    '<a href="' + (res.url || '#') + '" target="_blank"><button>Open results sheet</button></a>';
+  div.appendChild(ok);
+};
+</script>

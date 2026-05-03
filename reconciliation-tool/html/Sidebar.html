@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <?!= include('Styles') ?>
+  </head>
+  <body>
+    <h1>Reconciliation</h1>
+    <p class="muted">Drag your CSV reports into the boxes. We never share them outside our company Drive.</p>
+
+    <div id="step1" class="step">
+      <h2><span class="stepnum">1</span>Upload AgencyBloc reports</h2>
+      <div id="dz_ab_individual" class="dropzone" data-source="ab_individual">
+        <div class="label">AB Individual Report</div>
+        <div class="muted">Drag a CSV here, or <a href="#" class="pickfile">click to choose</a></div>
+        <div class="filename"></div>
+      </div>
+      <div id="dz_ab_policy" class="dropzone" data-source="ab_policy">
+        <div class="label">AB Policy Report</div>
+        <div class="muted">Drag a CSV here, or <a href="#" class="pickfile">click to choose</a></div>
+        <div class="filename"></div>
+      </div>
+      <button id="btn_step1_next" disabled>Next: choose agents</button>
+    </div>
+
+    <div id="step2" class="step disabled">
+      <h2><span class="stepnum">2</span>Choose agents</h2>
+      <p class="muted">We found these agents in your AB Individual report. Pick the ones to include.</p>
+      <input type="search" id="agent_search" placeholder="Search agents…" />
+      <div class="row" style="margin: 6px 0;">
+        <button class="secondary" id="agent_all">Select all</button>
+        <button class="secondary" id="agent_none">Deselect all</button>
+      </div>
+      <div id="agent_list" class="agent-list"></div>
+      <button id="btn_step2_next" disabled style="margin-top: 8px;">Confirm</button>
+    </div>
+
+    <div id="step3" class="step disabled">
+      <h2><span class="stepnum">3</span>Choose checks</h2>
+      <p class="muted">Pick one or more. Some checks need extra carrier files.</p>
+      <div id="check_list"></div>
+      <div id="carrier_uploads"></div>
+      <button id="btn_run" disabled style="margin-top: 10px;">Run reconciliation</button>
+    </div>
+
+    <div id="step4" class="step disabled">
+      <h2><span class="stepnum">4</span>Progress</h2>
+      <div id="phase_label" class="muted">Waiting…</div>
+      <div class="progress-bar"><div id="bar"></div></div>
+      <div id="result" style="margin-top: 8px;"></div>
+    </div>
+
+    <div id="errors"></div>
+
+    <?!= include('Client_Csv') ?>
+    <?!= include('Client_Bridge') ?>
+    <?!= include('Step1_Upload_AB') ?>
+    <?!= include('Step2_Agents') ?>
+    <?!= include('Step3_Checks') ?>
+    <?!= include('Step4_Progress') ?>
+  </body>
+</html>

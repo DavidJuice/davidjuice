@@ -1,0 +1,5 @@
+Member Number,Policy Number,MBI,First Name,Last Name,Date of Birth,Effective Date,Plan Description,Policy Status,Event Date,Producer
+H-1001,H-100,3CC3CC3CC33,Mary,Lee,1962-11-22,2024-03-01,Humana Choice,ACTIVE,2024-03-01,Carol Park
+H-1001,H-100,3CC3CC3CC33,Mary,Lee,1962-11-22,2024-03-01,Humana Choice,ACTIVE,2024-09-15,Carol Park
+H-1001,H-100,3CC3CC3CC33,Mary,Lee,1962-11-22,2024-03-01,Humana Choice,TERMINATED,2025-02-01,Carol Park
+H-1002,H-200,4DD4DD4DD44,Sam,Park,1959-05-30,2025-02-01,Humana Gold,ACTIVE,2025-02-01,Alice Smith

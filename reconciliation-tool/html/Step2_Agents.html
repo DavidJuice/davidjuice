@@ -1,0 +1,68 @@
+<script>
+RECON.renderAgents = function () {
+  var list = document.getElementById('agent_list');
+  list.innerHTML = '';
+  if (!RECON.state.agents.length) {
+    list.innerHTML = '<div class="muted">No agent column was found in the AB Individual report. Check the column header against config/field_mappings.json.</div>';
+    document.getElementById('btn_step2_next').disabled = true;
+    return;
+  }
+  RECON.state.agents.forEach(function (a) {
+    var lbl = document.createElement('label');
+    var cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.value = a.name;
+    cb.checked = true;
+    cb.addEventListener('change', updateConfirmState);
+    lbl.appendChild(cb);
+    var span = document.createElement('span');
+    span.textContent = a.name + ' (' + a.count + ')';
+    lbl.appendChild(span);
+    list.appendChild(lbl);
+  });
+  updateConfirmState();
+};
+
+function getCheckedAgentBoxes() {
+  return Array.prototype.slice.call(document.querySelectorAll('#agent_list input[type=checkbox]'));
+}
+
+function updateConfirmState() {
+  var boxes = getCheckedAgentBoxes();
+  var any = boxes.some(function (b) { return b.checked && b.parentElement.style.display !== 'none'; });
+  document.getElementById('btn_step2_next').disabled = !any;
+}
+
+window.addEventListener('load', function () {
+  document.getElementById('agent_all').addEventListener('click', function () {
+    getCheckedAgentBoxes().forEach(function (b) { if (b.parentElement.style.display !== 'none') b.checked = true; });
+    updateConfirmState();
+  });
+  document.getElementById('agent_none').addEventListener('click', function () {
+    getCheckedAgentBoxes().forEach(function (b) { b.checked = false; });
+    updateConfirmState();
+  });
+  document.getElementById('agent_search').addEventListener('input', function (e) {
+    var q = e.target.value.toLowerCase();
+    Array.prototype.forEach.call(document.querySelectorAll('#agent_list label'), function (lbl) {
+      var t = lbl.textContent.toLowerCase();
+      lbl.style.display = (!q || t.indexOf(q) !== -1) ? '' : 'none';
+    });
+    updateConfirmState();
+  });
+
+  document.getElementById('btn_step2_next').addEventListener('click', function () {
+    var picked = getCheckedAgentBoxes().filter(function (b) { return b.checked; }).map(function (b) { return b.value; });
+    if (!picked.length) return;
+    RECON.state.selectedAgents = picked;
+    RECON.serverCall('getReconciliationCatalog')
+      .then(function (catalog) {
+        RECON.state.catalog = catalog;
+        RECON.renderChecks();
+        RECON.enableStep('step3', true);
+        document.getElementById('step3').scrollIntoView({ behavior: 'smooth' });
+      })
+      .catch(RECON.showError);
+  });
+});
+</script>

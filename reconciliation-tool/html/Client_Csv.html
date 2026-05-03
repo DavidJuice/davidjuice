@@ -1,0 +1,121 @@
+<script>
+// Client-side CSV reader. Streams the file with FileReader, parses with a
+// stateful RFC-4180 tokenizer (handles quoted fields, "" escapes, and newlines
+// embedded inside quoted fields), and ships rows to the server in batches via
+// google.script.run.
+
+window.RECON = window.RECON || {};
+RECON.uploadCsv = function (opts) {
+  var file = opts.file;
+  var sourceKey = opts.sourceKey;
+  var runId = opts.runId;
+  var onProgress = opts.onProgress || function () {};
+  var onDone = opts.onDone || function () {};
+  var onError = opts.onError || function () {};
+
+  var CHUNK_ROWS = 500;
+  var READ_BYTES = 1024 * 256;
+
+  var rows = [];
+  var rowAccum = [];
+  var fieldAccum = '';
+  var inQuotes = false;
+  var carry = '';
+  var chunkIndex = 0;
+  var rowsSent = 0;
+  var sha = 0; // simple FNV-1a 32-bit, just an integrity tag — not crypto.
+
+  function fnvUpdate(s) {
+    for (var i = 0; i < s.length; i++) {
+      sha ^= s.charCodeAt(i);
+      sha = (sha * 16777619) >>> 0;
+    }
+  }
+
+  function feed(text) {
+    fnvUpdate(text);
+    var s = carry + text;
+    carry = '';
+    var i = 0, len = s.length;
+    while (i < len) {
+      var c = s.charAt(i);
+      if (inQuotes) {
+        if (c === '"') {
+          if (i + 1 < len) {
+            if (s.charAt(i + 1) === '"') { fieldAccum += '"'; i += 2; continue; }
+            inQuotes = false; i++; continue;
+          }
+          // possible split between two CRs of "" — defer
+          carry = s.substring(i);
+          return;
+        }
+        fieldAccum += c; i++; continue;
+      }
+      if (c === '"') { inQuotes = true; i++; continue; }
+      if (c === ',') { rowAccum.push(fieldAccum); fieldAccum = ''; i++; continue; }
+      if (c === '\r') { i++; continue; }
+      if (c === '\n') {
+        rowAccum.push(fieldAccum); fieldAccum = '';
+        rows.push(rowAccum); rowAccum = [];
+        i++;
+        if (rows.length >= CHUNK_ROWS) flushChunk(false);
+        continue;
+      }
+      fieldAccum += c; i++;
+    }
+  }
+
+  function finishStream() {
+    if (carry.length || fieldAccum.length || rowAccum.length) {
+      // flush remaining
+      var remaining = carry;
+      carry = '';
+      if (remaining) {
+        // last attempt to digest — assume newline at EOF
+        for (var i = 0; i < remaining.length; i++) {
+          var c = remaining.charAt(i);
+          if (c === '"' && inQuotes) { inQuotes = false; continue; }
+          fieldAccum += c;
+        }
+      }
+      if (fieldAccum.length || rowAccum.length) {
+        rowAccum.push(fieldAccum); fieldAccum = '';
+        rows.push(rowAccum); rowAccum = [];
+      }
+    }
+    flushChunk(true);
+  }
+
+  function flushChunk(isFinal) {
+    var batch = rows;
+    rows = [];
+    var idx = chunkIndex++;
+    var tag = ('00000000' + (sha >>> 0).toString(16)).slice(-8);
+    google.script.run
+      .withSuccessHandler(function (res) {
+        rowsSent += batch.length;
+        onProgress({ rows: rowsSent, chunks: idx + 1 });
+        if (isFinal) onDone(res);
+      })
+      .withFailureHandler(function (err) { onError(err); })
+      .receiveChunk(runId, sourceKey, idx, batch, isFinal, tag);
+  }
+
+  // First, tell the server we're starting (creates the scratch tab fresh).
+  google.script.run
+    .withSuccessHandler(function () {
+      var reader = file.stream().getReader();
+      var decoder = new TextDecoder('utf-8');
+      function pump() {
+        reader.read().then(function (r) {
+          if (r.done) { feed(decoder.decode()); finishStream(); return; }
+          feed(decoder.decode(r.value, { stream: true }));
+          pump();
+        }).catch(onError);
+      }
+      pump();
+    })
+    .withFailureHandler(onError)
+    .startUpload(sourceKey, file.name);
+};
+</script>

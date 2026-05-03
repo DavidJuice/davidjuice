@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "sources": {
+    "ab_individual": {
+      "label": "AgencyBloc Individual Report",
+      "header_required": ["First Name", "Last Name"],
+      "fields": {
+        "member_id":       { "columns": ["Member ID", "Subscriber ID", "Mbr#", "Mbr #", "Member #"] },
+        "policy_number":   { "columns": ["Policy Number", "Policy #", "Policy"] },
+        "mbi":             { "columns": ["MBI", "Medicare Number", "Medicare #"] },
+        "first_name":      { "columns": ["First Name", "Member First", "FirstName"], "transform": "trim" },
+        "last_name":       { "columns": ["Last Name", "Member Last", "LastName"], "transform": "trim" },
+        "dob":             { "columns": ["DOB", "Date of Birth", "Birthdate"], "type": "date" },
+        "agent_of_record": { "columns": ["Agent of Record", "Writing Agent", "AOR", "Agent"], "transform": "trim" },
+        "effective_date":  { "columns": ["Effective Date", "Eff Date"], "type": "date" },
+        "term_date":       { "columns": ["Term Date", "Termination Date"], "type": "date" },
+        "plan_name":       { "columns": ["Plan", "Plan Name", "Product"], "transform": "trim" },
+        "plan_year":       { "columns": ["Plan Year", "Year"] },
+        "status":          { "columns": ["Status", "Policy Status"], "transform": "uppercase" },
+        "premium":         { "columns": ["Premium", "Monthly Premium"], "type": "number" },
+        "carrier":         { "columns": ["Carrier", "Insurance Company"], "transform": "trim" }
+      }
+    },
+
+    "ab_policy": {
+      "label": "AgencyBloc Policy Report",
+      "header_required": ["Policy Number"],
+      "fields": {
+        "member_id":       { "columns": ["Member ID", "Subscriber ID"] },
+        "policy_number":   { "columns": ["Policy Number", "Policy #", "Policy"] },
+        "mbi":             { "columns": ["MBI", "Medicare Number"] },
+        "first_name":      { "columns": ["Insured First Name", "First Name"], "transform": "trim" },
+        "last_name":       { "columns": ["Insured Last Name", "Last Name"], "transform": "trim" },
+        "dob":             { "columns": ["DOB", "Date of Birth"], "type": "date" },
+        "agent_of_record": { "columns": ["Agent of Record", "Writing Agent", "AOR"], "transform": "trim" },
+        "effective_date":  { "columns": ["Effective Date", "Eff Date"], "type": "date" },
+        "term_date":       { "columns": ["Term Date", "Termination Date"], "type": "date" },
+        "plan_name":       { "columns": ["Plan Name", "Plan", "Product"], "transform": "trim" },
+        "plan_year":       { "columns": ["Plan Year"] },
+        "status":          { "columns": ["Status", "Policy Status"], "transform": "uppercase" },
+        "premium":         { "columns": ["Premium"], "type": "number" },
+        "carrier":         { "columns": ["Carrier"], "transform": "trim" }
+      }
+    },
+
+    "uhc_bob": {
+      "label": "United Healthcare Book of Business",
+      "header_required": ["Subscriber ID"],
+      "fields": {
+        "member_id":       { "columns": ["Subscriber ID", "Member ID", "Subscriber Number"] },
+        "policy_number":   { "columns": ["Contract Number", "Contract #", "Policy Number"] },
+        "mbi":             { "columns": ["HICN/MBI", "MBI", "Medicare Number"] },
+        "first_name":      { "columns": ["Member First Name", "First Name"], "transform": "trim" },
+        "last_name":       { "columns": ["Member Last Name", "Last Name"], "transform": "trim" },
+        "dob":             { "columns": ["Date of Birth", "DOB"], "type": "date" },
+        "agent_of_record": { "columns": ["Writing Agent", "Agent Name", "Producer Name"], "transform": "trim" },
+        "effective_date":  { "columns": ["Plan Effective Date", "Effective Date"], "type": "date" },
+        "term_date":       { "columns": ["Plan Term Date", "Termination Date"], "type": "date" },
+        "plan_name":       { "columns": ["Plan Name", "Product Name"], "transform": "trim" },
+        "plan_year":       { "columns": ["Plan Year"] },
+        "status":          { "columns": ["Member Status", "Status"], "transform": "uppercase" },
+        "premium":         { "columns": ["Premium Amount", "Premium"], "type": "number" },
+        "carrier":         { "constant": "United Healthcare" }
+      }
+    },
+
+    "humana_bob": {
+      "label": "Humana Book of Business",
+      "header_required": ["Policy Number", "Event Date"],
+      "history": { "group_by": "policy_number", "latest_by": "event_date" },
+      "fields": {
+        "member_id":       { "columns": ["Member Number", "Subscriber ID"] },
+        "policy_number":   { "columns": ["Policy Number", "Contract Number"] },
+        "mbi":             { "columns": ["MBI", "Medicare ID"] },
+        "first_name":      { "columns": ["First Name"], "transform": "trim" },
+        "last_name":       { "columns": ["Last Name"], "transform": "trim" },
+        "dob":             { "columns": ["Date of Birth", "DOB"], "type": "date" },
+        "agent_of_record": { "columns": ["Agent of Record", "Producer", "Writing Agent"], "transform": "trim" },
+        "effective_date":  { "columns": ["Effective Date", "Coverage Start"], "type": "date" },
+        "term_date":       { "columns": ["Termination Date", "Coverage End"], "type": "date" },
+        "plan_name":       { "columns": ["Plan Description", "Plan Name"], "transform": "trim" },
+        "plan_year":       { "columns": ["Plan Year"] },
+        "status":          { "columns": ["Policy Status", "Status"], "transform": "uppercase" },
+        "premium":         { "columns": ["Monthly Premium", "Premium"], "type": "number" },
+        "event_date":      { "columns": ["Event Date", "Transaction Date", "Activity Date"], "type": "date" },
+        "carrier":         { "constant": "Humana" }
+      }
+    }
+  }
+}
