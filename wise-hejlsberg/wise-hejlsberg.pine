@@ -1,0 +1,753 @@
+//@version=5
+// =====================================================================
+// Wise Hejlsberg — Composite Indicator
+// =====================================================================
+// Two trading styles in one indicator:
+//   Style A — Long-term confluence (>=1 month holds, low churn):
+//     MA golden/death cross, RSI + regular & hidden divergence,
+//     MACD, Bollinger Bands, volume, volume profile (매물대), Fibonacci.
+//   Style B — ICT price-action setup:
+//     Liquidity sweeps, FVGs, Order Blocks, inversion taps,
+//     SMT divergence, pin-bar confirmation, external liquidity targets.
+// Use the `Mode` input to pick which style drives BUY/SELL arrows.
+// =====================================================================
+indicator("Wise Hejlsberg", shorttitle="WH", overlay=true,
+     max_boxes_count=500, max_lines_count=500,
+     max_labels_count=500, max_bars_back=1000)
+
+// ---------- Mode ----------
+modeOpt = input.string("Both", "Mode",
+     options=["Long-term", "ICT", "Both"], group="Mode")
+isLong  = modeOpt == "Long-term" or modeOpt == "Both"
+isICT   = modeOpt == "ICT"       or modeOpt == "Both"
+
+// ====================================================================
+// STYLE A — Long-term confluence
+// ====================================================================
+
+// ---------- Trend / MAs ----------
+gMA = "Style A · Trend / MA"
+fastSmaLen = input.int(50,  "Fast SMA",  minval=1, group=gMA)
+slowSmaLen = input.int(200, "Slow SMA",  minval=1, group=gMA)
+fastEmaLen = input.int(21,  "Fast EMA",  minval=1, group=gMA)
+slowEmaLen = input.int(55,  "Slow EMA",  minval=1, group=gMA)
+showCrosses = input.bool(true, "Mark golden / death cross", group=gMA)
+
+fastSma = ta.sma(close, fastSmaLen)
+slowSma = ta.sma(close, slowSmaLen)
+fastEma = ta.ema(close, fastEmaLen)
+slowEma = ta.ema(close, slowEmaLen)
+
+plot(isLong ? fastSma : na, "Fast SMA", color=color.new(color.orange, 0))
+plot(isLong ? slowSma : na, "Slow SMA", color=color.new(color.red,    0))
+plot(isLong ? fastEma : na, "Fast EMA", color=color.new(color.aqua,   30))
+plot(isLong ? slowEma : na, "Slow EMA", color=color.new(color.blue,   30))
+
+goldenCross = ta.crossover(fastSma, slowSma)
+deathCross  = ta.crossunder(fastSma, slowSma)
+if showCrosses and isLong and goldenCross
+    label.new(bar_index, low, "Golden",  style=label.style_label_up,
+         color=color.new(color.green, 0), textcolor=color.white, size=size.small)
+if showCrosses and isLong and deathCross
+    label.new(bar_index, high, "Death",  style=label.style_label_down,
+         color=color.new(color.red,   0), textcolor=color.white, size=size.small)
+
+// MA score: fresh cross dominates; otherwise alignment.
+var int barsSinceGolden = 1000
+var int barsSinceDeath  = 1000
+barsSinceGolden := goldenCross ? 0 : barsSinceGolden + 1
+barsSinceDeath  := deathCross  ? 0 : barsSinceDeath + 1
+
+slowSmaRising  = slowSma > slowSma[5]
+slowSmaFalling = slowSma < slowSma[5]
+maScore = 0.0
+if barsSinceGolden <= 10
+    maScore := 2.0
+else if barsSinceDeath <= 10
+    maScore := -2.0
+else if close > fastSma and close > slowSma and slowSmaRising
+    maScore := 1.0
+else if close < fastSma and close < slowSma and slowSmaFalling
+    maScore := -1.0
+
+// ---------- RSI + divergence ----------
+gRSI = "Style A · RSI"
+rsiLen      = input.int(14, "RSI length", minval=2, group=gRSI)
+rsiOB       = input.int(70, "Overbought", group=gRSI)
+rsiOS       = input.int(30, "Oversold",   group=gRSI)
+divLeft     = input.int(5, "Divergence pivot left",  minval=1, group=gRSI)
+divRight    = input.int(5, "Divergence pivot right", minval=1, group=gRSI)
+showHidden  = input.bool(true, "Detect hidden divergence", group=gRSI)
+
+rsi = ta.rsi(close, rsiLen)
+
+// Track last two confirmed price/RSI pivots (high side and low side).
+var float lastHighPrice1 = na
+var float lastHighPrice2 = na
+var float lastHighRsi1   = na
+var float lastHighRsi2   = na
+var int   lastHighBar1   = na
+var int   lastHighBar2   = na
+var float lastLowPrice1  = na
+var float lastLowPrice2  = na
+var float lastLowRsi1    = na
+var float lastLowRsi2    = na
+var int   lastLowBar1    = na
+var int   lastLowBar2    = na
+
+phPrice = ta.pivothigh(high, divLeft, divRight)
+plPrice = ta.pivotlow(low,   divLeft, divRight)
+phRsi   = ta.pivothigh(rsi,  divLeft, divRight)
+plRsi   = ta.pivotlow(rsi,   divLeft, divRight)
+
+regBullDiv = false
+regBearDiv = false
+hidBullDiv = false
+hidBearDiv = false
+
+if not na(phPrice) and not na(phRsi)
+    lastHighPrice2 := lastHighPrice1
+    lastHighRsi2   := lastHighRsi1
+    lastHighBar2   := lastHighBar1
+    lastHighPrice1 := phPrice
+    lastHighRsi1   := phRsi
+    lastHighBar1   := bar_index - divRight
+    if not na(lastHighPrice2)
+        // Regular bearish: price HH, RSI LH
+        if lastHighPrice1 > lastHighPrice2 and lastHighRsi1 < lastHighRsi2
+            regBearDiv := true
+        // Hidden bearish: price LH, RSI HH (continuation in downtrend)
+        if showHidden and lastHighPrice1 < lastHighPrice2 and lastHighRsi1 > lastHighRsi2 and slowSmaFalling
+            hidBearDiv := true
+
+if not na(plPrice) and not na(plRsi)
+    lastLowPrice2 := lastLowPrice1
+    lastLowRsi2   := lastLowRsi1
+    lastLowBar2   := lastLowBar1
+    lastLowPrice1 := plPrice
+    lastLowRsi1   := plRsi
+    lastLowBar1   := bar_index - divRight
+    if not na(lastLowPrice2)
+        // Regular bullish: price LL, RSI HL
+        if lastLowPrice1 < lastLowPrice2 and lastLowRsi1 > lastLowRsi2
+            regBullDiv := true
+        // Hidden bullish: price HL, RSI LL (continuation in uptrend)
+        if showHidden and lastLowPrice1 > lastLowPrice2 and lastLowRsi1 < lastLowRsi2 and slowSmaRising
+            hidBullDiv := true
+
+// Draw divergence lines + label.
+if isLong and regBullDiv
+    line.new(lastLowBar2, lastLowPrice2, lastLowBar1, lastLowPrice1,
+         color=color.new(color.green, 0), width=2)
+    label.new(lastLowBar1, lastLowPrice1, "Bull Div",
+         style=label.style_label_up, color=color.new(color.green, 0),
+         textcolor=color.white, size=size.small)
+if isLong and regBearDiv
+    line.new(lastHighBar2, lastHighPrice2, lastHighBar1, lastHighPrice1,
+         color=color.new(color.red, 0), width=2)
+    label.new(lastHighBar1, lastHighPrice1, "Bear Div",
+         style=label.style_label_down, color=color.new(color.red, 0),
+         textcolor=color.white, size=size.small)
+if isLong and hidBullDiv
+    line.new(lastLowBar2, lastLowPrice2, lastLowBar1, lastLowPrice1,
+         color=color.new(color.lime, 30), width=1, style=line.style_dashed)
+if isLong and hidBearDiv
+    line.new(lastHighBar2, lastHighPrice2, lastHighBar1, lastHighPrice1,
+         color=color.new(color.maroon, 30), width=1, style=line.style_dashed)
+
+rsiScore = 0.0
+if regBullDiv
+    rsiScore := 2.0
+else if regBearDiv
+    rsiScore := -2.0
+else if hidBullDiv
+    rsiScore := 1.0
+else if hidBearDiv
+    rsiScore := -1.0
+else if rsi < rsiOS
+    rsiScore := 0.5
+else if rsi > rsiOB
+    rsiScore := -0.5
+
+// ---------- MACD ----------
+gMACD = "Style A · MACD"
+macdFast    = input.int(12, "MACD fast",   group=gMACD)
+macdSlow    = input.int(26, "MACD slow",   group=gMACD)
+macdSig     = input.int(9,  "MACD signal", group=gMACD)
+[macdLine, macdSignal, macdHist] = ta.macd(close, macdFast, macdSlow, macdSig)
+
+macdBullCross = ta.crossover(macdLine, macdSignal)
+macdBearCross = ta.crossunder(macdLine, macdSignal)
+macdZeroUp    = ta.crossover(macdLine, 0)
+macdZeroDn    = ta.crossunder(macdLine, 0)
+
+macdScore = 0.0
+if macdZeroUp
+    macdScore := 1.5
+else if macdZeroDn
+    macdScore := -1.5
+else if macdBullCross and macdLine < 0
+    macdScore := 1.0
+else if macdBearCross and macdLine > 0
+    macdScore := -1.0
+else if macdHist > 0 and macdHist > macdHist[1]
+    macdScore := 0.5
+else if macdHist < 0 and macdHist < macdHist[1]
+    macdScore := -0.5
+
+// ---------- Bollinger Bands ----------
+gBB = "Style A · Bollinger"
+bbLen   = input.int(20,  "BB length", group=gBB)
+bbMult  = input.float(2.0, "BB multiplier", group=gBB)
+[bbMid, bbUpper, bbLower] = ta.bb(close, bbLen, bbMult)
+bbWidth = (bbUpper - bbLower) / bbMid
+bbWidthPctile = ta.percentile_linear_interpolation(bbWidth, 100, 20)
+bbSqueeze = bbWidth <= bbWidthPctile
+
+plot(isLong ? bbUpper : na, "BB Upper", color=color.new(color.gray, 50))
+plot(isLong ? bbMid   : na, "BB Mid",   color=color.new(color.gray, 50))
+plot(isLong ? bbLower : na, "BB Lower", color=color.new(color.gray, 50))
+
+bbScore = 0.0
+if low <= bbLower and rsi < 35
+    bbScore := 1.0
+else if high >= bbUpper and rsi > 65
+    bbScore := -1.0
+
+// ---------- Volume ----------
+gVOL = "Style A · Volume"
+volMaLen = input.int(20,  "Volume MA length", group=gVOL)
+volHiMlt = input.float(1.5, "High-volume multiplier", group=gVOL)
+volMa = ta.sma(volume, volMaLen)
+highVol = volume > volMa * volHiMlt
+
+// ---------- Volume Profile (매물대) approximation ----------
+gVP = "Style A · Volume Profile (매물대)"
+vpLookback = input.int(250, "Lookback bars",  minval=20, group=gVP)
+vpBins     = input.int(24,  "Bins",            minval=8, maxval=60, group=gVP)
+vpRefresh  = input.int(20,  "Rebuild every N bars", minval=1, group=gVP)
+showVP     = input.bool(true, "Draw POC / VAH / VAL", group=gVP)
+
+var line pocLine = na
+var line vahLine = na
+var line valLine = na
+var float pocPrice = na
+var float vahPrice = na
+var float valPrice = na
+
+if isLong and (bar_index % vpRefresh == 0 or barstate.islast)
+    pmax = ta.highest(high, vpLookback)
+    pmin = ta.lowest(low,   vpLookback)
+    if pmax > pmin and bar_index >= vpLookback
+        binSize = (pmax - pmin) / vpBins
+        bins = array.new_float(vpBins, 0.0)
+        for i = 0 to vpLookback - 1
+            tp = (high[i] + low[i] + close[i]) / 3.0
+            idx = int((tp - pmin) / binSize)
+            idx := math.max(0, math.min(vpBins - 1, idx))
+            bins.set(idx, bins.get(idx) + volume[i])
+        pocIdx = 0
+        pocVol = 0.0
+        for i = 0 to vpBins - 1
+            v = bins.get(i)
+            if v > pocVol
+                pocVol := v
+                pocIdx := i
+        totalVol = 0.0
+        for i = 0 to vpBins - 1
+            totalVol += bins.get(i)
+        target = totalVol * 0.70
+        accum = bins.get(pocIdx)
+        lo = pocIdx
+        hi = pocIdx
+        while accum < target and (lo > 0 or hi < vpBins - 1)
+            lv = lo > 0 ? bins.get(lo - 1) : -1.0
+            hv = hi < vpBins - 1 ? bins.get(hi + 1) : -1.0
+            if hv >= lv
+                hi += 1
+                accum += hv
+            else
+                lo -= 1
+                accum += lv
+        pocPrice := pmin + (pocIdx + 0.5) * binSize
+        valPrice := pmin + lo * binSize
+        vahPrice := pmin + (hi + 1) * binSize
+        if showVP
+            if not na(pocLine)
+                line.delete(pocLine)
+                line.delete(vahLine)
+                line.delete(valLine)
+            pocLine := line.new(bar_index - vpLookback, pocPrice, bar_index, pocPrice,
+                 extend=extend.right, color=color.new(color.yellow, 0), width=2)
+            vahLine := line.new(bar_index - vpLookback, vahPrice, bar_index, vahPrice,
+                 extend=extend.right, color=color.new(color.yellow, 60), width=1)
+            valLine := line.new(bar_index - vpLookback, valPrice, bar_index, valPrice,
+                 extend=extend.right, color=color.new(color.yellow, 60), width=1)
+
+atr14 = ta.atr(14)
+nearPoc = not na(pocPrice) and math.abs(close - pocPrice) < 0.5 * atr14
+nearVal = not na(valPrice) and math.abs(close - valPrice) < 0.5 * atr14
+nearVah = not na(vahPrice) and math.abs(close - vahPrice) < 0.5 * atr14
+
+vpScore = 0.0
+if nearVal and close > valPrice
+    vpScore := 1.0
+else if nearVah and close < vahPrice
+    vpScore := -1.0
+else if nearPoc and close > open
+    vpScore := 0.5
+else if nearPoc and close < open
+    vpScore := -0.5
+
+// ---------- Fibonacci auto-draw ----------
+gFIB = "Style A · Fibonacci"
+fibLookback = input.int(120, "Fib swing lookback", minval=20, group=gFIB)
+showFib     = input.bool(true, "Draw fib levels", group=gFIB)
+
+var line[] fibLines = array.new_line()
+var float fibAnchorHi = na
+var float fibAnchorLo = na
+var int   fibAnchorHiBar = na
+var int   fibAnchorLoBar = na
+
+fibLevels = array.from(0.236, 0.382, 0.5, 0.618, 0.786, 1.272, 1.618, 2.618)
+
+if isLong and (bar_index % vpRefresh == 0 or barstate.islast)
+    swingHi = ta.highest(high, fibLookback)
+    swingLo = ta.lowest(low,   fibLookback)
+    hiBar = bar_index + ta.highestbars(high, fibLookback)
+    loBar = bar_index + ta.lowestbars(low,  fibLookback)
+    fibAnchorHi := swingHi
+    fibAnchorLo := swingLo
+    fibAnchorHiBar := hiBar
+    fibAnchorLoBar := loBar
+    if showFib
+        for i = 0 to array.size(fibLines) - 1
+            line.delete(array.get(fibLines, i))
+        array.clear(fibLines)
+        // Direction: if last extreme is the high, retracement goes high->low
+        upTrend = loBar < hiBar  // low formed before high → uptrend
+        for i = 0 to array.size(fibLevels) - 1
+            f = array.get(fibLevels, i)
+            price = upTrend ? swingHi - (swingHi - swingLo) * f
+                            : swingLo + (swingHi - swingLo) * f
+            isExt = f > 1.0
+            col = isExt ? color.new(color.purple, 30) : color.new(color.teal, 30)
+            ln = line.new(math.min(hiBar, loBar), price, bar_index, price,
+                 extend=extend.right, color=col, width=1, style=line.style_dotted)
+            array.push(fibLines, ln)
+
+// Fib reaction score: in golden pocket (0.5–0.618) with bullish reversal.
+fibScore = 0.0
+if not na(fibAnchorHi) and not na(fibAnchorLo)
+    range_ = fibAnchorHi - fibAnchorLo
+    upTrendFib = fibAnchorLoBar < fibAnchorHiBar
+    f50  = upTrendFib ? fibAnchorHi - range_ * 0.5   : fibAnchorLo + range_ * 0.5
+    f618 = upTrendFib ? fibAnchorHi - range_ * 0.618 : fibAnchorLo + range_ * 0.618
+    f1272 = upTrendFib ? fibAnchorHi + range_ * 0.272 : fibAnchorLo - range_ * 0.272
+    f1618 = upTrendFib ? fibAnchorHi + range_ * 0.618 : fibAnchorLo - range_ * 0.618
+    inGoldenLong  = upTrendFib and low <= f50 and low >= f618 and close > open
+    inGoldenShort = not upTrendFib and high >= f50 and high <= f618 and close < open
+    rejectExtUp   = upTrendFib and high >= f1272 and close < open
+    rejectExtDn   = not upTrendFib and low  <= f1272 and close > open
+    if inGoldenLong
+        fibScore := 1.0
+    else if inGoldenShort
+        fibScore := -1.0
+    else if rejectExtUp
+        fibScore := -1.0
+    else if rejectExtDn
+        fibScore := 1.0
+
+// ---------- Style A composite ----------
+gComp = "Style A · Composite"
+wMA   = input.float(1.0, "Weight: MA",      group=gComp)
+wRSI  = input.float(1.5, "Weight: RSI/Div", group=gComp)
+wMACD = input.float(1.0, "Weight: MACD",    group=gComp)
+wBB   = input.float(0.5, "Weight: BB",      group=gComp)
+wVP   = input.float(1.0, "Weight: VP",      group=gComp)
+wFib  = input.float(1.0, "Weight: Fib",     group=gComp)
+buyTh = input.float(6.0, "Buy threshold",   group=gComp)
+sellTh= input.float(-6.0,"Sell threshold",  group=gComp)
+minBars = input.int(22, "Min bars between signals (~1mo on D)", minval=1, group=gComp)
+useHTF  = input.bool(true, "Require HTF trend agreement", group=gComp)
+htf     = input.timeframe("D", "HTF", group=gComp)
+
+htfSlowSma  = request.security(syminfo.tickerid, htf, ta.sma(close, slowSmaLen),
+     barmerge.gaps_off, barmerge.lookahead_off)
+htfTrendUp  = htfSlowSma > htfSlowSma[3]
+htfTrendDn  = htfSlowSma < htfSlowSma[3]
+
+rawScoreA = wMA*maScore + wRSI*rsiScore + wMACD*macdScore + wBB*bbScore + wVP*vpScore + wFib*fibScore
+volMult   = highVol ? 1.25 : 1.0
+scoreA    = rawScoreA * volMult
+
+var int lastSignalBarA = -10000
+canSignalA = bar_index - lastSignalBarA >= minBars
+buyA  = isLong and canSignalA and scoreA >=  buyTh and (not useHTF or not htfTrendDn)
+sellA = isLong and canSignalA and scoreA <=  sellTh and (not useHTF or not htfTrendUp)
+if buyA or sellA
+    lastSignalBarA := bar_index
+
+plotshape(buyA,  title="Style A BUY",  style=shape.circle,
+     location=location.belowbar, color=color.new(color.green, 0),
+     size=size.normal, text="A▲")
+plotshape(sellA, title="Style A SELL", style=shape.circle,
+     location=location.abovebar, color=color.new(color.red, 0),
+     size=size.normal, text="A▼")
+
+var bool inPosA = false
+if buyA
+    inPosA := true
+if sellA
+    inPosA := false
+bgcolor(inPosA and isLong ? color.new(color.green, 92) : na, title="Style A position bg")
+
+// ====================================================================
+// STYLE B — ICT price-action
+// ====================================================================
+gICT = "Style B · ICT"
+ictPivLen   = input.int(10, "Liquidity pivot length", minval=2, group=gICT)
+fvgMinAtrPct= input.float(25.0, "Min FVG size (% of ATR14)", minval=0, group=gICT)
+obLookback  = input.int(30,  "Order block lookback", minval=5, group=gICT)
+obDispMult  = input.float(1.0, "OB displacement (x ATR14)", group=gICT)
+smtSymbol   = input.symbol("", "SMT pair (blank = off)", group=gICT)
+ictHtf      = input.timeframe("60", "Liquidity sweep HTF", group=gICT)
+usePin      = input.bool(true, "Require pin-bar confirmation", group=gICT)
+ictBuyTh    = input.int(3, "ICT score >= for BUY",  minval=1, maxval=4, group=gICT)
+ictSellTh   = input.int(3, "ICT score >= for SELL", minval=1, maxval=4, group=gICT)
+ictCooldown = input.int(2, "ICT min bars between signals", minval=0, group=gICT)
+
+// ---------- Liquidity sweeps ----------
+swingHiPv = ta.pivothigh(high, ictPivLen, ictPivLen)
+swingLoPv = ta.pivotlow(low,   ictPivLen, ictPivLen)
+
+var float lastBSL = na  // buyside liquidity (recent swing high)
+var float lastSSL = na  // sellside liquidity (recent swing low)
+var int   lastBSLBar = na
+var int   lastSSLBar = na
+if not na(swingHiPv)
+    lastBSL := swingHiPv
+    lastBSLBar := bar_index - ictPivLen
+if not na(swingLoPv)
+    lastSSL := swingLoPv
+    lastSSLBar := bar_index - ictPivLen
+
+bullSweep = not na(lastSSL) and low < lastSSL and close > lastSSL
+bearSweep = not na(lastBSL) and high > lastBSL and close < lastBSL
+
+[htfHi, htfLo] = request.security(syminfo.tickerid, ictHtf,
+     [ta.pivothigh(high, 3, 3), ta.pivotlow(low, 3, 3)],
+     barmerge.gaps_off, barmerge.lookahead_off)
+var float htfBSL = na
+var float htfSSL = na
+if not na(htfHi)
+    htfBSL := htfHi
+if not na(htfLo)
+    htfSSL := htfLo
+htfBullSweep = not na(htfSSL) and low < htfSSL and close > htfSSL
+htfBearSweep = not na(htfBSL) and high > htfBSL and close < htfBSL
+
+if isICT and bullSweep
+    label.new(bar_index, low,  "SSL swept", style=label.style_triangleup,
+         color=color.new(color.lime, 0), textcolor=color.white, size=size.tiny)
+if isICT and bearSweep
+    label.new(bar_index, high, "BSL swept", style=label.style_triangledown,
+         color=color.new(color.red, 0),  textcolor=color.white, size=size.tiny)
+
+// ---------- Fair Value Gaps ----------
+type FVG
+    box  bx
+    float top
+    float bot
+    bool  bull
+    bool  inverted
+
+var array<FVG> fvgs = array.new<FVG>()
+
+minFvg = atr14 * fvgMinAtrPct / 100.0
+bullFvgNew = low > high[2] and close[1] > open[1] and (low - high[2]) >= minFvg
+bearFvgNew = high < low[2] and close[1] < open[1] and (low[2] - high) >= minFvg
+
+if isICT and bullFvgNew
+    bx = box.new(bar_index - 2, low, bar_index + 20, high[2],
+         border_color=color.new(color.green, 50),
+         bgcolor=color.new(color.green, 85), extend=extend.right)
+    array.push(fvgs, FVG.new(bx, low, high[2], true, false))
+if isICT and bearFvgNew
+    bx = box.new(bar_index - 2, low[2], bar_index + 20, high,
+         border_color=color.new(color.red, 50),
+         bgcolor=color.new(color.red, 85), extend=extend.right)
+    array.push(fvgs, FVG.new(bx, low[2], high, false, false))
+
+// Update FVGs: detect fill → invert; detect tap on inverted → fire flag.
+inversionTapBull = false
+inversionTapBear = false
+unfilledBullFvg = false
+unfilledBearFvg = false
+
+if array.size(fvgs) > 0
+    i = array.size(fvgs) - 1
+    while i >= 0
+        f = array.get(fvgs, i)
+        if not f.inverted
+            // Fill check
+            filled = f.bull ? close < f.bot : close > f.top
+            if filled
+                f.inverted := true
+                box.set_bgcolor(f.bx,
+                     f.bull ? color.new(color.maroon, 80) : color.new(color.lime, 80))
+                box.set_border_color(f.bx,
+                     f.bull ? color.new(color.maroon, 30) : color.new(color.lime, 30))
+            else
+                if f.bull and low <= f.top and high >= f.bot
+                    unfilledBullFvg := true
+                if (not f.bull) and high >= f.bot and low <= f.top
+                    unfilledBearFvg := true
+        else
+            // Inverted FVG acts as the opposite zone; tap fires entry flag.
+            inZone = high >= f.bot and low <= f.top
+            if f.bull and inZone and close < f.top
+                inversionTapBear := true
+            if (not f.bull) and inZone and close > f.bot
+                inversionTapBull := true
+        // Drop very old FVGs (>200 bars) to keep array bounded
+        if bar_index - box.get_left(f.bx) > 200
+            box.delete(f.bx)
+            array.remove(fvgs, i)
+        i -= 1
+
+// ---------- Order Blocks ----------
+type OB
+    box  bx
+    float top
+    float bot
+    bool  bull
+
+var array<OB> obs = array.new<OB>()
+
+displacement = math.abs(close - open) > obDispMult * atr14
+bullOBSetup = displacement and close > open and close[1] < open[1]
+bearOBSetup = displacement and close < open and close[1] > open[1]
+
+if isICT and bullOBSetup
+    bx = box.new(bar_index - 1, low[1], bar_index + obLookback, high[1],
+         border_color=color.new(color.aqua, 50),
+         bgcolor=color.new(color.aqua, 90), extend=extend.right)
+    array.push(obs, OB.new(bx, low[1], high[1], true))
+if isICT and bearOBSetup
+    bx = box.new(bar_index - 1, low[1], bar_index + obLookback, high[1],
+         border_color=color.new(color.fuchsia, 50),
+         bgcolor=color.new(color.fuchsia, 90), extend=extend.right)
+    array.push(obs, OB.new(bx, low[1], high[1], false))
+
+activeBullOB = false
+activeBearOB = false
+if array.size(obs) > 0
+    i = array.size(obs) - 1
+    while i >= 0
+        o = array.get(obs, i)
+        // Invalidate if fully traded through against direction.
+        invalid = o.bull ? close < o.bot : close > o.top
+        if invalid
+            box.delete(o.bx)
+            array.remove(obs, i)
+        else
+            if o.bull and low <= o.top and high >= o.bot
+                activeBullOB := true
+            if (not o.bull) and low <= o.top and high >= o.bot
+                activeBearOB := true
+            if bar_index - box.get_left(o.bx) > 300
+                box.delete(o.bx)
+                array.remove(obs, i)
+        i -= 1
+
+// ---------- SMT divergence ----------
+useSmt = str.length(smtSymbol) > 0
+smtSymToUse = useSmt ? smtSymbol : syminfo.tickerid
+[smtPhRaw, smtPlRaw] = request.security(smtSymToUse, timeframe.period,
+     [ta.pivothigh(high, ictPivLen, ictPivLen),
+      ta.pivotlow(low,  ictPivLen, ictPivLen)],
+     barmerge.gaps_off, barmerge.lookahead_off)
+smtPh = useSmt ? smtPhRaw : float(na)
+smtPl = useSmt ? smtPlRaw : float(na)
+
+var float lastChartHi = na
+var float lastChartLo = na
+var float lastSmtHi   = na
+var float lastSmtLo   = na
+
+bullSMT = false
+bearSMT = false
+
+if not na(swingHiPv)
+    if not na(lastChartHi) and not na(smtPh) and not na(lastSmtHi)
+        if swingHiPv > lastChartHi and smtPh < lastSmtHi
+            bearSMT := true
+    lastChartHi := swingHiPv
+    if not na(smtPh)
+        lastSmtHi := smtPh
+if not na(swingLoPv)
+    if not na(lastChartLo) and not na(smtPl) and not na(lastSmtLo)
+        if swingLoPv < lastChartLo and smtPl > lastSmtLo
+            bullSMT := true
+    lastChartLo := swingLoPv
+    if not na(smtPl)
+        lastSmtLo := smtPl
+
+// ---------- Pin bar / confirmation ----------
+rng = high - low
+body = math.abs(close - open)
+bullPin = rng > 0 and (close - low) / rng > 0.66 and body / rng < 0.33
+bearPin = rng > 0 and (high - close) / rng > 0.66 and body / rng < 0.33
+
+freshBullFvg = bullFvgNew
+freshBearFvg = bearFvgNew
+
+bullConfirm = (bullPin and (activeBullOB or unfilledBullFvg or inversionTapBull or bullSweep)) or freshBullFvg
+bearConfirm = (bearPin and (activeBearOB or unfilledBearFvg or inversionTapBear or bearSweep)) or freshBearFvg
+
+// ---------- External liquidity targets ----------
+var float tp1Long  = na
+var float tp1Short = na
+if not na(swingHiPv)
+    tp1Long := swingHiPv
+if not na(swingLoPv)
+    tp1Short := swingLoPv
+
+// ---------- ICT score ----------
+ictBullScore = 0
+ictBearScore = 0
+if bullSweep or htfBullSweep
+    ictBullScore += 1
+if bearSweep or htfBearSweep
+    ictBearScore += 1
+if bullSMT
+    ictBullScore += 1
+if bearSMT
+    ictBearScore += 1
+if unfilledBullFvg or activeBullOB or inversionTapBull
+    ictBullScore += 1
+if unfilledBearFvg or activeBearOB or inversionTapBear
+    ictBearScore += 1
+if (usePin and bullConfirm) or (not usePin and (bullPin or freshBullFvg))
+    ictBullScore += 1
+if (usePin and bearConfirm) or (not usePin and (bearPin or freshBearFvg))
+    ictBearScore += 1
+
+var int lastIctSignalBar = -10000
+canIctSignal = bar_index - lastIctSignalBar >= ictCooldown
+buyB  = isICT and canIctSignal and ictBullScore >= ictBuyTh
+sellB = isICT and canIctSignal and ictBearScore >= ictSellTh
+if buyB or sellB
+    lastIctSignalBar := bar_index
+
+plotshape(buyB,  title="ICT BUY",  style=shape.triangleup,
+     location=location.belowbar, color=color.new(color.lime, 0),
+     size=size.normal, text="ICT▲")
+plotshape(sellB, title="ICT SELL", style=shape.triangledown,
+     location=location.abovebar, color=color.new(color.fuchsia, 0),
+     size=size.normal, text="ICT▼")
+
+// Plot the ICT stop & TP suggestions on the entry bar.
+var line stopLine = na
+var line tp1Line  = na
+if buyB
+    longStop = ta.lowest(low, 5)
+    if not na(stopLine)
+        line.delete(stopLine)
+        line.delete(tp1Line)
+    stopLine := line.new(bar_index, longStop, bar_index + 20, longStop,
+         color=color.new(color.red, 0), width=1, style=line.style_dashed)
+    if not na(tp1Long)
+        tp1Line := line.new(bar_index, tp1Long, bar_index + 20, tp1Long,
+             color=color.new(color.green, 0), width=1, style=line.style_dashed)
+if sellB
+    shortStop = ta.highest(high, 5)
+    if not na(stopLine)
+        line.delete(stopLine)
+        line.delete(tp1Line)
+    stopLine := line.new(bar_index, shortStop, bar_index + 20, shortStop,
+         color=color.new(color.red, 0), width=1, style=line.style_dashed)
+    if not na(tp1Short)
+        tp1Line := line.new(bar_index, tp1Short, bar_index + 20, tp1Short,
+             color=color.new(color.green, 0), width=1, style=line.style_dashed)
+
+// ====================================================================
+// Status table
+// ====================================================================
+var table dash = table.new(position.top_right, 3, 9,
+     bgcolor=color.new(color.black, 80), border_width=1)
+
+f_color(s) =>
+    s > 0 ? color.new(color.green, 0) : s < 0 ? color.new(color.red, 0) : color.new(color.gray, 0)
+
+if barstate.islast
+    table.cell(dash, 0, 0, "Component", text_color=color.white, bgcolor=color.new(color.gray, 60))
+    table.cell(dash, 1, 0, "Score",     text_color=color.white, bgcolor=color.new(color.gray, 60))
+    table.cell(dash, 2, 0, "State",     text_color=color.white, bgcolor=color.new(color.gray, 60))
+
+    table.cell(dash, 0, 1, "MA")
+    table.cell(dash, 1, 1, str.tostring(maScore, "#.##"), bgcolor=f_color(maScore), text_color=color.white)
+    table.cell(dash, 2, 1, barsSinceGolden < barsSinceDeath ? "Golden " + str.tostring(barsSinceGolden) + "b" : "Death " + str.tostring(barsSinceDeath) + "b")
+
+    table.cell(dash, 0, 2, "RSI/Div")
+    table.cell(dash, 1, 2, str.tostring(rsiScore, "#.##"), bgcolor=f_color(rsiScore), text_color=color.white)
+    rsiState = regBullDiv ? "Reg Bull" : regBearDiv ? "Reg Bear" : hidBullDiv ? "Hid Bull" : hidBearDiv ? "Hid Bear" : str.tostring(rsi, "#.#")
+    table.cell(dash, 2, 2, rsiState)
+
+    table.cell(dash, 0, 3, "MACD")
+    table.cell(dash, 1, 3, str.tostring(macdScore, "#.##"), bgcolor=f_color(macdScore), text_color=color.white)
+    table.cell(dash, 2, 3, str.tostring(macdHist, "#.####"))
+
+    table.cell(dash, 0, 4, "BB")
+    table.cell(dash, 1, 4, str.tostring(bbScore, "#.##"), bgcolor=f_color(bbScore), text_color=color.white)
+    table.cell(dash, 2, 4, bbSqueeze ? "Squeeze" : "Normal")
+
+    table.cell(dash, 0, 5, "VP (매물대)")
+    table.cell(dash, 1, 5, str.tostring(vpScore, "#.##"), bgcolor=f_color(vpScore), text_color=color.white)
+    vpState = nearPoc ? "@POC" : nearVal ? "@VAL" : nearVah ? "@VAH" : "—"
+    table.cell(dash, 2, 5, vpState)
+
+    table.cell(dash, 0, 6, "Fib")
+    table.cell(dash, 1, 6, str.tostring(fibScore, "#.##"), bgcolor=f_color(fibScore), text_color=color.white)
+    table.cell(dash, 2, 6, "—")
+
+    table.cell(dash, 0, 7, "Style A", bgcolor=color.new(color.navy, 60), text_color=color.white)
+    table.cell(dash, 1, 7, str.tostring(scoreA, "#.##"), bgcolor=f_color(scoreA), text_color=color.white)
+    verdictA = buyA ? "BUY" : sellA ? "SELL" : inPosA ? "HOLD long" : "FLAT"
+    table.cell(dash, 2, 7, verdictA, text_color=color.white)
+
+    table.cell(dash, 0, 8, "Style B (ICT)", bgcolor=color.new(color.navy, 60), text_color=color.white)
+    table.cell(dash, 1, 8, "+" + str.tostring(ictBullScore) + " / -" + str.tostring(ictBearScore))
+    verdictB = buyB ? "BUY" : sellB ? "SELL" : "—"
+    table.cell(dash, 2, 8, verdictB, text_color=color.white)
+
+// ====================================================================
+// Alerts (free TV: alertcondition; webhook-ready: alert() JSON)
+// ====================================================================
+alertcondition(buyA,  "WH Style A BUY",  "WH-A BUY {{ticker}} @ {{close}}")
+alertcondition(sellA, "WH Style A SELL", "WH-A SELL {{ticker}} @ {{close}}")
+alertcondition(buyB,  "WH Style B BUY",  "WH-B BUY {{ticker}} @ {{close}}")
+alertcondition(sellB, "WH Style B SELL", "WH-B SELL {{ticker}} @ {{close}}")
+
+if buyA
+    alert('{"action":"buy","style":"A","ticker":"' + syminfo.ticker +
+         '","price":' + str.tostring(close) + ',"score":' + str.tostring(scoreA) + '}',
+         alert.freq_once_per_bar_close)
+if sellA
+    alert('{"action":"sell","style":"A","ticker":"' + syminfo.ticker +
+         '","price":' + str.tostring(close) + ',"score":' + str.tostring(scoreA) + '}',
+         alert.freq_once_per_bar_close)
+if buyB
+    alert('{"action":"buy","style":"B","ticker":"' + syminfo.ticker +
+         '","price":' + str.tostring(close) +
+         ',"stop":' + str.tostring(ta.lowest(low, 5)) +
+         ',"tp1":' + str.tostring(tp1Long) + '}',
+         alert.freq_once_per_bar_close)
+if sellB
+    alert('{"action":"sell","style":"B","ticker":"' + syminfo.ticker +
+         '","price":' + str.tostring(close) +
+         ',"stop":' + str.tostring(ta.highest(high, 5)) +
+         ',"tp1":' + str.tostring(tp1Short) + '}',
+         alert.freq_once_per_bar_close)
