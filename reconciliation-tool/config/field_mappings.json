@@ -134,7 +134,7 @@
         "term_date":          { "columns": ["policyTermDate"], "type": "date" },
         "term_reason_code":   { "columns": ["termReasonCode"], "transform": "trim" },
         "plan_name":          { "columns": ["planName"], "transform": "trim" },
-        "individual_id":      { "columns": ["individualID"], "transform": "trim" },
+        "uhc_individual_id":  { "columns": ["individualID"], "transform": "trim" },
         "agent_of_record":    { "columns": ["Agent of Record", "agentName"], "transform": "trim" },
         "contract":           { "columns": ["contract"], "transform": "trim" },
         "email":              { "columns": ["memberEmail"], "transform": "trim" },
@@ -147,6 +147,11 @@
     "humana_bob": {
       "label": "Humana Book of Business",
       "header_required": ["Humana ID"],
+      "history": {
+        "group_by": "member_id",
+        "latest_by": ["status_date", "effective_date"],
+        "preferred_status": ["ACTIVE", "PENDING", "INACTIVE", "TERMINATED", "CANCELLED", "REJECTED"]
+      },
       "fields": {
         "last_name":              { "columns": ["MbrLastName"], "transform": "trim" },
         "first_name":             { "columns": ["MbrFirstName"], "transform": "trim" },
