@@ -150,7 +150,7 @@
       "history": {
         "group_by": "member_id",
         "latest_by": ["status_date", "effective_date"],
-        "preferred_status": ["ACTIVE", "PENDING", "INACTIVE", "TERMINATED", "CANCELLED", "REJECTED"]
+        "preferred_status": ["ACTIVE POLICY", "FUTURE ACTIVE POLICY", "INACTIVE POLICY"]
       },
       "fields": {
         "last_name":              { "columns": ["MbrLastName"], "transform": "trim" },

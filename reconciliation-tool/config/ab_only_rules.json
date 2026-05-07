@@ -31,9 +31,9 @@
   "policy_types_medsup":   ["MEDSUP", "MEDICARE SUPPLEMENT", "SUPPLEMENT", "MED SUP"],
   "policy_types_pdp":      ["PDP", "PART D", "PRESCRIPTION DRUG"],
   "policy_types_life":     ["LIFE", "LIFE INSURANCE"],
-  "active_status_values":   ["ACTIVE"],
+  "active_status_values":   ["ACTIVE", "ACTIVE POLICY", "FUTURE ACTIVE POLICY"],
   "pending_status_values":  ["PENDING"],
-  "inactive_status_values": ["INACTIVE", "TERMINATED", "TERM", "CANCELED", "CANCELLED", "LAPSED", "REJECTED"],
+  "inactive_status_values": ["INACTIVE", "INACTIVE POLICY", "TERMINATED", "TERM", "CANCELED", "CANCELLED", "LAPSED", "REJECTED"],
   "humana_carrier_keys":    ["humana"],
   "pending_max_days":       15
 }
