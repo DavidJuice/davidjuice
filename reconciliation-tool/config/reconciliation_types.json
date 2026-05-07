@@ -4,13 +4,13 @@
     {
       "id": "ab_internal",
       "label": "AgencyBloc internal consistency (Individual ↔ Policy)",
-      "description": "Find clients in the Individual report missing from the Policy report and vice versa, and surface mismatches in agent, plan, status, or effective date.",
+      "description": "Find clients in the Individual report missing from the Policy report and vice versa, and surface mismatches in agent, plan, or denormalized status. AB Individual carries no policy_number/member_id, so the match falls back to MBI then name+DOB; the absence of a match becomes the exception.",
       "left": "ab_individual",
       "right": "ab_policy",
       "required_uploads": ["ab_individual", "ab_policy"],
-      "match_keys": ["mbi", "member_id", "policy_number", "name_dob"],
-      "compare_fields": ["agent_of_record", "plan_name", "status", "effective_date", "term_date"],
-      "allow_fuzzy": false
+      "match_keys": ["mbi", "name_dob"],
+      "compare_fields": ["agent_of_record", "plan_name", "status"],
+      "allow_fuzzy": true
     },
     {
       "id": "ab_only_rules",
@@ -23,25 +23,24 @@
     {
       "id": "ab_vs_uhc",
       "label": "AgencyBloc ↔ United Healthcare Book of Business",
-      "description": "Compare AgencyBloc Individual data against UHC's Book of Business. Surfaces policies missing from either side and field mismatches. Treats UHC as source of truth: any UHC-active member missing or inactive in AB is flagged.",
+      "description": "Compare AgencyBloc Individual data against UHC's Book of Business. AB Individual carries no carrier-side member ID, so the match is MBI when present, name+DOB otherwise, with fuzzy as backstop. Treats UHC as source of truth: any UHC-active member missing or inactive in AB is flagged.",
       "left": "ab_individual",
       "right": "uhc_bob",
       "required_uploads": ["ab_individual", "uhc_bob"],
-      "match_keys": ["mbi", "member_id", "policy_number", "name_dob"],
-      "compare_fields": ["plan_name", "status", "effective_date", "term_date", "agent_of_record"],
+      "match_keys": ["mbi", "name_dob"],
+      "compare_fields": ["plan_name", "status", "agent_of_record"],
       "allow_fuzzy": true,
       "bob_source_of_truth": true
     },
     {
       "id": "ab_vs_humana",
       "label": "AgencyBloc ↔ Humana Book of Business",
-      "description": "Compare AgencyBloc Individual data against Humana's Book of Business. Humana's per-policy event history is collapsed to the latest event per policy before comparison. AB and Humana intentionally hold different policy numbers, so policy_number is NOT used as a match key here.",
+      "description": "Compare AgencyBloc Individual data against Humana's Book of Business. Humana's per-policy event history is collapsed to the latest event per policy before comparison. AB Individual carries no member_id/policy_number, so the match is MBI when present, name+DOB otherwise, with fuzzy as backstop.",
       "left": "ab_individual",
       "right": "humana_bob",
       "required_uploads": ["ab_individual", "humana_bob"],
-      "match_keys": ["mbi", "member_id", "policy_number", "name_dob"],
-      "skip_keys": ["policy_number"],
-      "compare_fields": ["plan_name", "status", "effective_date", "term_date", "agent_of_record"],
+      "match_keys": ["mbi", "name_dob"],
+      "compare_fields": ["plan_name", "status", "agent_of_record"],
       "allow_fuzzy": true,
       "bob_source_of_truth": true
     }
