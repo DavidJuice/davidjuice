@@ -25,14 +25,11 @@ RECON.startReconciliation = function () {
 };
 
 function knownSources() {
-  // Aggregate every required + optional source across all reconciliation types,
-  // plus the AB Customer file (used by rule 10 and Data Search later on).
   var seen = {};
   var order = [];
   function add(src) { if (!seen[src]) { seen[src] = true; order.push(src); } }
   add('ab_individual');
   add('ab_policy');
-  add('ab_customer');
   (RECON.state.catalog || []).forEach(function (t) {
     (t.required_uploads || []).forEach(add);
     (t.optional_uploads || []).forEach(add);
@@ -44,7 +41,6 @@ function prettySource(src) {
   switch (src) {
     case 'ab_individual': return 'AgencyBloc Individual Report';
     case 'ab_policy':     return 'AgencyBloc Policy Report';
-    case 'ab_customer':   return 'AgencyBloc Customer Report';
     case 'uhc_bob':       return 'UnitedHealthcare Book of Business';
     case 'humana_bob':    return 'Humana Book of Business';
   }

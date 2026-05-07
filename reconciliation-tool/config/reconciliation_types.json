@@ -1,14 +1,14 @@
 {
-  "version": 2,
+  "version": 3,
   "types": [
     {
       "id": "ab_internal",
       "label": "AgencyBloc internal consistency (Individual ↔ Policy)",
-      "description": "Find clients in the Individual report missing from the Policy report and vice versa, and surface mismatches in agent, plan, or denormalized status. AB Individual carries no policy_number/member_id, so the match falls back to MBI then name+DOB; the absence of a match becomes the exception.",
+      "description": "Find clients in the Individual report missing from the Policy report and vice versa, and surface mismatches in agent, plan, or denormalized status. Individual ID is a true foreign key on the Policy report and is the primary match key; MBI and name+DOB are fallbacks.",
       "left": "ab_individual",
       "right": "ab_policy",
       "required_uploads": ["ab_individual", "ab_policy"],
-      "match_keys": ["mbi", "name_dob"],
+      "match_keys": ["individual_id", "mbi", "name_dob"],
       "compare_fields": ["agent_of_record", "plan_name", "status"],
       "allow_fuzzy": true
     },
@@ -17,30 +17,29 @@
       "label": "AgencyBloc internal data quality rules",
       "description": "Run the 10 AB-only consistency rules across Individual + Policy reports (type/status, policy combinations, identifier identity, date ordering, missing signing agents, pending-too-long, backfill suggestions, etc.).",
       "engine": "ab_only",
-      "required_uploads": ["ab_individual", "ab_policy"],
-      "optional_uploads": ["ab_customer"]
+      "required_uploads": ["ab_individual", "ab_policy"]
     },
     {
       "id": "ab_vs_uhc",
       "label": "AgencyBloc ↔ United Healthcare Book of Business",
-      "description": "Compare AgencyBloc Individual data against UHC's Book of Business. AB Individual carries no carrier-side member ID, so the match is MBI when present, name+DOB otherwise, with fuzzy as backstop. Treats UHC as source of truth: any UHC-active member missing or inactive in AB is flagged.",
-      "left": "ab_individual",
+      "description": "Compare AgencyBloc Policy data against UHC's Book of Business. UHC's policyId column carries both the policy number and the member ID (they are identical for UHC), and matches AB Policy.Member ID / AB Policy.Policy Number. Match priority is member_id → policy_number → MBI → name+DOB, with fuzzy as backstop. Treats UHC as source of truth: any UHC-active member missing or inactive in AB is flagged.",
+      "left": "ab_policy",
       "right": "uhc_bob",
-      "required_uploads": ["ab_individual", "uhc_bob"],
-      "match_keys": ["mbi", "name_dob"],
-      "compare_fields": ["plan_name", "status", "agent_of_record"],
+      "required_uploads": ["ab_policy", "uhc_bob"],
+      "match_keys": ["member_id", "policy_number", "mbi", "name_dob"],
+      "compare_fields": ["plan_name", "status", "effective_date", "term_date", "agent_of_record"],
       "allow_fuzzy": true,
       "bob_source_of_truth": true
     },
     {
       "id": "ab_vs_humana",
       "label": "AgencyBloc ↔ Humana Book of Business",
-      "description": "Compare AgencyBloc Individual data against Humana's Book of Business. Humana's per-policy event history is collapsed to the latest event per policy before comparison. AB Individual carries no member_id/policy_number, so the match is MBI when present, name+DOB otherwise, with fuzzy as backstop.",
-      "left": "ab_individual",
+      "description": "Compare AgencyBloc Policy data against Humana's Book of Business. Humana's `Humana ID` column matches AB Policy.Member ID. The Humana BoB does not carry a policy number, so the match is member_id → MBI → name+DOB with fuzzy as backstop.",
+      "left": "ab_policy",
       "right": "humana_bob",
-      "required_uploads": ["ab_individual", "humana_bob"],
-      "match_keys": ["mbi", "name_dob"],
-      "compare_fields": ["plan_name", "status", "agent_of_record"],
+      "required_uploads": ["ab_policy", "humana_bob"],
+      "match_keys": ["member_id", "mbi", "name_dob"],
+      "compare_fields": ["plan_name", "status", "effective_date", "term_date", "agent_of_record"],
       "allow_fuzzy": true,
       "bob_source_of_truth": true
     }
