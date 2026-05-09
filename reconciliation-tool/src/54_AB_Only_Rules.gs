@@ -66,56 +66,93 @@ function rule1_typeStatusConsistency(individuals, cfg) {
 }
 
 // ---- Rule 2 ----
+//
+// Categorizes each ACTIVE policy into a coverage-type "category" (part_c,
+// medsup, pdp, aca, apple, chm, non_aca, annuity, life, home, auto) using
+// alias lists in ab_only_rules.json. Then walks `forbidden_active_combinations`
+// from the config and flags any member whose active policies fall in two
+// categories the agency has declared mutually exclusive.
+//
+// A separate "duplicate Part C" check fires when a single member has more
+// than one active Part C policy.
+
 function rule2_policyTypeCombinations(policies, cfg) {
   var out = [];
-  var partC  = upperSet_(cfg.policy_types_part_c);
-  var medsup = upperSet_(cfg.policy_types_medsup);
-  var pdp    = upperSet_(cfg.policy_types_pdp);
   var active = upperSet_(cfg.active_status_values);
+  var categorySets = buildCategorySets_(cfg);
+  var partC = categorySets.part_c || {};
 
   var byMember = {};
   for (var i = 0; i < policies.length; i++) {
     var p = policies[i];
-    var status = String(p.status || '').toUpperCase();
-    if (!active[status]) continue;
+    if (!active[String(p.status || '').toUpperCase()]) continue;
     var key = p.member_id || (p.first_name + '|' + p.last_name + '|' + p.dob);
     if (!key) continue;
-    if (!byMember[key]) byMember[key] = [];
-    byMember[key].push(p);
+    (byMember[key] = byMember[key] || []).push(p);
   }
+
+  var forbidden = cfg.forbidden_active_combinations || [];
 
   for (var k in byMember) {
     var bucket = byMember[k];
-    var partCCount = 0, hasMedSup = false, hasPDP = false;
-    var typesSeen = [];
-    for (var j = 0; j < bucket.length; j++) {
-      var t = String(bucket[j].policy_type || '').toUpperCase();
-      typesSeen.push(t);
-      if (partC[t]) partCCount++;
-      if (medsup[t]) hasMedSup = true;
-      if (pdp[t]) hasPDP = true;
+    var policiesByCategory = classifyBucket_(bucket, categorySets);
+
+    // Duplicate-Part-C check (independent of forbidden_active_combinations).
+    var partCBucket = policiesByCategory.part_c || [];
+    if (partCBucket.length > 1) {
+      for (var b = 0; b < partCBucket.length; b++) {
+        out.push(violation_('rule2_duplicate_part_c', SEVERITY.ERROR,
+          'member has ' + partCBucket.length + ' active Part C policies (max 1 allowed)',
+          partCBucket[b]));
+      }
     }
-    if (partCCount > 1) {
-      for (var b = 0; b < bucket.length; b++) {
-        if (partC[String(bucket[b].policy_type || '').toUpperCase()]) {
-          out.push(violation_('rule2_duplicate_part_c', SEVERITY.ERROR,
-            'member has ' + partCCount + ' active Part C policies (max 1 allowed)',
-            bucket[b]));
+
+    // Forbidden-combination dispatch.
+    for (var f = 0; f < forbidden.length; f++) {
+      var rule = forbidden[f];
+      var cats = rule.categories || [];
+      if (cats.length < 2) continue;
+      var allPresent = true;
+      for (var c = 0; c < cats.length; c++) {
+        if (!(policiesByCategory[cats[c]] && policiesByCategory[cats[c]].length)) {
+          allPresent = false;
+          break;
+        }
+      }
+      if (!allPresent) continue;
+      // Flag every policy that participates in any of the forbidden categories.
+      var flagged = {};
+      for (var c2 = 0; c2 < cats.length; c2++) {
+        var pols = policiesByCategory[cats[c2]] || [];
+        for (var pi = 0; pi < pols.length; pi++) {
+          if (flagged[pols[pi].__src_row]) continue;
+          flagged[pols[pi].__src_row] = true;
+          out.push(violation_(rule.id, SEVERITY.ERROR, rule.message, pols[pi]));
         }
       }
     }
-    if (partCCount >= 1 && hasMedSup) {
-      for (var b2 = 0; b2 < bucket.length; b2++) {
-        out.push(violation_('rule2_part_c_with_medsup', SEVERITY.ERROR,
-          'member has active Part C and active MedSup simultaneously',
-          bucket[b2]));
-      }
+  }
+  return out;
+}
+
+function buildCategorySets_(cfg) {
+  var out = {};
+  for (var k in cfg) {
+    if (k.indexOf('policy_types_') === 0) {
+      out[k.substring('policy_types_'.length)] = upperSet_(cfg[k]);
     }
-    if (partCCount >= 1 && hasPDP) {
-      for (var b3 = 0; b3 < bucket.length; b3++) {
-        out.push(violation_('rule2_part_c_with_pdp', SEVERITY.ERROR,
-          'member has active Part C and active PDP simultaneously',
-          bucket[b3]));
+  }
+  return out;
+}
+
+function classifyBucket_(bucket, categorySets) {
+  var out = {};
+  for (var i = 0; i < bucket.length; i++) {
+    var t = String(bucket[i].policy_type || '').toUpperCase();
+    if (!t) continue;
+    for (var cat in categorySets) {
+      if (categorySets[cat][t]) {
+        (out[cat] = out[cat] || []).push(bucket[i]);
       }
     }
   }

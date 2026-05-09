@@ -52,6 +52,20 @@ function abRulesTestCfg_() {
     policy_types_medsup:   ['MEDSUP'],
     policy_types_pdp:      ['PDP'],
     policy_types_life:     ['LIFE'],
+    policy_types_aca:      ['ACA', 'ACA(INDV. HEALTH)'],
+    policy_types_apple:    ['APPLE', 'APPLE HEALTH'],
+    policy_types_chm:      ['CHM'],
+    policy_types_non_aca:  ['NON-ACA'],
+    policy_types_annuity:  ['ANNUITY'],
+    policy_types_home:     ['HOME'],
+    policy_types_auto:     ['AUTO'],
+    forbidden_active_combinations: [
+      { id: 'rule2_aca_with_part_c',    categories: ['aca', 'part_c'],    message: 'ACA + Part C' },
+      { id: 'rule2_aca_with_apple',     categories: ['aca', 'apple'],     message: 'ACA + Apple' },
+      { id: 'rule2_part_c_with_apple',  categories: ['part_c', 'apple'],  message: 'Part C + Apple' },
+      { id: 'rule2_part_c_with_medsup', categories: ['part_c', 'medsup'], message: 'Part C + MedSup' },
+      { id: 'rule2_part_c_with_pdp',    categories: ['part_c', 'pdp'],    message: 'Part C + PDP' }
+    ],
     active_status_values:   ['ACTIVE'],
     pending_status_values:  ['PENDING'],
     inactive_status_values: ['INACTIVE', 'TERMINATED'],
@@ -85,11 +99,97 @@ function test_rule2_part_c_combinations() {
     { member_id: 'M3', policy_type: 'Life',   status: 'ACTIVE', __src_row: 7 }  // multiple Life is OK
   ];
   var v = rule2_policyTypeCombinations(policies, cfg);
-  // M1 -> 2 duplicate-part-c violations (one per row); M2 -> 2 part-c-with-medsup (one per row)
   var dup = v.filter(function (x) { return x.rule_id === 'rule2_duplicate_part_c'; });
   var combo = v.filter(function (x) { return x.rule_id === 'rule2_part_c_with_medsup'; });
   assertEqual(dup.length, 2, 'duplicate Part C flagged on each offending row');
   assertEqual(combo.length, 2, 'Part C + MedSup flagged on each row in the offending bucket');
+}
+
+function test_rule2_aca_with_part_c() {
+  var cfg = abRulesTestCfg_();
+  var policies = [
+    { member_id: 'M1', policy_type: 'ACA(Indv. Health)', status: 'ACTIVE', __src_row: 2 },
+    { member_id: 'M1', policy_type: 'Part C',            status: 'ACTIVE', __src_row: 3 }
+  ];
+  var v = rule2_policyTypeCombinations(policies, cfg);
+  var hits = v.filter(function (x) { return x.rule_id === 'rule2_aca_with_part_c'; });
+  assertEqual(hits.length, 2, 'both ACA and Part C rows flagged when active simultaneously');
+}
+
+function test_rule2_aca_pending_does_not_trigger() {
+  // ACA active + Part C PENDING. PENDING is not active, so no rule2 violation
+  // fires (rule2 only inspects ACTIVE policies). Pending Part C is normal
+  // mid-conversion state.
+  var cfg = abRulesTestCfg_();
+  var policies = [
+    { member_id: 'M1', policy_type: 'ACA',    status: 'ACTIVE',  __src_row: 2 },
+    { member_id: 'M1', policy_type: 'Part C', status: 'PENDING', __src_row: 3 }
+  ];
+  var v = rule2_policyTypeCombinations(policies, cfg);
+  var hits = v.filter(function (x) { return x.rule_id === 'rule2_aca_with_part_c'; });
+  assertEqual(hits.length, 0, 'pending Part C alongside active ACA is not a Rule 2 violation');
+}
+
+function test_rule2_aca_with_apple() {
+  var cfg = abRulesTestCfg_();
+  var policies = [
+    { member_id: 'M1', policy_type: 'ACA',          status: 'ACTIVE', __src_row: 2 },
+    { member_id: 'M1', policy_type: 'Apple Health', status: 'ACTIVE', __src_row: 3 }
+  ];
+  var v = rule2_policyTypeCombinations(policies, cfg);
+  var hits = v.filter(function (x) { return x.rule_id === 'rule2_aca_with_apple'; });
+  assertEqual(hits.length, 2);
+}
+
+function test_rule2_part_c_with_apple() {
+  var cfg = abRulesTestCfg_();
+  var policies = [
+    { member_id: 'M1', policy_type: 'Part C',       status: 'ACTIVE', __src_row: 2 },
+    { member_id: 'M1', policy_type: 'Apple Health', status: 'ACTIVE', __src_row: 3 }
+  ];
+  var v = rule2_policyTypeCombinations(policies, cfg);
+  var hits = v.filter(function (x) { return x.rule_id === 'rule2_part_c_with_apple'; });
+  assertEqual(hits.length, 2);
+}
+
+function test_rule2_safe_combos_do_not_trigger() {
+  var cfg = abRulesTestCfg_();
+  var policies = [
+    // MedSup + PDP allowed
+    { member_id: 'M1', policy_type: 'MedSup', status: 'ACTIVE', __src_row: 2 },
+    { member_id: 'M1', policy_type: 'PDP',    status: 'ACTIVE', __src_row: 3 },
+    // CHM + Non-ACA allowed
+    { member_id: 'M2', policy_type: 'CHM',     status: 'ACTIVE', __src_row: 4 },
+    { member_id: 'M2', policy_type: 'NON-ACA', status: 'ACTIVE', __src_row: 5 },
+    // Annuity / Life / Home / Auto can pair with anything
+    { member_id: 'M3', policy_type: 'Part C',  status: 'ACTIVE', __src_row: 6 },
+    { member_id: 'M3', policy_type: 'Annuity', status: 'ACTIVE', __src_row: 7 },
+    { member_id: 'M3', policy_type: 'Life',    status: 'ACTIVE', __src_row: 8 },
+    { member_id: 'M3', policy_type: 'Auto',    status: 'ACTIVE', __src_row: 9 },
+    { member_id: 'M3', policy_type: 'Home',    status: 'ACTIVE', __src_row: 10 }
+  ];
+  var v = rule2_policyTypeCombinations(policies, cfg);
+  assertEqual(v.length, 0, 'MedSup+PDP, CHM+Non-ACA, and ancillary combos must not trigger');
+}
+
+function test_rule2_three_way_violation() {
+  // Member with all three of {ACA, Part C, Apple} active. Each pair is a
+  // distinct forbidden combo, so all three policies should be flagged
+  // (deduplicated per rule per row).
+  var cfg = abRulesTestCfg_();
+  var policies = [
+    { member_id: 'M1', policy_type: 'ACA',          status: 'ACTIVE', __src_row: 2 },
+    { member_id: 'M1', policy_type: 'Part C',       status: 'ACTIVE', __src_row: 3 },
+    { member_id: 'M1', policy_type: 'Apple Health', status: 'ACTIVE', __src_row: 4 }
+  ];
+  var v = rule2_policyTypeCombinations(policies, cfg);
+  // 3 forbidden pairs each flag 2 rows = 6 total exception entries.
+  // (each row appears in two pairs, but flagged separately per rule.)
+  var ids = {};
+  v.forEach(function (x) { ids[x.rule_id] = (ids[x.rule_id] || 0) + 1; });
+  assertEqual(ids.rule2_aca_with_part_c,   2);
+  assertEqual(ids.rule2_aca_with_apple,    2);
+  assertEqual(ids.rule2_part_c_with_apple, 2);
 }
 
 function test_rule3_active_policy_requires_client() {
