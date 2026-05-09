@@ -191,6 +191,33 @@ window.RECON = window.RECON || {};
         hint.textContent = parts.join('  •  ');
       })
       .iep_getSettings();
+    google.script.run
+      .withSuccessHandler(function (list) {
+        var ta = document.getElementById('iep_recipients');
+        if (ta) ta.value = (list || []).join('\n');
+      })
+      .iep_getRecipients();
+  }
+
+  function saveRecipients() {
+    var ta = document.getElementById('iep_recipients');
+    var statusEl = document.getElementById('iep_recipients_status');
+    var btn = document.getElementById('iep_btn_save_recipients');
+    var emails = (ta.value || '').split(/[\n,;]+/).map(function (s) { return s.trim(); }).filter(function (s) { return !!s; });
+    btn.disabled = true;
+    statusEl.textContent = 'Saving…';
+    google.script.run
+      .withSuccessHandler(function (clean) {
+        ta.value = clean.join('\n');
+        statusEl.textContent = 'Saved (' + clean.length + ' recipient(s)).';
+        btn.disabled = false;
+        loadSettingsHint();
+      })
+      .withFailureHandler(function (err) {
+        statusEl.textContent = String(err.message || err);
+        btn.disabled = false;
+      })
+      .iep_setRecipients(emails);
   }
 
   RECON.startMedicareIEP = function () {
@@ -236,6 +263,8 @@ window.RECON = window.RECON || {};
     if (runFolderBtn) runFolderBtn.addEventListener('click', runFromDriveFolder);
     var emailBtn = document.getElementById('iep_btn_email');
     if (emailBtn) emailBtn.addEventListener('click', emailLastReport);
+    var saveRecipBtn = document.getElementById('iep_btn_save_recipients');
+    if (saveRecipBtn) saveRecipBtn.addEventListener('click', saveRecipients);
   });
 })();
 </script>

@@ -46,7 +46,28 @@ function runAllTests() {
     'test_rule9_date_ordering',
     'test_rule10_backfill_from_active_policy',
     'test_bob_source_of_truth_emits_when_ab_missing',
-    'test_mbi_gate_via_resolveAlias'
+    'test_mbi_gate_via_resolveAlias',
+    // Rule 2 expansion
+    'test_rule2_aca_with_part_c',
+    'test_rule2_aca_pending_does_not_trigger',
+    'test_rule2_aca_with_apple',
+    'test_rule2_part_c_with_apple',
+    'test_rule2_safe_combos_do_not_trigger',
+    'test_rule2_three_way_violation',
+    // IEP tracker
+    'test_iep_iso_parse_and_format',
+    'test_iep_add_years_handles_leap_year',
+    'test_iep_effective_range_is_5_months_from_birth_month',
+    'test_iep_is_part_c_coverage_aliases',
+    'test_iep_is_aca_coverage_aliases',
+    'test_iep_member_id_for_display_swaps_for_aca',
+    'test_iep_analyze_filters_to_clients_only',
+    'test_iep_analyze_window_filter',
+    'test_iep_analyze_classifies_converted_within_iep_window',
+    'test_iep_analyze_marks_part_c_outside_iep_as_not_converted',
+    'test_iep_analyze_pending_part_c_in_iep_window_counts_as_converted',
+    'test_iep_stats_aggregation',
+    'test_iep_yoy_lookup_finds_same_month_last_year'
   ];
   fns.forEach(function (name) {
     var t0 = Date.now();

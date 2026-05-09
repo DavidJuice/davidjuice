@@ -62,10 +62,12 @@ function iep_run(runId, options) {
   var pols = normalize('ab_policy', rawPols);
 
   var result = iepAnalyze_(inds, pols, windowStart, windowEnd, options.selected_agents || []);
+  var yoy = computeIepYoY_(inds, pols, windowStart, windowEnd);
   var written = writeIepWorkbook_(runId, result.rows, result.stats, {
     windowStart: windowStart,
     windowEnd: windowEnd,
-    selectedAgents: options.selected_agents || []
+    selectedAgents: options.selected_agents || [],
+    yoy: yoy
   });
 
   audit('iep_run', runId, {
@@ -146,6 +148,47 @@ function iepAnalyze_(individuals, policies, windowStart, windowEnd, selectedAgen
 
   var stats = buildIepStats_(rows, windowStart, windowEnd);
   return { rows: rows, stats: stats };
+}
+
+// ---------- Year-over-year ----------
+//
+// For each month in the chosen window, compute "this year" totals and the
+// totals for the same month one year prior, using the same Individual +
+// Policy data set. Drives the IEP YoY tab so agents can see whether
+// conversion rates are improving compared to the same month last year.
+
+function computeIepYoY_(individuals, policies, windowStart, windowEnd) {
+  var months = monthsBetween_(windowStart, windowEnd);
+  var rows = [];
+  for (var i = 0; i < months.length; i++) {
+    var thisKey = months[i];
+    var lastKey = (Number(thisKey.substring(0, 4)) - 1) + thisKey.substring(4);
+    var thisCohort = analyzeMonthForYoY_(individuals, policies, thisKey);
+    var lastCohort = analyzeMonthForYoY_(individuals, policies, lastKey);
+    rows.push({
+      month: thisKey,
+      this_year_total:     thisCohort.total,
+      this_year_converted: thisCohort.converted,
+      this_year_pct:       thisCohort.total ? (thisCohort.converted / thisCohort.total) : 0,
+      last_year_month:     lastKey,
+      last_year_total:     lastCohort.total,
+      last_year_converted: lastCohort.converted,
+      last_year_pct:       lastCohort.total ? (lastCohort.converted / lastCohort.total) : 0
+    });
+  }
+  return rows;
+}
+
+function analyzeMonthForYoY_(individuals, policies, monthKey) {
+  var year  = Number(monthKey.substring(0, 4));
+  var month = Number(monthKey.substring(5, 7)) - 1;
+  var start = new Date(year, month, 1);
+  var end   = new Date(year, month + 1, 0); // last day of month
+  var sub = iepAnalyze_(individuals, policies, start, end, []);
+  return {
+    total: sub.stats.totals.total,
+    converted: sub.stats.totals.converted
+  };
 }
 
 function filterClients_(individuals) {
@@ -348,6 +391,7 @@ function writeIepWorkbook_(runId, rows, stats, opts) {
   var defaultSheet = ss.getSheets()[0];
   writeIepClientsTab_(ss, rows);
   writeIepStatsTab_(ss, stats, opts);
+  if (opts.yoy && opts.yoy.length) writeIepYoYTab_(ss, opts.yoy);
   writeIepMetadataTab_(ss, runId, rows.length, opts);
   if (defaultSheet && ss.getSheets().length > 1) ss.deleteSheet(defaultSheet);
 
@@ -433,6 +477,33 @@ function writeIepStatsTab_(ss, stats, opts) {
   sh.setFrozenRows(1);
 }
 
+function writeIepYoYTab_(ss, yoy) {
+  var sh = ss.insertSheet('IEP YoY');
+  sh.getRange(1, 1).setValue('Year-over-year conversion comparison').setFontWeight('bold');
+  var header = ['Month', 'Total (this yr)', 'Converted', 'Conv. %', 'Same month last yr', 'Total (last yr)', 'Converted', 'Conv. %', 'YoY Δ %'];
+  sh.getRange(2, 1, 1, header.length).setValues([header]).setFontWeight('bold');
+  if (!yoy.length) {
+    sh.getRange(3, 1).setValue('No data in window.');
+    return;
+  }
+  var values = yoy.map(function (r) {
+    var deltaPct = (r.this_year_pct - r.last_year_pct) * 100;
+    return [
+      r.month,
+      r.this_year_total, r.this_year_converted, formatPct_(r.this_year_pct),
+      r.last_year_month,
+      r.last_year_total, r.last_year_converted, formatPct_(r.last_year_pct),
+      (deltaPct >= 0 ? '+' : '') + (Math.round(deltaPct * 10) / 10) + ' pp'
+    ];
+  });
+  sh.getRange(3, 1, values.length, header.length).setValues(values);
+  sh.setFrozenRows(2);
+}
+
+function formatPct_(frac) {
+  return Math.round(frac * 1000) / 10 + '%';
+}
+
 function writeIepMetadataTab_(ss, runId, rowCount, opts) {
   var sh = ss.insertSheet('RunMetadata');
   var rows = [
@@ -485,6 +556,39 @@ function iep_getSettings() {
   };
 }
 
+// Returns the current recipient_emails array. The UI uses this to populate
+// the editor textarea.
+function iep_getRecipients() {
+  var s = getIepSettings_();
+  return s.recipient_emails || [];
+}
+
+// Persists a new recipient list to the Drive override at
+// /Reconciliation Tool/Config/iep_settings.json. Performs a basic
+// well-formed-email check on each entry.
+function iep_setRecipients(emails) {
+  var clean = [];
+  var seen = {};
+  for (var i = 0; i < (emails || []).length; i++) {
+    var addr = String(emails[i] || '').trim();
+    if (!addr) continue;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addr)) {
+      throw new Error('Not a valid email: ' + addr);
+    }
+    var key = addr.toLowerCase();
+    if (seen[key]) continue;
+    seen[key] = true;
+    clean.push(addr);
+  }
+  var current = getIepSettings_();
+  var merged = {};
+  for (var k in current) merged[k] = current[k];
+  merged.recipient_emails = clean;
+  writeJsonToDriveConfig_('iep_settings.json', merged);
+  audit('iep_recipients_updated', '', { count: clean.length });
+  return clean;
+}
+
 // ---------- Drive-folder source ----------
 
 function iep_runFromFolder(options) {
@@ -510,12 +614,14 @@ function iep_runFromFolder(options) {
   var inds = normalize('ab_individual', indRaw);
   var pols = normalize('ab_policy', polRaw);
   var result = iepAnalyze_(inds, pols, windowStart, windowEnd, options.selected_agents || []);
+  var yoy = computeIepYoY_(inds, pols, windowStart, windowEnd);
 
   var runId = 'iep_' + Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'UTC', 'yyyyMMdd_HHmmss');
   var written = writeIepWorkbook_(runId, result.rows, result.stats, {
     windowStart: windowStart,
     windowEnd: windowEnd,
-    selectedAgents: options.selected_agents || []
+    selectedAgents: options.selected_agents || [],
+    yoy: yoy
   });
 
   audit('iep_run_from_folder', runId, {

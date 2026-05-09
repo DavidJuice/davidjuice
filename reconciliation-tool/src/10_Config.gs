@@ -86,15 +86,8 @@ function readSettingsFromSheet_() {
 
 function readJsonFromDriveConfig_(filename) {
   try {
-    var settings = EMBEDDED_SETTINGS;
-    var folderName = settings.config_folder_name || 'Config';
-    var ssFile = DriveApp.getFileById(SpreadsheetApp.getActiveSpreadsheet().getId());
-    var parents = ssFile.getParents();
-    if (!parents.hasNext()) return null;
-    var toolFolder = parents.next();
-    var configFolders = toolFolder.getFoldersByName(folderName);
-    if (!configFolders.hasNext()) return null;
-    var folder = configFolders.next();
+    var folder = getDriveConfigFolder_(false);
+    if (!folder) return null;
     var files = folder.getFilesByName(filename);
     if (!files.hasNext()) return null;
     var f = files.next();
@@ -103,4 +96,35 @@ function readJsonFromDriveConfig_(filename) {
     safeLog('readJsonFromDriveConfig_ failed', { filename: filename, error: String(e) });
     return null;
   }
+}
+
+// Writes a JSON config override to /Reconciliation Tool/Config/<filename>.
+// Creates the Config folder if it doesn't exist. Used by tools like the IEP
+// Tracker to persist admin-editable settings (e.g. recipient_emails) without
+// requiring a code push.
+function writeJsonToDriveConfig_(filename, value) {
+  var folder = getDriveConfigFolder_(true);
+  if (!folder) throw new Error('Cannot resolve the tool folder. Move the Master Sheet under the Insurance Ops Shared Drive.');
+  var json = JSON.stringify(value, null, 2);
+  var existing = folder.getFilesByName(filename);
+  if (existing.hasNext()) {
+    var f = existing.next();
+    f.setContent(json);
+    return f.getId();
+  }
+  var created = folder.createFile(filename, json, 'application/json');
+  return created.getId();
+}
+
+function getDriveConfigFolder_(createIfMissing) {
+  var settings = EMBEDDED_SETTINGS;
+  var folderName = settings.config_folder_name || 'Config';
+  var ssFile = DriveApp.getFileById(SpreadsheetApp.getActiveSpreadsheet().getId());
+  var parents = ssFile.getParents();
+  if (!parents.hasNext()) return null;
+  var toolFolder = parents.next();
+  var configFolders = toolFolder.getFoldersByName(folderName);
+  if (configFolders.hasNext()) return configFolders.next();
+  if (createIfMissing) return toolFolder.createFolder(folderName);
+  return null;
 }

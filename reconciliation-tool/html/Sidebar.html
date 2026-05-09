@@ -114,6 +114,16 @@
         <button id="iep_btn_email" class="secondary" disabled>Email last report</button>
       </div>
       <div id="iep_settings_hint" class="muted" style="margin-top: 4px;"></div>
+
+      <details style="margin-top: 12px;">
+        <summary style="cursor: pointer;">Email recipients</summary>
+        <p class="muted" style="margin: 6px 0;">One email per line. Used by the "Email last report" button and the monthly auto-send. Saves to <code>/Reconciliation Tool/Config/iep_settings.json</code>.</p>
+        <textarea id="iep_recipients" rows="4" style="width: 100%; box-sizing: border-box;"></textarea>
+        <div class="row" style="margin-top: 6px;">
+          <button id="iep_btn_save_recipients">Save</button>
+          <span id="iep_recipients_status" class="muted"></span>
+        </div>
+      </details>
       <div id="iep_status" class="muted" style="margin-top: 8px;"></div>
       <div id="iep_result"></div>
     </div>
