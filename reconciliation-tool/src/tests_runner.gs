@@ -67,7 +67,12 @@ function runAllTests() {
     'test_iep_analyze_marks_part_c_outside_iep_as_not_converted',
     'test_iep_analyze_pending_part_c_in_iep_window_counts_as_converted',
     'test_iep_stats_aggregation',
-    'test_iep_yoy_lookup_finds_same_month_last_year'
+    'test_iep_yoy_lookup_finds_same_month_last_year',
+    'test_iep_mode_part_c_only',
+    'test_iep_mode_medsup_pdp_requires_both',
+    'test_iep_mode_either_part_c_or_medsup_pdp',
+    'test_iep_mode_either_flags_both_paths_when_present',
+    'test_iep_mode_any_coverage_catches_unusual_paths'
   ];
   fns.forEach(function (name) {
     var t0 = Date.now();

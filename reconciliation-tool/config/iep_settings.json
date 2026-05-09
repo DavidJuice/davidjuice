@@ -7,5 +7,6 @@
   "monthly_schedule_enabled": false,
   "monthly_window_months_ahead": 1,
   "monthly_window_months_back": 0,
-  "send_csv_attachment": true
+  "send_csv_attachment": true,
+  "conversion_path": "either"
 }

@@ -61,12 +61,14 @@ function iep_run(runId, options) {
   var inds = normalize('ab_individual', rawInds);
   var pols = normalize('ab_policy', rawPols);
 
-  var result = iepAnalyze_(inds, pols, windowStart, windowEnd, options.selected_agents || []);
-  var yoy = computeIepYoY_(inds, pols, windowStart, windowEnd);
+  var conversionPath = options.conversion_path || 'either';
+  var result = iepAnalyze_(inds, pols, windowStart, windowEnd, options.selected_agents || [], conversionPath);
+  var yoy = computeIepYoY_(inds, pols, windowStart, windowEnd, conversionPath);
   var written = writeIepWorkbook_(runId, result.rows, result.stats, {
     windowStart: windowStart,
     windowEnd: windowEnd,
     selectedAgents: options.selected_agents || [],
+    conversionPath: conversionPath,
     yoy: yoy
   });
 
@@ -83,7 +85,8 @@ function iep_run(runId, options) {
 
 // ---------- Core analysis ----------
 
-function iepAnalyze_(individuals, policies, windowStart, windowEnd, selectedAgents) {
+function iepAnalyze_(individuals, policies, windowStart, windowEnd, selectedAgents, conversionPath) {
+  conversionPath = conversionPath || 'either';
   var clients = filterClients_(individuals);
   var sixtyFifthByClient = {};
   var inWindow = [];
@@ -124,22 +127,11 @@ function iepAnalyze_(individuals, policies, windowStart, windowEnd, selectedAgen
     var matched = matchClientToPolicies_(c2, policyByMBI, policyByNDOB);
     var iepRange = iepEffectiveRange_(sixtyFifth);
 
-    var partC = matched.filter(function (mp) {
-      if (!isActiveOrPendingStatus_(mp.status)) return false;
-      if (!isPartCCoverage_(mp.policy_type)) return false;
-      var eff = parseIso_(mp.effective_date);
-      if (!eff) return false;
-      return eff >= iepRange.start && eff < iepRange.endExcl;
-    });
+    var classification = classifyConversion_(matched, iepRange);
+    var verdict = verdictFromClassification_(classification, conversionPath);
 
-    var converted = partC.length > 0;
-    var displayPolicy = partC[0]
-      || matched.filter(function (mp) { return isPartCCoverage_(mp.policy_type) && isActiveOrPendingStatus_(mp.status); })[0]
-      || matched.filter(function (mp) { return isActiveOrPendingStatus_(mp.status); })[0]
-      || matched[0]
-      || null;
-
-    rows.push(buildClientRow_(c2, sixtyFifth, displayPolicy, converted));
+    var displayPolicy = pickDisplayPolicy_(matched, classification, verdict);
+    rows.push(buildClientRow_(c2, sixtyFifth, displayPolicy, verdict));
   }
 
   rows.sort(function (a, b) {
@@ -150,6 +142,131 @@ function iepAnalyze_(individuals, policies, windowStart, windowEnd, selectedAgen
   return { rows: rows, stats: stats };
 }
 
+// ---- Conversion classification ----
+//
+// Inspects every policy joined to a client and decides whether they have
+// each Medicare-conversion path active or pending with an Effective Date
+// inside their personal IEP-effective range. The final "Converted" verdict
+// depends on the user-selected conversion_path mode:
+//
+//   part_c       : Part C alone is enough.
+//   medsup_pdp   : MedSup AND PDP must both be present.
+//   either       : Part C OR (MedSup AND PDP).            (default)
+//   any_coverage : any Active/Pending coverage in the IEP range counts;
+//                  surfaces unusual paths (e.g. just MedSup, just PDP,
+//                  Apple/ACA renewals around the birthday) so the agent
+//                  can review and reclassify.
+//
+// `path_label` records which path was matched; it lands in the Conversion
+// Path column on the Clients tab so the user can sort/filter the Sheet.
+
+function classifyConversion_(matched, iepRange) {
+  var partC = false, medsup = false, pdp = false, anyOther = false;
+  var partCPolicy = null, medsupPolicy = null, pdpPolicy = null, otherPolicy = null;
+  for (var i = 0; i < matched.length; i++) {
+    var p = matched[i];
+    if (!isActiveOrPendingStatus_(p.status)) continue;
+    var eff = parseIso_(p.effective_date);
+    if (!eff || eff < iepRange.start || eff >= iepRange.endExcl) continue;
+
+    if (isPartCCoverage_(p.policy_type)) {
+      partC = true;
+      if (!partCPolicy) partCPolicy = p;
+    } else if (isMedSupCoverage_(p.policy_type)) {
+      medsup = true;
+      if (!medsupPolicy) medsupPolicy = p;
+    } else if (isPDPCoverage_(p.policy_type)) {
+      pdp = true;
+      if (!pdpPolicy) pdpPolicy = p;
+    } else {
+      anyOther = true;
+      if (!otherPolicy) otherPolicy = p;
+    }
+  }
+  return {
+    partC: partC,
+    medsup: medsup,
+    pdp: pdp,
+    medsupPlusPdp: medsup && pdp,
+    anyOther: anyOther,
+    partCPolicy: partCPolicy,
+    medsupPolicy: medsupPolicy,
+    pdpPolicy: pdpPolicy,
+    otherPolicy: otherPolicy
+  };
+}
+
+function verdictFromClassification_(c, mode) {
+  var converted = false, path = '';
+  switch (mode) {
+    case 'part_c':
+      converted = c.partC;
+      path = converted ? 'Part C' : '';
+      break;
+    case 'medsup_pdp':
+      converted = c.medsupPlusPdp;
+      path = converted ? 'MedSup+PDP' : '';
+      break;
+    case 'any_coverage':
+      converted = c.partC || c.medsupPlusPdp || c.medsup || c.pdp || c.anyOther;
+      if (c.partC && c.medsupPlusPdp) path = 'Both';
+      else if (c.partC) path = 'Part C';
+      else if (c.medsupPlusPdp) path = 'MedSup+PDP';
+      else if (c.medsup || c.pdp) path = 'Partial (MedSup or PDP)';
+      else if (c.anyOther) path = 'Other';
+      else path = '';
+      break;
+    case 'either':
+    default:
+      if (c.partC && c.medsupPlusPdp) { converted = true; path = 'Both'; }
+      else if (c.partC) { converted = true; path = 'Part C'; }
+      else if (c.medsupPlusPdp) { converted = true; path = 'MedSup+PDP'; }
+      else { converted = false; path = ''; }
+      break;
+  }
+  return {
+    converted: converted,
+    path: path,
+    status: converted ? ('Converted (' + path + ')') : 'Not Converted Yet'
+  };
+}
+
+function pickDisplayPolicy_(matched, c, verdict) {
+  if (verdict.converted) {
+    if (verdict.path === 'Part C' || verdict.path === 'Both') return c.partCPolicy || c.medsupPolicy;
+    if (verdict.path === 'MedSup+PDP') return c.medsupPolicy || c.pdpPolicy;
+    if (verdict.path === 'Partial (MedSup or PDP)') return c.medsupPolicy || c.pdpPolicy;
+    if (verdict.path === 'Other') return c.otherPolicy;
+  }
+  // Fallbacks for "Not Converted Yet" rows so the user still sees the
+  // most-relevant policy attached to the client.
+  return c.partCPolicy || c.medsupPolicy || c.pdpPolicy || c.otherPolicy
+    || matched.filter(function (p) { return isActiveOrPendingStatus_(p.status); })[0]
+    || matched[0] || null;
+}
+
+function isMedSupCoverage_(coverageType) {
+  if (!coverageType) return false;
+  var u = String(coverageType).toUpperCase();
+  var rules = (typeof getAbOnlyRulesConfig_ === 'function') ? getAbOnlyRulesConfig_() : {};
+  var aliases = (rules.policy_types_medsup || ['MEDSUP', 'MEDICARE SUPPLEMENT', 'SUPPLEMENT', 'MED SUP']);
+  for (var i = 0; i < aliases.length; i++) {
+    if (u.indexOf(String(aliases[i]).toUpperCase()) !== -1) return true;
+  }
+  return false;
+}
+
+function isPDPCoverage_(coverageType) {
+  if (!coverageType) return false;
+  var u = String(coverageType).toUpperCase();
+  var rules = (typeof getAbOnlyRulesConfig_ === 'function') ? getAbOnlyRulesConfig_() : {};
+  var aliases = (rules.policy_types_pdp || ['PDP', 'PART D', 'PRESCRIPTION DRUG']);
+  for (var i = 0; i < aliases.length; i++) {
+    if (u.indexOf(String(aliases[i]).toUpperCase()) !== -1) return true;
+  }
+  return false;
+}
+
 // ---------- Year-over-year ----------
 //
 // For each month in the chosen window, compute "this year" totals and the
@@ -157,14 +274,15 @@ function iepAnalyze_(individuals, policies, windowStart, windowEnd, selectedAgen
 // Policy data set. Drives the IEP YoY tab so agents can see whether
 // conversion rates are improving compared to the same month last year.
 
-function computeIepYoY_(individuals, policies, windowStart, windowEnd) {
+function computeIepYoY_(individuals, policies, windowStart, windowEnd, conversionPath) {
+  conversionPath = conversionPath || 'either';
   var months = monthsBetween_(windowStart, windowEnd);
   var rows = [];
   for (var i = 0; i < months.length; i++) {
     var thisKey = months[i];
     var lastKey = (Number(thisKey.substring(0, 4)) - 1) + thisKey.substring(4);
-    var thisCohort = analyzeMonthForYoY_(individuals, policies, thisKey);
-    var lastCohort = analyzeMonthForYoY_(individuals, policies, lastKey);
+    var thisCohort = analyzeMonthForYoY_(individuals, policies, thisKey, conversionPath);
+    var lastCohort = analyzeMonthForYoY_(individuals, policies, lastKey, conversionPath);
     rows.push({
       month: thisKey,
       this_year_total:     thisCohort.total,
@@ -179,12 +297,12 @@ function computeIepYoY_(individuals, policies, windowStart, windowEnd) {
   return rows;
 }
 
-function analyzeMonthForYoY_(individuals, policies, monthKey) {
+function analyzeMonthForYoY_(individuals, policies, monthKey, conversionPath) {
   var year  = Number(monthKey.substring(0, 4));
   var month = Number(monthKey.substring(5, 7)) - 1;
   var start = new Date(year, month, 1);
   var end   = new Date(year, month + 1, 0); // last day of month
-  var sub = iepAnalyze_(individuals, policies, start, end, []);
+  var sub = iepAnalyze_(individuals, policies, start, end, [], conversionPath);
   return {
     total: sub.stats.totals.total,
     converted: sub.stats.totals.converted
@@ -265,7 +383,7 @@ function memberIdForDisplay_(policyRow) {
   return policyRow.member_id || '';
 }
 
-function buildClientRow_(client, sixtyFifth, policy, converted) {
+function buildClientRow_(client, sixtyFifth, policy, verdict) {
   var fullName = [client.first_name, client.middle_name, client.last_name]
     .filter(function (x) { return !!x; }).join(' ').replace(/\s+/g, ' ').trim();
   var phone = client.phone_cellular || client.phone_home || client.phone_business || '';
@@ -289,7 +407,8 @@ function buildClientRow_(client, sixtyFifth, policy, converted) {
     policy_servicing_agent: policy ? (policy.servicing_agent || '') : '',
     member_id:              memberIdForDisplay_(policy),
     policy_number:          policy ? (policy.policy_number || '') : '',
-    conversion_status:      converted ? 'Converted (IEP)' : 'Not Converted Yet'
+    conversion_status:      verdict.status,
+    conversion_path:        verdict.path
   };
 }
 
@@ -352,7 +471,7 @@ function buildIepStats_(rows, windowStart, windowEnd) {
   for (var i = 0; i < rows.length; i++) {
     var r = rows[i];
     var monthKey = (r.sixty_fifth_birthday || '').substring(0, 7) || '(unknown)';
-    var converted = r.conversion_status === 'Converted (IEP)';
+    var converted = String(r.conversion_status || '').indexOf('Converted') === 0;
     var agent = (r.servicing_agent || '(unassigned)').trim() || '(unassigned)';
     totals.total++;
     totals[converted ? 'converted' : 'not_converted']++;
@@ -411,7 +530,7 @@ function writeIepClientsTab_(ss, rows) {
     'App Submit Date', 'Effective Date',
     'Signing Agent Name', 'Policy Servicing Agent',
     'Member ID', 'Policy Number',
-    'Conversion Status'
+    'Conversion Status', 'Conversion Path'
   ];
   sh.appendRow(header);
   sh.getRange(1, 1, 1, header.length).setFontWeight('bold');
@@ -425,7 +544,7 @@ function writeIepClientsTab_(ss, rows) {
       r.app_submit_date, r.effective_date,
       r.signing_agent_name, r.policy_servicing_agent,
       r.member_id, r.policy_number,
-      r.conversion_status
+      r.conversion_status, r.conversion_path
     ];
   });
   sh.getRange(2, 1, values.length, header.length).setValues(values);
@@ -436,6 +555,9 @@ function writeIepStatsTab_(ss, stats, opts) {
   var row = 1;
   sh.getRange(row, 1).setValue('Window').setFontWeight('bold');
   sh.getRange(row, 2).setValue(isoOf_(opts.windowStart) + '  →  ' + isoOf_(opts.windowEnd));
+  row++;
+  sh.getRange(row, 1).setValue('Conversion path').setFontWeight('bold');
+  sh.getRange(row, 2).setValue(prettyConversionPath_(opts.conversionPath));
   row += 2;
 
   sh.getRange(row, 1).setValue('Totals (entire window)').setFontWeight('bold');
@@ -504,6 +626,16 @@ function formatPct_(frac) {
   return Math.round(frac * 1000) / 10 + '%';
 }
 
+function prettyConversionPath_(path) {
+  switch (path) {
+    case 'part_c':       return 'Part C only';
+    case 'medsup_pdp':   return 'MedSup + PDP only';
+    case 'any_coverage': return 'Any active/pending coverage in IEP window';
+    case 'either':
+    default:             return 'Either Part C or MedSup+PDP';
+  }
+}
+
 function writeIepMetadataTab_(ss, runId, rowCount, opts) {
   var sh = ss.insertSheet('RunMetadata');
   var rows = [
@@ -512,6 +644,7 @@ function writeIepMetadataTab_(ss, runId, rowCount, opts) {
     ['user', Session.getActiveUser().getEmail() || ''],
     ['window_start', isoOf_(opts.windowStart)],
     ['window_end', isoOf_(opts.windowEnd)],
+    ['conversion_path', prettyConversionPath_(opts.conversionPath)],
     ['selected_agents', (opts.selectedAgents || []).join(', ') || '(all)'],
     ['client_rows', rowCount]
   ];
@@ -613,14 +746,16 @@ function iep_runFromFolder(options) {
 
   var inds = normalize('ab_individual', indRaw);
   var pols = normalize('ab_policy', polRaw);
-  var result = iepAnalyze_(inds, pols, windowStart, windowEnd, options.selected_agents || []);
-  var yoy = computeIepYoY_(inds, pols, windowStart, windowEnd);
+  var conversionPath = options.conversion_path || 'either';
+  var result = iepAnalyze_(inds, pols, windowStart, windowEnd, options.selected_agents || [], conversionPath);
+  var yoy = computeIepYoY_(inds, pols, windowStart, windowEnd, conversionPath);
 
   var runId = 'iep_' + Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'UTC', 'yyyyMMdd_HHmmss');
   var written = writeIepWorkbook_(runId, result.rows, result.stats, {
     windowStart: windowStart,
     windowEnd: windowEnd,
     selectedAgents: options.selected_agents || [],
+    conversionPath: conversionPath,
     yoy: yoy
   });
 
@@ -750,7 +885,8 @@ function iepMonthlyTick() {
     var res = iep_runFromFolder({
       window_start: isoOf_(start),
       window_end: isoOf_(end),
-      selected_agents: []
+      selected_agents: [],
+      conversion_path: settings.conversion_path || 'either'
     });
     iep_emailReport(res.url, settings.recipient_emails || []);
     audit('iep_monthly_sent', res.runId, { rows: res.rows });

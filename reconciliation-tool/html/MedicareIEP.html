@@ -116,6 +116,14 @@ window.RECON = window.RECON || {};
     return IEP.agents.filter(function (a) { return IEP.selectedAgents[a]; });
   }
 
+  function selectedConversionPath() {
+    var radios = document.getElementsByName('iep_conversion_path');
+    for (var i = 0; i < radios.length; i++) {
+      if (radios[i].checked) return radios[i].value;
+    }
+    return 'either';
+  }
+
   function updateRunButton() {
     var ok = IEP.uploads.ab_individual && IEP.uploads.ab_policy
       && document.getElementById('iep_window_start').value
@@ -147,7 +155,8 @@ window.RECON = window.RECON || {};
       .iep_run(RECON.state.runId, {
         window_start: document.getElementById('iep_window_start').value,
         window_end:   document.getElementById('iep_window_end').value,
-        selected_agents: selectedAgentList()
+        selected_agents: selectedAgentList(),
+        conversion_path: selectedConversionPath()
       });
   }
 
@@ -163,7 +172,8 @@ window.RECON = window.RECON || {};
       .iep_runFromFolder({
         window_start: document.getElementById('iep_window_start').value,
         window_end:   document.getElementById('iep_window_end').value,
-        selected_agents: selectedAgentList()
+        selected_agents: selectedAgentList(),
+        conversion_path: selectedConversionPath()
       });
   }
 

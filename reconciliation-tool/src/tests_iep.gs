@@ -143,13 +143,14 @@ function test_iep_analyze_window_filter() {
 
 function test_iep_analyze_classifies_converted_within_iep_window() {
   // 65th = April 10, 2026. IEP-effective range = [2026-04-01, 2026-09-01).
-  // A Part C policy effective 2026-05-01 -> Converted.
+  // A Part C policy effective 2026-05-01 -> Converted via Part C.
   var inds = [iepClientFixture_({ dob: '1961-04-10', row: 2 })];
   var pols = [iepPolicyFixture_({ dob: '1961-04-10', coverageType: 'Part C',
                                    status: 'ACTIVE', effective: '2026-05-01', row: 5 })];
-  var res = iepAnalyze_(inds, pols, new Date(2026, 0, 1), new Date(2026, 11, 31), []);
+  var res = iepAnalyze_(inds, pols, new Date(2026, 0, 1), new Date(2026, 11, 31), [], 'either');
   assertEqual(res.rows.length, 1);
-  assertEqual(res.rows[0].conversion_status, 'Converted (IEP)');
+  assertEqual(res.rows[0].conversion_status, 'Converted (Part C)');
+  assertEqual(res.rows[0].conversion_path, 'Part C');
 }
 
 function test_iep_analyze_marks_part_c_outside_iep_as_not_converted() {
@@ -158,17 +159,126 @@ function test_iep_analyze_marks_part_c_outside_iep_as_not_converted() {
   var inds = [iepClientFixture_({ dob: '1961-04-10', row: 2 })];
   var pols = [iepPolicyFixture_({ dob: '1961-04-10', coverageType: 'Part C',
                                    status: 'ACTIVE', effective: '2024-12-01', row: 5 })];
-  var res = iepAnalyze_(inds, pols, new Date(2026, 0, 1), new Date(2026, 11, 31), []);
+  var res = iepAnalyze_(inds, pols, new Date(2026, 0, 1), new Date(2026, 11, 31), [], 'either');
   assertEqual(res.rows[0].conversion_status, 'Not Converted Yet');
+  assertEqual(res.rows[0].conversion_path, '');
 }
 
 function test_iep_analyze_pending_part_c_in_iep_window_counts_as_converted() {
-  // PENDING Part C effective inside IEP range -> Converted.
+  // PENDING Part C effective inside IEP range -> Converted via Part C.
   var inds = [iepClientFixture_({ dob: '1961-04-10', row: 2 })];
   var pols = [iepPolicyFixture_({ dob: '1961-04-10', coverageType: 'Part C',
                                    status: 'PENDING', effective: '2026-05-01', row: 5 })];
-  var res = iepAnalyze_(inds, pols, new Date(2026, 0, 1), new Date(2026, 11, 31), []);
-  assertEqual(res.rows[0].conversion_status, 'Converted (IEP)');
+  var res = iepAnalyze_(inds, pols, new Date(2026, 0, 1), new Date(2026, 11, 31), [], 'either');
+  assertEqual(res.rows[0].conversion_status, 'Converted (Part C)');
+}
+
+// ---- Conversion-path modes ----
+
+function iepClientWithDob_(row) {
+  return iepClientFixture_({ dob: '1961-04-10', first: 'C' + row, row: row });
+}
+
+function test_iep_mode_part_c_only() {
+  // Client A: Part C in IEP window -> converted
+  // Client B: MedSup + PDP in IEP window -> NOT converted under part_c mode
+  var inds = [iepClientWithDob_(2), iepClientFixture_({ first: 'B', last: 'X', dob: '1961-04-10', row: 3 })];
+  var pols = [
+    iepPolicyFixture_({ first: 'C2', last: 'Doe', dob: '1961-04-10', coverageType: 'Part C',
+                         status: 'ACTIVE', effective: '2026-05-01', row: 5 }),
+    iepPolicyFixture_({ first: 'B', last: 'X', dob: '1961-04-10', coverageType: 'MedSup',
+                         status: 'ACTIVE', effective: '2026-05-01', row: 6 }),
+    iepPolicyFixture_({ first: 'B', last: 'X', dob: '1961-04-10', coverageType: 'PDP',
+                         status: 'ACTIVE', effective: '2026-05-01', row: 7 })
+  ];
+  var res = iepAnalyze_(inds, pols, new Date(2026, 0, 1), new Date(2026, 11, 31), [], 'part_c');
+  var byName = {};
+  res.rows.forEach(function (r) { byName[r.full_name] = r; });
+  assertEqual(byName['C2 Doe'].conversion_status, 'Converted (Part C)');
+  assertEqual(byName['B X'].conversion_status, 'Not Converted Yet',
+              'MedSup+PDP should NOT count under part_c mode');
+}
+
+function test_iep_mode_medsup_pdp_requires_both() {
+  // Client A: only MedSup -> NOT converted under medsup_pdp
+  // Client B: MedSup + PDP -> converted
+  // Client C: only Part C -> NOT converted under medsup_pdp
+  var inds = [
+    iepClientFixture_({ first: 'A', last: 'X', dob: '1961-04-10', row: 2 }),
+    iepClientFixture_({ first: 'B', last: 'X', dob: '1961-04-10', row: 3 }),
+    iepClientFixture_({ first: 'C', last: 'X', dob: '1961-04-10', row: 4 })
+  ];
+  var pols = [
+    iepPolicyFixture_({ first: 'A', last: 'X', dob: '1961-04-10', coverageType: 'MedSup',
+                         status: 'ACTIVE', effective: '2026-05-01', row: 5 }),
+    iepPolicyFixture_({ first: 'B', last: 'X', dob: '1961-04-10', coverageType: 'MedSup',
+                         status: 'ACTIVE', effective: '2026-05-01', row: 6 }),
+    iepPolicyFixture_({ first: 'B', last: 'X', dob: '1961-04-10', coverageType: 'PDP',
+                         status: 'ACTIVE', effective: '2026-05-01', row: 7 }),
+    iepPolicyFixture_({ first: 'C', last: 'X', dob: '1961-04-10', coverageType: 'Part C',
+                         status: 'ACTIVE', effective: '2026-05-01', row: 8 })
+  ];
+  var res = iepAnalyze_(inds, pols, new Date(2026, 0, 1), new Date(2026, 11, 31), [], 'medsup_pdp');
+  var byName = {};
+  res.rows.forEach(function (r) { byName[r.full_name] = r; });
+  assertEqual(byName['A X'].conversion_status, 'Not Converted Yet',
+              'MedSup alone should not count');
+  assertEqual(byName['B X'].conversion_status, 'Converted (MedSup+PDP)');
+  assertEqual(byName['C X'].conversion_status, 'Not Converted Yet',
+              'Part C alone should not count under medsup_pdp mode');
+}
+
+function test_iep_mode_either_part_c_or_medsup_pdp() {
+  var inds = [
+    iepClientFixture_({ first: 'A', last: 'X', dob: '1961-04-10', row: 2 }),
+    iepClientFixture_({ first: 'B', last: 'X', dob: '1961-04-10', row: 3 })
+  ];
+  var pols = [
+    iepPolicyFixture_({ first: 'A', last: 'X', dob: '1961-04-10', coverageType: 'Part C',
+                         status: 'ACTIVE', effective: '2026-05-01', row: 5 }),
+    iepPolicyFixture_({ first: 'B', last: 'X', dob: '1961-04-10', coverageType: 'MedSup',
+                         status: 'ACTIVE', effective: '2026-05-01', row: 6 }),
+    iepPolicyFixture_({ first: 'B', last: 'X', dob: '1961-04-10', coverageType: 'PDP',
+                         status: 'ACTIVE', effective: '2026-05-01', row: 7 })
+  ];
+  var res = iepAnalyze_(inds, pols, new Date(2026, 0, 1), new Date(2026, 11, 31), [], 'either');
+  var byName = {};
+  res.rows.forEach(function (r) { byName[r.full_name] = r; });
+  assertEqual(byName['A X'].conversion_status, 'Converted (Part C)');
+  assertEqual(byName['B X'].conversion_status, 'Converted (MedSup+PDP)');
+}
+
+function test_iep_mode_either_flags_both_paths_when_present() {
+  // Same client with BOTH Part C and (MedSup + PDP) effective in IEP window.
+  // Under either mode, should report path = 'Both'. (Note: Rule 2 will
+  // separately flag this combination as forbidden.)
+  var inds = [iepClientFixture_({ first: 'D', last: 'X', dob: '1961-04-10', row: 2 })];
+  var pols = [
+    iepPolicyFixture_({ first: 'D', last: 'X', dob: '1961-04-10', coverageType: 'Part C',
+                         status: 'ACTIVE', effective: '2026-05-01', row: 5 }),
+    iepPolicyFixture_({ first: 'D', last: 'X', dob: '1961-04-10', coverageType: 'MedSup',
+                         status: 'ACTIVE', effective: '2026-05-01', row: 6 }),
+    iepPolicyFixture_({ first: 'D', last: 'X', dob: '1961-04-10', coverageType: 'PDP',
+                         status: 'ACTIVE', effective: '2026-05-01', row: 7 })
+  ];
+  var res = iepAnalyze_(inds, pols, new Date(2026, 0, 1), new Date(2026, 11, 31), [], 'either');
+  assertEqual(res.rows[0].conversion_status, 'Converted (Both)');
+  assertEqual(res.rows[0].conversion_path, 'Both');
+}
+
+function test_iep_mode_any_coverage_catches_unusual_paths() {
+  // MedSup alone (no PDP) effective in IEP window. Under any_coverage,
+  // this should count; under medsup_pdp it would not.
+  var inds = [iepClientFixture_({ first: 'E', last: 'X', dob: '1961-04-10', row: 2 })];
+  var pols = [
+    iepPolicyFixture_({ first: 'E', last: 'X', dob: '1961-04-10', coverageType: 'MedSup',
+                         status: 'ACTIVE', effective: '2026-05-01', row: 5 })
+  ];
+  var resAny = iepAnalyze_(inds, pols, new Date(2026, 0, 1), new Date(2026, 11, 31), [], 'any_coverage');
+  assertEqual(resAny.rows[0].conversion_status, 'Converted (Partial (MedSup or PDP))');
+
+  var resStrict = iepAnalyze_(inds, pols, new Date(2026, 0, 1), new Date(2026, 11, 31), [], 'medsup_pdp');
+  assertEqual(resStrict.rows[0].conversion_status, 'Not Converted Yet');
 }
 
 function test_iep_stats_aggregation() {

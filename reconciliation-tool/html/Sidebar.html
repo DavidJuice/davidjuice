@@ -100,7 +100,16 @@
         <label>End   <input type="date" id="iep_window_end" /></label>
       </div>
 
-      <h3 style="margin-top: 12px;">3. Filter by Servicing Agent <span class="muted">(optional)</span></h3>
+      <h3 style="margin-top: 12px;">3. Conversion path</h3>
+      <p class="muted">Choose what counts as "Converted" for the stats and YoY tabs.</p>
+      <div class="row" id="iep_conversion_path_group">
+        <label><input type="radio" name="iep_conversion_path" value="part_c" /> Part C only</label>
+        <label><input type="radio" name="iep_conversion_path" value="medsup_pdp" /> MedSup + PDP only</label>
+        <label><input type="radio" name="iep_conversion_path" value="either" checked /> Either Part C or MedSup+PDP</label>
+        <label><input type="radio" name="iep_conversion_path" value="any_coverage" /> Any active/pending coverage in IEP window</label>
+      </div>
+
+      <h3 style="margin-top: 12px;">4. Filter by Servicing Agent <span class="muted">(optional)</span></h3>
       <input type="search" id="iep_agent_search" placeholder="Search agents…" />
       <div class="row" style="margin: 6px 0;">
         <button class="secondary" id="iep_agent_all">Select all</button>
