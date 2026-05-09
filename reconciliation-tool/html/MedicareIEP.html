@@ -1,0 +1,241 @@
+<script>
+window.RECON = window.RECON || {};
+
+(function () {
+  var IEP = {
+    uploads: { ab_individual: false, ab_policy: false },
+    agents: [],
+    selectedAgents: {},
+    lastSheetUrl: null,
+    settings: null
+  };
+
+  // -- date helpers --
+  function todayIso() {
+    var d = new Date();
+    return d.toISOString().substring(0, 10);
+  }
+  function isoOf(d) { return d.toISOString().substring(0, 10); }
+  function addMonths(d, n) {
+    var x = new Date(d.getFullYear(), d.getMonth() + n, d.getDate());
+    return x;
+  }
+
+  function applyPreset(preset) {
+    var today = new Date();
+    var start, end;
+    if (preset === 'next_1m')  { start = today; end = addMonths(today, 1); }
+    else if (preset === 'next_4m') { start = today; end = addMonths(today, 4); }
+    else if (preset === 'past_6m') { start = addMonths(today, -6); end = today; }
+    else if (preset === 'past_1y') { start = addMonths(today, -12); end = today; }
+    else if (preset === 'last_qtr_next_qtr') { start = addMonths(today, -3); end = addMonths(today, 3); }
+    else return;
+    document.getElementById('iep_window_start').value = isoOf(start);
+    document.getElementById('iep_window_end').value   = isoOf(end);
+  }
+
+  // -- UI rendering --
+  function renderUploadZones() {
+    var box = document.getElementById('iep_uploads');
+    box.innerHTML = '';
+    [
+      { src: 'ab_individual', label: 'AgencyBloc Individual Report' },
+      { src: 'ab_policy',     label: 'AgencyBloc Policy Report'     }
+    ].forEach(function (item) {
+      var z = document.createElement('div');
+      z.className = 'dropzone';
+      z.id = 'iep_dz_' + item.src;
+      z.dataset.source = item.src;
+      z.innerHTML =
+        '<div class="label">' + item.label + '</div>' +
+        '<div class="muted">Drag a CSV here, or <a href="#" class="pickfile">click to choose</a></div>' +
+        '<div class="filename"></div>' +
+        '<div class="upload-error"></div>';
+      box.appendChild(z);
+      RECON.wireDropZone(z.id, item.src, function () {
+        google.script.run
+          .withSuccessHandler(function (res) {
+            if (res && res.errors && res.errors.length) {
+              z.querySelector('.upload-error').textContent = res.errors.join('  •  ');
+              IEP.uploads[item.src] = false;
+            } else {
+              z.querySelector('.upload-error').textContent = '';
+              IEP.uploads[item.src] = true;
+              if (item.src === 'ab_individual') loadAgents();
+              updateRunButton();
+            }
+          })
+          .withFailureHandler(function (err) {
+            z.querySelector('.upload-error').textContent = String(err.message || err);
+            IEP.uploads[item.src] = false;
+            updateRunButton();
+          })
+          .validateAndRecordUpload(RECON.state.runId, item.src);
+      });
+    });
+  }
+
+  function loadAgents() {
+    var listEl = document.getElementById('iep_agent_list');
+    listEl.innerHTML = '<div class="muted">Loading agents…</div>';
+    google.script.run
+      .withSuccessHandler(function (agents) {
+        IEP.agents = agents || [];
+        IEP.selectedAgents = {};
+        IEP.agents.forEach(function (a) { IEP.selectedAgents[a] = true; });
+        renderAgents('');
+      })
+      .withFailureHandler(function (err) {
+        listEl.innerHTML = '<div class="upload-error">' + (err.message || err) + '</div>';
+      })
+      .iep_listAgents(RECON.state.runId);
+  }
+
+  function renderAgents(filter) {
+    var listEl = document.getElementById('iep_agent_list');
+    listEl.innerHTML = '';
+    var f = (filter || '').toLowerCase();
+    IEP.agents.filter(function (a) { return !f || a.toLowerCase().indexOf(f) !== -1; })
+      .forEach(function (a) {
+        var lbl = document.createElement('label');
+        lbl.className = 'agent-item';
+        var cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = !!IEP.selectedAgents[a];
+        cb.addEventListener('change', function () { IEP.selectedAgents[a] = cb.checked; });
+        lbl.appendChild(cb);
+        lbl.appendChild(document.createTextNode(' ' + a));
+        listEl.appendChild(lbl);
+      });
+    if (!IEP.agents.length) {
+      listEl.innerHTML = '<div class="muted">No agents detected. Upload the Individual report first.</div>';
+    }
+  }
+
+  function selectedAgentList() {
+    return IEP.agents.filter(function (a) { return IEP.selectedAgents[a]; });
+  }
+
+  function updateRunButton() {
+    var ok = IEP.uploads.ab_individual && IEP.uploads.ab_policy
+      && document.getElementById('iep_window_start').value
+      && document.getElementById('iep_window_end').value;
+    document.getElementById('iep_btn_run').disabled = !ok;
+  }
+
+  function showResult(res) {
+    var resultEl = document.getElementById('iep_result');
+    var s = res.stats || {};
+    IEP.lastSheetUrl = res.url;
+    document.getElementById('iep_btn_email').disabled = !res.url;
+    resultEl.innerHTML =
+      '<p>' + (res.rows || 0) + ' clients in window  •  ' +
+      (s.converted || 0) + ' converted  •  ' +
+      (s.not_converted || 0) + ' not converted</p>' +
+      '<p><a href="' + res.url + '" target="_blank">Open results sheet →</a></p>';
+  }
+
+  function runAnalysis() {
+    var btn = document.getElementById('iep_btn_run');
+    var statusEl = document.getElementById('iep_status');
+    btn.disabled = true;
+    statusEl.textContent = 'Running…';
+    document.getElementById('iep_result').innerHTML = '';
+    google.script.run
+      .withSuccessHandler(function (res) { statusEl.textContent = 'Done.'; showResult(res); btn.disabled = false; })
+      .withFailureHandler(function (err) { statusEl.textContent = ''; document.getElementById('iep_result').innerHTML = '<div class="upload-error">' + (err.message || err) + '</div>'; btn.disabled = false; })
+      .iep_run(RECON.state.runId, {
+        window_start: document.getElementById('iep_window_start').value,
+        window_end:   document.getElementById('iep_window_end').value,
+        selected_agents: selectedAgentList()
+      });
+  }
+
+  function runFromDriveFolder() {
+    var btn = document.getElementById('iep_btn_run_folder');
+    var statusEl = document.getElementById('iep_status');
+    btn.disabled = true;
+    statusEl.textContent = 'Reading Drive folder…';
+    document.getElementById('iep_result').innerHTML = '';
+    google.script.run
+      .withSuccessHandler(function (res) { statusEl.textContent = 'Done (from Drive folder).'; showResult(res); btn.disabled = false; })
+      .withFailureHandler(function (err) { statusEl.textContent = ''; document.getElementById('iep_result').innerHTML = '<div class="upload-error">' + (err.message || err) + '</div>'; btn.disabled = false; })
+      .iep_runFromFolder({
+        window_start: document.getElementById('iep_window_start').value,
+        window_end:   document.getElementById('iep_window_end').value,
+        selected_agents: selectedAgentList()
+      });
+  }
+
+  function emailLastReport() {
+    if (!IEP.lastSheetUrl) return;
+    var btn = document.getElementById('iep_btn_email');
+    var statusEl = document.getElementById('iep_status');
+    btn.disabled = true;
+    statusEl.textContent = 'Emailing…';
+    google.script.run
+      .withSuccessHandler(function (res) { statusEl.textContent = 'Sent to ' + (res.sent || 0) + ' recipient(s).'; btn.disabled = false; })
+      .withFailureHandler(function (err) { statusEl.textContent = ''; document.getElementById('iep_result').innerHTML += '<div class="upload-error">' + (err.message || err) + '</div>'; btn.disabled = false; })
+      .iep_emailReport(IEP.lastSheetUrl, []);
+  }
+
+  function loadSettingsHint() {
+    google.script.run
+      .withSuccessHandler(function (s) {
+        IEP.settings = s;
+        var hint = document.getElementById('iep_settings_hint');
+        var parts = [];
+        parts.push(s.folder_configured ? 'Drive folder configured' : 'Drive folder not configured');
+        parts.push(s.recipient_count + ' email recipient(s) configured');
+        parts.push('Monthly schedule: ' + (s.monthly_schedule_enabled ? 'on' : 'off'));
+        hint.textContent = parts.join('  •  ');
+      })
+      .iep_getSettings();
+  }
+
+  RECON.startMedicareIEP = function () {
+    if (!RECON.state) RECON.state = {};
+    if (!RECON.state.runId) {
+      google.script.run
+        .withSuccessHandler(function (res) {
+          RECON.state.runId = res.runId;
+          renderUploadZones();
+        })
+        .beginNewRun();
+    } else {
+      renderUploadZones();
+    }
+    document.getElementById('iep_window_start').value = todayIso();
+    document.getElementById('iep_window_end').value   = isoOf(addMonths(new Date(), 1));
+    loadSettingsHint();
+  };
+
+  window.addEventListener('load', function () {
+    var presets = document.getElementById('iep_presets');
+    if (presets) {
+      presets.addEventListener('click', function (e) {
+        if (e.target.dataset && e.target.dataset.preset) {
+          applyPreset(e.target.dataset.preset);
+          updateRunButton();
+        }
+      });
+    }
+    var s = document.getElementById('iep_window_start');
+    var e = document.getElementById('iep_window_end');
+    if (s) s.addEventListener('change', updateRunButton);
+    if (e) e.addEventListener('change', updateRunButton);
+    var search = document.getElementById('iep_agent_search');
+    if (search) search.addEventListener('input', function () { renderAgents(search.value); });
+    var allBtn = document.getElementById('iep_agent_all');
+    var noneBtn = document.getElementById('iep_agent_none');
+    if (allBtn)  allBtn.addEventListener('click',  function () { IEP.agents.forEach(function (a) { IEP.selectedAgents[a] = true;  }); renderAgents(document.getElementById('iep_agent_search').value); });
+    if (noneBtn) noneBtn.addEventListener('click', function () { IEP.agents.forEach(function (a) { IEP.selectedAgents[a] = false; }); renderAgents(document.getElementById('iep_agent_search').value); });
+    var runBtn = document.getElementById('iep_btn_run');
+    if (runBtn) runBtn.addEventListener('click', runAnalysis);
+    var runFolderBtn = document.getElementById('iep_btn_run_folder');
+    if (runFolderBtn) runFolderBtn.addEventListener('click', runFromDriveFolder);
+    var emailBtn = document.getElementById('iep_btn_email');
+    if (emailBtn) emailBtn.addEventListener('click', emailLastReport);
+  });
+})();
+</script>

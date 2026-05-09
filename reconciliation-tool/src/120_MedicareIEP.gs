@@ -1,0 +1,655 @@
+// Medicare IEP Conversion Tracker
+//
+// Identifies AgencyBloc clients whose 65th birthday falls inside a chosen
+// date window, joins them to the Policy report (MBI -> name+DOB+middle),
+// and classifies each as "Converted (IEP)" or "Not Converted Yet" based on
+// whether they have an Active or Pending Part C policy whose Effective Date
+// falls inside their personal Initial Enrollment Period effective range.
+//
+// IEP effective range for a person turning 65 in month M:
+//   Earliest: 1st of M     (applied 1-3 months before)
+//   Latest:   1st of M+4   (applied 3 months after birth month)
+//   -> half-open interval [start_of_month(M), start_of_month(M+5))
+//
+// Output:
+//   Tab 1 "IEP Clients" — one row per client in window with combined
+//                         Individual + Policy fields.
+//   Tab 2 "IEP Stats"   — per-agent totals and per-agent-per-month rows
+//                         showing total / converted / not-converted /
+//                         conversion %, plus an "All Agents" rollup.
+
+// ---------- Server endpoints (called from MedicareIEP.html) ----------
+
+// List Servicing Agents found in the uploaded AB Individual report.
+function iep_listAgents(runId) {
+  var raw = readScratchRows(runId, 'ab_individual');
+  if (!raw || raw.length < 2) return [];
+  var inds = normalize('ab_individual', raw);
+  var seen = {};
+  var agents = [];
+  for (var i = 0; i < inds.length; i++) {
+    var a = (inds[i].servicing_agent || '').trim();
+    if (!a || seen[a]) continue;
+    seen[a] = true;
+    agents.push(a);
+  }
+  agents.sort();
+  return agents;
+}
+
+// Main entry: run analysis and write the output Sheet.
+function iep_run(runId, options) {
+  options = options || {};
+  var windowStart = parseIso_(options.window_start);
+  var windowEnd   = parseIso_(options.window_end);
+  if (!windowStart || !windowEnd) {
+    throw new Error('Pick a valid start and end date for the 65th-birthday window.');
+  }
+  if (windowEnd < windowStart) {
+    throw new Error('End date is before start date.');
+  }
+
+  var rawInds = readScratchRows(runId, 'ab_individual');
+  var rawPols = readScratchRows(runId, 'ab_policy');
+  if (!rawInds || rawInds.length < 2) {
+    throw new Error('Upload the AgencyBloc Individual report first.');
+  }
+  if (!rawPols || rawPols.length < 2) {
+    throw new Error('Upload the AgencyBloc Policy report first.');
+  }
+
+  var inds = normalize('ab_individual', rawInds);
+  var pols = normalize('ab_policy', rawPols);
+
+  var result = iepAnalyze_(inds, pols, windowStart, windowEnd, options.selected_agents || []);
+  var written = writeIepWorkbook_(runId, result.rows, result.stats, {
+    windowStart: windowStart,
+    windowEnd: windowEnd,
+    selectedAgents: options.selected_agents || []
+  });
+
+  audit('iep_run', runId, {
+    window_start: isoOf_(windowStart),
+    window_end: isoOf_(windowEnd),
+    rows: result.rows.length,
+    converted: result.stats.totals.converted,
+    not_converted: result.stats.totals.not_converted
+  });
+
+  return { url: written.url, rows: result.rows.length, stats: result.stats.totals };
+}
+
+// ---------- Core analysis ----------
+
+function iepAnalyze_(individuals, policies, windowStart, windowEnd, selectedAgents) {
+  var clients = filterClients_(individuals);
+  var sixtyFifthByClient = {};
+  var inWindow = [];
+  for (var i = 0; i < clients.length; i++) {
+    var c = clients[i];
+    var dob = parseIso_(c.dob);
+    if (!dob) continue;
+    var sixtyFifth = addYears_(dob, 65);
+    if (sixtyFifth < windowStart || sixtyFifth > windowEnd) continue;
+    sixtyFifthByClient[c.__src_row] = sixtyFifth;
+    inWindow.push(c);
+  }
+
+  if (selectedAgents && selectedAgents.length) {
+    var agentSet = {};
+    selectedAgents.forEach(function (a) { agentSet[normalizeAgentKey_(a)] = true; });
+    inWindow = inWindow.filter(function (c) {
+      return agentSet[normalizeAgentKey_(c.servicing_agent)];
+    });
+  }
+
+  var policyByMBI = {};
+  var policyByNDOB = {};
+  for (var p = 0; p < policies.length; p++) {
+    var pol = policies[p];
+    if (pol.mbi) {
+      var k = String(pol.mbi).trim().toUpperCase();
+      (policyByMBI[k] = policyByMBI[k] || []).push(pol);
+    }
+    var ndob = nameDOBKey_(pol);
+    if (ndob) (policyByNDOB[ndob] = policyByNDOB[ndob] || []).push(pol);
+  }
+
+  var rows = [];
+  for (var j = 0; j < inWindow.length; j++) {
+    var c2 = inWindow[j];
+    var sixtyFifth = sixtyFifthByClient[c2.__src_row];
+    var matched = matchClientToPolicies_(c2, policyByMBI, policyByNDOB);
+    var iepRange = iepEffectiveRange_(sixtyFifth);
+
+    var partC = matched.filter(function (mp) {
+      if (!isActiveOrPendingStatus_(mp.status)) return false;
+      if (!isPartCCoverage_(mp.policy_type)) return false;
+      var eff = parseIso_(mp.effective_date);
+      if (!eff) return false;
+      return eff >= iepRange.start && eff < iepRange.endExcl;
+    });
+
+    var converted = partC.length > 0;
+    var displayPolicy = partC[0]
+      || matched.filter(function (mp) { return isPartCCoverage_(mp.policy_type) && isActiveOrPendingStatus_(mp.status); })[0]
+      || matched.filter(function (mp) { return isActiveOrPendingStatus_(mp.status); })[0]
+      || matched[0]
+      || null;
+
+    rows.push(buildClientRow_(c2, sixtyFifth, displayPolicy, converted));
+  }
+
+  rows.sort(function (a, b) {
+    return (a.sixty_fifth_birthday || '').localeCompare(b.sixty_fifth_birthday || '');
+  });
+
+  var stats = buildIepStats_(rows, windowStart, windowEnd);
+  return { rows: rows, stats: stats };
+}
+
+function filterClients_(individuals) {
+  var out = [];
+  for (var i = 0; i < individuals.length; i++) {
+    var t = String(individuals[i].individual_type || '').trim().toLowerCase();
+    if (t === 'client') out.push(individuals[i]);
+  }
+  return out;
+}
+
+function matchClientToPolicies_(client, policyByMBI, policyByNDOB) {
+  var hits = [];
+  var seen = {};
+  function add(p) {
+    if (seen[p.__src_row]) return;
+    seen[p.__src_row] = true;
+    hits.push(p);
+  }
+  if (client.mbi) {
+    var k = String(client.mbi).trim().toUpperCase();
+    (policyByMBI[k] || []).forEach(add);
+  }
+  var ndob = nameDOBKey_(client);
+  if (ndob) (policyByNDOB[ndob] || []).forEach(add);
+  return hits;
+}
+
+function nameDOBKey_(rec) {
+  var ln = normLower_(rec.last_name);
+  var fn = normLower_(rec.first_name);
+  var dob = rec.dob || '';
+  if (!ln || !fn || !dob) return null;
+  var mn = normLower_(rec.middle_name);
+  return ln + '|' + fn + '|' + (mn ? mn.charAt(0) : '') + '|' + dob;
+}
+
+function normLower_(s) {
+  if (!s) return '';
+  return String(s).trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function normalizeAgentKey_(s) {
+  return String(s || '').trim().toUpperCase();
+}
+
+function isActiveOrPendingStatus_(s) {
+  var u = String(s || '').toUpperCase();
+  return u === 'ACTIVE' || u === 'PENDING';
+}
+
+function isPartCCoverage_(coverageType) {
+  if (!coverageType) return false;
+  var u = String(coverageType).toUpperCase();
+  var rules = (typeof getAbOnlyRulesConfig_ === 'function') ? getAbOnlyRulesConfig_() : {};
+  var aliases = (rules.policy_types_part_c || ['PART C', 'MAPD', 'MEDICARE ADVANTAGE', 'MA', 'MA-PD']);
+  for (var i = 0; i < aliases.length; i++) {
+    if (u.indexOf(String(aliases[i]).toUpperCase()) !== -1) return true;
+  }
+  return false;
+}
+
+function isAcaCoverage_(coverageType) {
+  if (!coverageType) return false;
+  var u = String(coverageType).toUpperCase();
+  return u.indexOf('ACA') !== -1 || u.indexOf('INDV. HEALTH') !== -1 || u.indexOf('INDIVIDUAL HEALTH') !== -1;
+}
+
+function memberIdForDisplay_(policyRow) {
+  if (!policyRow) return '';
+  if (isAcaCoverage_(policyRow.policy_type)) {
+    return policyRow.wahpf_app_id || policyRow.member_id || '';
+  }
+  return policyRow.member_id || '';
+}
+
+function buildClientRow_(client, sixtyFifth, policy, converted) {
+  var fullName = [client.first_name, client.middle_name, client.last_name]
+    .filter(function (x) { return !!x; }).join(' ').replace(/\s+/g, ' ').trim();
+  var phone = client.phone_cellular || client.phone_home || client.phone_business || '';
+  return {
+    full_name:              fullName,
+    individual_id:          client.individual_id || '',
+    gender:                 client.gender || '',
+    dob:                    client.dob || '',
+    sixty_fifth_birthday:   isoOf_(sixtyFifth),
+    phone:                  phone,
+    email:                  client.email || '',
+    servicing_agent:        client.servicing_agent || '',
+    individual_type:        client.individual_type || '',
+    individual_status:      client.status || '',
+    carrier_name:           policy ? (policy.carrier || '') : '',
+    product_name:           policy ? (policy.plan_name || '') : '',
+    coverage_type:          policy ? (policy.policy_type || '') : '',
+    app_submit_date:        policy ? (policy.app_submit_date || '') : '',
+    effective_date:         policy ? (policy.effective_date || '') : '',
+    signing_agent_name:     policy ? (policy.signed_by || '') : '',
+    policy_servicing_agent: policy ? (policy.servicing_agent || '') : '',
+    member_id:              memberIdForDisplay_(policy),
+    policy_number:          policy ? (policy.policy_number || '') : '',
+    conversion_status:      converted ? 'Converted (IEP)' : 'Not Converted Yet'
+  };
+}
+
+// ---------- IEP date math ----------
+
+function iepEffectiveRange_(sixtyFifthDate) {
+  var start = new Date(sixtyFifthDate.getFullYear(), sixtyFifthDate.getMonth(), 1);
+  var endExcl = new Date(sixtyFifthDate.getFullYear(), sixtyFifthDate.getMonth() + 5, 1);
+  return { start: start, endExcl: endExcl };
+}
+
+function parseIso_(s) {
+  if (!s) return null;
+  if (s instanceof Date) return new Date(s.getFullYear(), s.getMonth(), s.getDate());
+  var m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return null;
+  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+}
+
+function isoOf_(d) {
+  if (!d) return '';
+  var y = d.getFullYear();
+  var m = d.getMonth() + 1;
+  var dd = d.getDate();
+  return y + '-' + (m < 10 ? '0' + m : m) + '-' + (dd < 10 ? '0' + dd : dd);
+}
+
+function addYears_(d, n) {
+  return new Date(d.getFullYear() + n, d.getMonth(), d.getDate());
+}
+
+function addMonths_(d, n) {
+  return new Date(d.getFullYear(), d.getMonth() + n, d.getDate());
+}
+
+function startOfMonth_(d) {
+  return new Date(d.getFullYear(), d.getMonth(), 1);
+}
+
+// ---------- Stats ----------
+
+function buildIepStats_(rows, windowStart, windowEnd) {
+  var months = monthsBetween_(windowStart, windowEnd);
+  var byAgent = {};
+  var totals  = { total: 0, converted: 0, not_converted: 0 };
+
+  function bumpAgent(agent, monthKey, converted) {
+    var a = byAgent[agent] || (byAgent[agent] = {
+      agent: agent,
+      total: 0, converted: 0, not_converted: 0,
+      monthly: {}
+    });
+    a.total++;
+    a[converted ? 'converted' : 'not_converted']++;
+    var m = a.monthly[monthKey] || (a.monthly[monthKey] = { total: 0, converted: 0, not_converted: 0 });
+    m.total++;
+    m[converted ? 'converted' : 'not_converted']++;
+  }
+
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i];
+    var monthKey = (r.sixty_fifth_birthday || '').substring(0, 7) || '(unknown)';
+    var converted = r.conversion_status === 'Converted (IEP)';
+    var agent = (r.servicing_agent || '(unassigned)').trim() || '(unassigned)';
+    totals.total++;
+    totals[converted ? 'converted' : 'not_converted']++;
+    bumpAgent(agent, monthKey, converted);
+  }
+
+  var agentList = Object.keys(byAgent).map(function (k) { return byAgent[k]; });
+  agentList.sort(function (a, b) { return a.agent.localeCompare(b.agent); });
+
+  return { totals: totals, agents: agentList, months: months };
+}
+
+function monthsBetween_(start, end) {
+  var out = [];
+  var cur = new Date(start.getFullYear(), start.getMonth(), 1);
+  var stop = new Date(end.getFullYear(), end.getMonth(), 1);
+  while (cur <= stop) {
+    out.push(isoOf_(cur).substring(0, 7));
+    cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
+  }
+  return out;
+}
+
+// ---------- Output workbook ----------
+
+function writeIepWorkbook_(runId, rows, stats, opts) {
+  var folder = getOrCreateRunsFolder_();
+  var who = (Session.getActiveUser().getEmail() || 'unknown').split('@')[0];
+  var name = 'IEP_' + runId + '_' + who;
+  var ss = SpreadsheetApp.create(name);
+  var file = DriveApp.getFileById(ss.getId());
+  folder.addFile(file);
+  DriveApp.getRootFolder().removeFile(file);
+  try { file.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.NONE); } catch (e) {}
+
+  var defaultSheet = ss.getSheets()[0];
+  writeIepClientsTab_(ss, rows);
+  writeIepStatsTab_(ss, stats, opts);
+  writeIepMetadataTab_(ss, runId, rows.length, opts);
+  if (defaultSheet && ss.getSheets().length > 1) ss.deleteSheet(defaultSheet);
+
+  var clients = ss.getSheetByName('IEP Clients');
+  if (clients) ss.setActiveSheet(clients);
+
+  appendRunIndex_(runId, ss.getUrl());
+  return { url: ss.getUrl(), id: ss.getId() };
+}
+
+function writeIepClientsTab_(ss, rows) {
+  var sh = ss.insertSheet('IEP Clients');
+  var header = [
+    'Full Name', 'Individual ID', 'Gender', 'DOB', '65th Birthday',
+    'Phone', 'Email', 'Servicing Agent', 'Individual Type', 'Individual Status',
+    'Carrier Name', 'Product Name', 'Coverage Type',
+    'App Submit Date', 'Effective Date',
+    'Signing Agent Name', 'Policy Servicing Agent',
+    'Member ID', 'Policy Number',
+    'Conversion Status'
+  ];
+  sh.appendRow(header);
+  sh.getRange(1, 1, 1, header.length).setFontWeight('bold');
+  sh.setFrozenRows(1);
+  if (!rows.length) return;
+  var values = rows.map(function (r) {
+    return [
+      r.full_name, r.individual_id, r.gender, r.dob, r.sixty_fifth_birthday,
+      r.phone, r.email, r.servicing_agent, r.individual_type, r.individual_status,
+      r.carrier_name, r.product_name, r.coverage_type,
+      r.app_submit_date, r.effective_date,
+      r.signing_agent_name, r.policy_servicing_agent,
+      r.member_id, r.policy_number,
+      r.conversion_status
+    ];
+  });
+  sh.getRange(2, 1, values.length, header.length).setValues(values);
+}
+
+function writeIepStatsTab_(ss, stats, opts) {
+  var sh = ss.insertSheet('IEP Stats');
+  var row = 1;
+  sh.getRange(row, 1).setValue('Window').setFontWeight('bold');
+  sh.getRange(row, 2).setValue(isoOf_(opts.windowStart) + '  →  ' + isoOf_(opts.windowEnd));
+  row += 2;
+
+  sh.getRange(row, 1).setValue('Totals (entire window)').setFontWeight('bold');
+  row++;
+  sh.getRange(row, 1, 1, 5).setValues([['Agent', 'Total in Window', 'Converted (IEP)', 'Not Converted', 'Conversion %']]).setFontWeight('bold');
+  row++;
+  var allRow = ['All Agents', stats.totals.total, stats.totals.converted, stats.totals.not_converted, pctOf_(stats.totals.converted, stats.totals.total)];
+  sh.getRange(row, 1, 1, 5).setValues([allRow]).setFontWeight('bold');
+  row++;
+  for (var i = 0; i < stats.agents.length; i++) {
+    var a = stats.agents[i];
+    sh.getRange(row, 1, 1, 5).setValues([[a.agent, a.total, a.converted, a.not_converted, pctOf_(a.converted, a.total)]]);
+    row++;
+  }
+
+  row += 1;
+  sh.getRange(row, 1).setValue('Monthly breakdown').setFontWeight('bold');
+  row++;
+  sh.getRange(row, 1, 1, 6).setValues([['Agent', 'Birthday Month', 'Total', 'Converted (IEP)', 'Not Converted', 'Conversion %']]).setFontWeight('bold');
+  row++;
+  // All-Agents monthly
+  var monthlyAll = aggregateAgentsByMonth_(stats.agents, stats.months);
+  for (var m = 0; m < stats.months.length; m++) {
+    var mk = stats.months[m];
+    var mt = monthlyAll[mk] || { total: 0, converted: 0, not_converted: 0 };
+    sh.getRange(row, 1, 1, 6).setValues([['All Agents', mk, mt.total, mt.converted, mt.not_converted, pctOf_(mt.converted, mt.total)]]).setFontWeight('bold');
+    row++;
+  }
+  for (var ai = 0; ai < stats.agents.length; ai++) {
+    var ag = stats.agents[ai];
+    for (var mi = 0; mi < stats.months.length; mi++) {
+      var key = stats.months[mi];
+      var data = ag.monthly[key] || { total: 0, converted: 0, not_converted: 0 };
+      if (data.total === 0) continue;
+      sh.getRange(row, 1, 1, 6).setValues([[ag.agent, key, data.total, data.converted, data.not_converted, pctOf_(data.converted, data.total)]]);
+      row++;
+    }
+  }
+  sh.setFrozenRows(1);
+}
+
+function writeIepMetadataTab_(ss, runId, rowCount, opts) {
+  var sh = ss.insertSheet('RunMetadata');
+  var rows = [
+    ['run_id', runId],
+    ['generated', new Date().toString()],
+    ['user', Session.getActiveUser().getEmail() || ''],
+    ['window_start', isoOf_(opts.windowStart)],
+    ['window_end', isoOf_(opts.windowEnd)],
+    ['selected_agents', (opts.selectedAgents || []).join(', ') || '(all)'],
+    ['client_rows', rowCount]
+  ];
+  sh.getRange(1, 1, rows.length, 2).setValues(rows);
+}
+
+function aggregateAgentsByMonth_(agents, months) {
+  var out = {};
+  for (var i = 0; i < months.length; i++) out[months[i]] = { total: 0, converted: 0, not_converted: 0 };
+  for (var a = 0; a < agents.length; a++) {
+    var ag = agents[a];
+    for (var k in ag.monthly) {
+      if (!out[k]) out[k] = { total: 0, converted: 0, not_converted: 0 };
+      out[k].total         += ag.monthly[k].total;
+      out[k].converted     += ag.monthly[k].converted;
+      out[k].not_converted += ag.monthly[k].not_converted;
+    }
+  }
+  return out;
+}
+
+function pctOf_(num, denom) {
+  if (!denom) return '0%';
+  return Math.round((num / denom) * 1000) / 10 + '%';
+}
+
+// ---------- Settings ----------
+
+function getIepSettings_() {
+  var override = readJsonFromDriveConfig_('iep_settings.json');
+  return override || (typeof EMBEDDED_IEP_SETTINGS !== 'undefined' ? EMBEDDED_IEP_SETTINGS : {});
+}
+
+function iep_getSettings() {
+  var s = getIepSettings_();
+  return {
+    folder_configured: !!s.report_folder_id,
+    recipient_count: (s.recipient_emails || []).length,
+    monthly_schedule_enabled: !!s.monthly_schedule_enabled,
+    monthly_window_months_ahead: s.monthly_window_months_ahead || 1,
+    monthly_window_months_back: s.monthly_window_months_back || 0
+  };
+}
+
+// ---------- Drive-folder source ----------
+
+function iep_runFromFolder(options) {
+  options = options || {};
+  var windowStart = parseIso_(options.window_start);
+  var windowEnd   = parseIso_(options.window_end);
+  if (!windowStart || !windowEnd) {
+    throw new Error('Pick a valid start and end date for the 65th-birthday window.');
+  }
+  if (windowEnd < windowStart) throw new Error('End date is before start date.');
+
+  var settings = getIepSettings_();
+  if (!settings.report_folder_id) {
+    throw new Error('No IEP report folder configured. Set "report_folder_id" in /Reconciliation Tool/Config/iep_settings.json.');
+  }
+
+  var folder = DriveApp.getFolderById(settings.report_folder_id);
+  var indRaw = loadLatestCsvFromFolder_(folder, settings.individual_filename_pattern || 'individualreport');
+  var polRaw = loadLatestCsvFromFolder_(folder, settings.policy_filename_pattern || 'PolicyIndividualsGroups');
+  if (!indRaw) throw new Error('No Individual report (matching "' + (settings.individual_filename_pattern || 'individualreport') + '") found in the IEP folder.');
+  if (!polRaw) throw new Error('No Policy report (matching "' + (settings.policy_filename_pattern || 'PolicyIndividualsGroups') + '") found in the IEP folder.');
+
+  var inds = normalize('ab_individual', indRaw);
+  var pols = normalize('ab_policy', polRaw);
+  var result = iepAnalyze_(inds, pols, windowStart, windowEnd, options.selected_agents || []);
+
+  var runId = 'iep_' + Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'UTC', 'yyyyMMdd_HHmmss');
+  var written = writeIepWorkbook_(runId, result.rows, result.stats, {
+    windowStart: windowStart,
+    windowEnd: windowEnd,
+    selectedAgents: options.selected_agents || []
+  });
+
+  audit('iep_run_from_folder', runId, {
+    window_start: isoOf_(windowStart),
+    window_end: isoOf_(windowEnd),
+    rows: result.rows.length,
+    converted: result.stats.totals.converted
+  });
+
+  return { url: written.url, runId: runId, rows: result.rows.length, stats: result.stats.totals };
+}
+
+function loadLatestCsvFromFolder_(folder, pattern) {
+  var pat = String(pattern || '').toLowerCase();
+  var files = folder.getFiles();
+  var latest = null;
+  while (files.hasNext()) {
+    var f = files.next();
+    var n = f.getName().toLowerCase();
+    if (pat && n.indexOf(pat) === -1) continue;
+    if (!latest || f.getDateCreated().getTime() > latest.getDateCreated().getTime()) {
+      latest = f;
+    }
+  }
+  if (!latest) return null;
+  var text = latest.getBlob().getDataAsString('UTF-8');
+  return parseCsv(text);
+}
+
+// ---------- Email distribution ----------
+
+function iep_emailReport(sheetUrl, recipients) {
+  var settings = getIepSettings_();
+  var to = (recipients && recipients.length) ? recipients : (settings.recipient_emails || []);
+  if (!to.length) {
+    throw new Error('No recipients configured. Add emails to /Reconciliation Tool/Config/iep_settings.json (recipient_emails) or pass an explicit list.');
+  }
+  if (!sheetUrl) throw new Error('No IEP report URL provided.');
+
+  var subject = 'Medicare IEP Tracker — ' + isoOf_(new Date());
+  var body =
+    'The latest Medicare IEP conversion report is available:\n\n' +
+    sheetUrl + '\n\n' +
+    'This email is sent inside our Google Workspace BAA. Do not forward outside the agency.';
+
+  var attachments = [];
+  if (settings.send_csv_attachment !== false) {
+    var csv = iepClientsCsvFromSheet_(sheetUrl);
+    if (csv) {
+      attachments.push(Utilities.newBlob(csv, 'text/csv', 'iep_clients.csv'));
+    }
+  }
+
+  for (var i = 0; i < to.length; i++) {
+    GmailApp.sendEmail(to[i], subject, body, { attachments: attachments });
+  }
+
+  audit('iep_emailed', '', { recipients: to.length, sheet: sheetUrl });
+  return { sent: to.length };
+}
+
+function iepClientsCsvFromSheet_(sheetUrl) {
+  var m = String(sheetUrl).match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (!m) return null;
+  var ss = SpreadsheetApp.openById(m[1]);
+  var sh = ss.getSheetByName('IEP Clients');
+  if (!sh) return null;
+  var values = sh.getDataRange().getValues();
+  return values.map(function (row) {
+    return row.map(function (cell) {
+      var s = (cell === null || cell === undefined) ? '' : String(cell);
+      if (s.indexOf(',') !== -1 || s.indexOf('"') !== -1 || s.indexOf('\n') !== -1) {
+        return '"' + s.replace(/"/g, '""') + '"';
+      }
+      return s;
+    }).join(',');
+  }).join('\n');
+}
+
+// ---------- Monthly scheduled trigger ----------
+//
+// Schedule: daily at 7am. The handler bails unless today is the last day of
+// the month and `monthly_schedule_enabled` is true. Daily firing avoids
+// edge cases with .onMonthDay() in months that have fewer days.
+
+var IEP_MONTHLY_TRIGGER = 'iepMonthlyTick';
+
+function installIepMonthly() {
+  uninstallIepMonthly();
+  ScriptApp.newTrigger(IEP_MONTHLY_TRIGGER)
+    .timeBased()
+    .everyDays(1)
+    .atHour(7)
+    .create();
+  audit('iep_monthly_installed', '', {});
+}
+
+function uninstallIepMonthly() {
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === IEP_MONTHLY_TRIGGER) {
+      ScriptApp.deleteTrigger(triggers[i]);
+    }
+  }
+}
+
+function iepMonthlyTick() {
+  var settings = getIepSettings_();
+  if (!settings.monthly_schedule_enabled) {
+    safeLog('iep_monthly_skipped', { reason: 'monthly_schedule_enabled is false' });
+    return;
+  }
+  var today = new Date();
+  var lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+  if (today.getDate() !== lastDay) {
+    safeLog('iep_monthly_skipped', { reason: 'not last day of month', day: today.getDate(), lastDay: lastDay });
+    return;
+  }
+
+  var monthsAhead = Number(settings.monthly_window_months_ahead) || 1;
+  var monthsBack  = Number(settings.monthly_window_months_back)  || 0;
+  var start = addMonths_(today, -monthsBack);
+  var end   = addMonths_(today, monthsAhead);
+
+  try {
+    var res = iep_runFromFolder({
+      window_start: isoOf_(start),
+      window_end: isoOf_(end),
+      selected_agents: []
+    });
+    iep_emailReport(res.url, settings.recipient_emails || []);
+    audit('iep_monthly_sent', res.runId, { rows: res.rows });
+  } catch (e) {
+    safeLog('iep_monthly_failed', { error: String(e && e.message || e) });
+    throw e;
+  }
+}

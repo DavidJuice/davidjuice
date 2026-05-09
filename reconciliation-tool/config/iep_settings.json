@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "report_folder_id": "",
+  "individual_filename_pattern": "individualreport",
+  "policy_filename_pattern": "PolicyIndividualsGroups",
+  "recipient_emails": [],
+  "monthly_schedule_enabled": false,
+  "monthly_window_months_ahead": 1,
+  "monthly_window_months_back": 0,
+  "send_csv_attachment": true
+}

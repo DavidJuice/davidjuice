@@ -16,6 +16,8 @@ window.addEventListener('load', function () {
       RECON.showScreen(target);
       if (target === 'screen_reconciliation' && RECON.startReconciliation) {
         RECON.startReconciliation();
+      } else if (target === 'screen_medicareiep' && RECON.startMedicareIEP) {
+        RECON.startMedicareIEP();
       }
     });
   });

@@ -25,6 +25,10 @@
           <div class="tool-desc">Auto-update the Plog tracking sheet from AgencyBloc on a schedule.</div>
           <div class="tool-status">Configuration pending</div>
         </button>
+        <button class="tool-card" data-target="screen_medicareiep">
+          <div class="tool-title">Medicare IEP Tracker</div>
+          <div class="tool-desc">Find clients turning 65 in a chosen window and see who has been converted to a Part C Medicare plan during their IEP.</div>
+        </button>
       </div>
     </div>
 
@@ -74,6 +78,46 @@
       </div>
     </div>
 
+    <!-- Medicare IEP Tracker tool -->
+    <div id="screen_medicareiep" class="screen hidden">
+      <button class="link-back" data-target="screen_toolselector">&larr; Back to tools</button>
+      <h2>Medicare IEP Tracker</h2>
+      <p class="muted">Find clients turning 65 in a chosen window. Each one is classified <em>Converted (IEP)</em> if they have an Active or Pending Part C policy whose Effective Date is inside their personal IEP-effective range.</p>
+
+      <h3 style="margin-top: 12px;">1. Upload reports <span class="muted">(or use a Drive folder, see below)</span></h3>
+      <div id="iep_uploads"></div>
+
+      <h3 style="margin-top: 12px;">2. Pick a 65th-birthday window</h3>
+      <div class="row" id="iep_presets">
+        <button class="secondary" data-preset="next_1m">Next 1 month</button>
+        <button class="secondary" data-preset="next_4m">Next 4 months</button>
+        <button class="secondary" data-preset="last_qtr_next_qtr">±3 months</button>
+        <button class="secondary" data-preset="past_6m">Past 6 months</button>
+        <button class="secondary" data-preset="past_1y">Past 1 year</button>
+      </div>
+      <div class="row" style="margin-top: 6px;">
+        <label>Start <input type="date" id="iep_window_start" /></label>
+        <label>End   <input type="date" id="iep_window_end" /></label>
+      </div>
+
+      <h3 style="margin-top: 12px;">3. Filter by Servicing Agent <span class="muted">(optional)</span></h3>
+      <input type="search" id="iep_agent_search" placeholder="Search agents…" />
+      <div class="row" style="margin: 6px 0;">
+        <button class="secondary" id="iep_agent_all">Select all</button>
+        <button class="secondary" id="iep_agent_none">Deselect all</button>
+      </div>
+      <div id="iep_agent_list" class="agent-list"><div class="muted">Upload the Individual report to populate.</div></div>
+
+      <div class="row" style="margin-top: 12px;">
+        <button id="iep_btn_run" disabled>Run from uploads</button>
+        <button id="iep_btn_run_folder" class="secondary">Run from Drive folder</button>
+        <button id="iep_btn_email" class="secondary" disabled>Email last report</button>
+      </div>
+      <div id="iep_settings_hint" class="muted" style="margin-top: 4px;"></div>
+      <div id="iep_status" class="muted" style="margin-top: 8px;"></div>
+      <div id="iep_result"></div>
+    </div>
+
     <!-- Plog Sync tool (placeholder) -->
     <div id="screen_plogsync" class="screen hidden">
       <button class="link-back" data-target="screen_toolselector">&larr; Back to tools</button>
@@ -102,5 +146,6 @@
     <?!= include('FileChecklist') ?>
     <?!= include('Step2_Agents') ?>
     <?!= include('Step4_Progress') ?>
+    <?!= include('MedicareIEP') ?>
   </body>
 </html>

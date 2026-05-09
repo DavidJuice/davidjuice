@@ -28,6 +28,7 @@ fi
   echo "var EMBEDDED_SETTINGS = $(cat "$CONFIG/settings.json");"
   echo "var EMBEDDED_AB_ONLY_RULES = $(cat "$CONFIG/ab_only_rules.json");"
   echo "var EMBEDDED_PLOG_SYNC = $(cat "$CONFIG/plog_sync.json");"
+  echo "var EMBEDDED_IEP_SETTINGS = $(cat "$CONFIG/iep_settings.json");"
 } > "$SRC/99_Embedded_Config.gs"
 
 echo "Build complete. src/ is ready for 'clasp push'."

@@ -9,6 +9,9 @@ function onOpen() {
     .addItem('Run All Tests', 'runAllTests')
     .addItem('Run Retention Now', 'runRetention')
     .addItem('Clear Stuck Run', 'clearStuckRun')
+    .addSeparator()
+    .addItem('Install IEP Monthly Email', 'installIepMonthly')
+    .addItem('Uninstall IEP Monthly Email', 'uninstallIepMonthly')
     .addToUi();
 }
 
