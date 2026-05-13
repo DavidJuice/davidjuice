@@ -151,7 +151,7 @@ const TRANSLATIONS = {
       directions:  "Get Directions",
       lynnwood:    "Lynnwood Office",
       federal_way: "Federal Way Office",
-      tacoma:      "Tacoma Office"
+      tacoma:      "Tacoma / Lakewood Office"
     },
 
     /* ── Contact Page ── */
@@ -173,7 +173,7 @@ const TRANSLATIONS = {
       office_any:    "Any Office",
       office_lw:     "Lynnwood",
       office_fw:     "Federal Way",
-      office_ta:     "Tacoma",
+      office_ta:     "Tacoma / Lakewood",
       service_label: "Service Interested In",
       service_any:   "Select a service",
       service_auto:  "Auto Insurance",
@@ -338,7 +338,7 @@ const TRANSLATIONS = {
       directions:  "길 찾기",
       lynnwood:    "린우드 지점",
       federal_way: "페더럴 웨이 지점",
-      tacoma:      "타코마 지점"
+      tacoma:      "타코마 / 레이크우드 지점"
     },
 
     /* ── Contact Page ── */
@@ -360,7 +360,7 @@ const TRANSLATIONS = {
       office_any:    "모든 지점",
       office_lw:     "린우드",
       office_fw:     "페더럴 웨이",
-      office_ta:     "타코마",
+      office_ta:     "타코마 / 레이크우드",
       service_label: "관심 서비스",
       service_any:   "서비스를 선택해주세요",
       service_auto:  "자동차 보험",
@@ -389,56 +389,56 @@ const TRANSLATIONS = {
 
 
   /* ============================================================
-     SPANISH  /  ESPAÑOL
+     SPANISH  /  Español
      ============================================================ */
   es: {
     nav: {
       home:      "Inicio",
-      about:     "Quiénes Somos",
+      about:     "Nosotros",
       services:  "Servicios",
       locations: "Ubicaciones",
       contact:   "Contacto"
     },
 
     hero: {
-      eyebrow:   "Agencia de Seguros Certificada — Estado de Washington",
+      eyebrow:   "Agencia de Seguros Licenciada — Estado de Washington",
       title:     "Protegiendo Lo Que Más Importa",
-      subtitle:  "Sirviendo a la comunidad coreano-estadounidense y multicultural en el estado de Washington desde 2013. Asesoría honesta. Cobertura asequible.",
+      subtitle:  "Sirviendo a la comunidad coreano-americana y multicultural en Washington desde 2013. Asesoría honesta. Cobertura asequible.",
       cta_quote: "Obtener Cotización Gratis",
       cta_learn: "Nuestros Servicios"
     },
 
     trust: {
-      licensed:  "Certificado en el Estado de Washington",
+      licensed:  "Licenciados en el Estado de Washington",
       since:     "Sirviendo Clientes Desde 2013",
       bilingual: "Servicio en Inglés y Coreano"
     },
 
     services_home: {
-      title:    "Nuestros Servicios de Seguros",
-      subtitle: "Soluciones de cobertura integral adaptadas a su vida, su familia y su negocio.",
-      learn:    "Saber Más",
+      title:    "Nuestros Servicios de Seguro",
+      subtitle: "Soluciones de cobertura adaptadas a su vida, familia y negocio.",
+      learn:    "Más Información",
       auto:        "Seguro de Auto",
-      auto_desc:   "Proteja su vehículo con cobertura integral, por colisión y de responsabilidad civil a precios competitivos.",
+      auto_desc:   "Proteja su vehículo con cobertura integral, de colisión y responsabilidad a tarifas competitivas.",
       home:        "Seguro de Hogar",
-      home_desc:   "Proteja su hogar y sus bienes contra incendios, robos, daños por clima y más.",
-      business:    "Seguro de Negocio",
-      business_desc: "Mantenga su negocio protegido con responsabilidad civil, propiedad comercial y compensación laboral.",
+      home_desc:   "Proteja su hogar y pertenencias contra incendios, robos, daños por el clima y más.",
+      business:    "Seguro Comercial",
+      business_desc: "Mantenga su negocio protegido con responsabilidad general, propiedad comercial y compensación laboral.",
       life:        "Seguro de Vida",
-      life_desc:   "Brinde seguridad financiera a su familia con pólizas de vida a plazo, entera y universal.",
-      health:      "Seguro Médico",
+      life_desc:   "Brinde seguridad financiera a su familia con pólizas de vida a término, entera y universal.",
+      health:      "Seguro de Salud",
       health_desc: "Inscripción en ACA / ObamaCare, planes de salud grupales y opciones de cobertura individual.",
       ltc:         "Cuidado a Largo Plazo",
-      ltc_desc:    "Planifique con anticipación los gastos de vida asistida, residencia de ancianos o atención domiciliaria.",
+      ltc_desc:    "Planifique con anticipación los gastos de vida asistida, hogar de ancianos o atención en el hogar.",
       medicare:    "Medicare y Jubilación",
-      medicare_desc: "Orientación para la inscripción en Medicare y planificación de la jubilación para asegurar su futuro."
+      medicare_desc: "Orientación para inscribirse en Medicare y planificación de jubilación para asegurar su futuro."
     },
 
     about_home: {
       title:   "Sobre Ace Insurance",
-      text1:   "Fundada en 2013 por Danny Kim, Ace Insurance & Retirement Services ha sido un socio de confianza para las familias y empresas del estado de Washington. Nos especializamos en servir a la comunidad coreano-estadounidense y multicultural con servicio personalizado bilingüe.",
-      text2:   "Como agencia independiente, trabajamos con múltiples compañías de alta calificación para encontrarle la mejor cobertura al mejor precio — no una póliza única para todos.",
-      cta:     "Conocer Nuestra Historia"
+      text1:   "Fundada en 2013 por Danny Kim, Ace Insurance & Retirement Services ha sido un socio de confianza para familias y negocios en Washington.",
+      text2:   "Como agencia independiente, trabajamos con múltiples aseguradoras para encontrar la mejor cobertura al mejor precio.",
+      cta:     "Nuestra Historia"
     },
 
     locations_home: {
@@ -454,85 +454,73 @@ const TRANSLATIONS = {
       or:       "o envíenos un mensaje"
     },
 
-    /* ── About Page ── */
     about: {
-      page_title:  "Quiénes Somos",
-      page_sub:    "Su socio de confianza en seguros desde 2013",
+      page_title:  "Nosotros",
+      page_sub:    "Su socio de seguros de confianza desde 2013",
       story_title: "Nuestra Historia",
-      story_p1:    "Ace Insurance & Retirement Services, Inc. fue fundada en 2013 por Danny Kim con una misión clara: proveer soluciones honestas y asequibles de seguros y jubilación a las comunidades coreano-estadounidenses y multiculturales en el estado de Washington.",
-      story_p2:    "Comenzando desde una sola oficina, hemos crecido para servir a clientes en Lynnwood, Federal Way, Tacoma y más. Nuestra independencia significa que trabajamos para usted — no para una sola aseguradora. Comparamos cotizaciones de múltiples compañías con calificación A para encontrar la opción adecuada para sus necesidades y presupuesto.",
-      story_p3:    "Ofrecemos consultas por videollamada, mensaje de texto, correo electrónico o en persona — lo que sea más conveniente para usted. Nuestro equipo habla inglés y coreano con fluidez.",
+      story_p1:    "Ace Insurance & Retirement Services, Inc. fue fundada en 2013 por Danny Kim con una misión clara: proveer soluciones honestas y asequibles de seguros y jubilación.",
+      story_p2:    "Crecimos para servir a clientes en Lynnwood, Federal Way, Tacoma y más. Nuestra independencia significa que trabajamos para usted.",
+      story_p3:    "Ofrecemos consultas por videollamada, texto, correo electrónico o en persona. Nuestro equipo habla inglés y coreano con fluidez.",
       founder_label: "Danny Kim",
       founder_title: "Fundador y Agente Principal",
-      community_title: "Nuestro Compromiso con la Comunidad",
-      community_p1: "Nos enorgullece servir a la comunidad coreano-estadounidense y a todas las familias multiculturales del oeste de Washington. Los seguros pueden ser confusos — navegarlos en un segundo idioma es aún más difícil. Por eso ofrecemos servicio completamente bilingüe en inglés y coreano, asegurando que cada cliente entienda completamente su cobertura.",
-      community_p2: "Creemos que todos merecen acceso a seguros de calidad y una planificación sólida para la jubilación, independientemente de su origen o idioma.",
+      community_title: "Compromiso con la Comunidad",
+      community_p1: "Estamos orgullosos de servir a la comunidad coreano-americana y a todas las familias multiculturales en Washington occidental.",
+      community_p2: "Creemos que todos merecen acceso a seguros de calidad y planificación de jubilación sólida.",
       values_title: "Nuestros Valores",
       val1_title:   "Confianza",
-      val1_desc:    "Le damos asesoría honesta, incluso cuando eso significa recomendar una opción de menor costo. Su confianza es nuestro activo más valioso.",
+      val1_desc:    "Le damos consejos honestos, incluso cuando eso significa recomendar una opción de menor precio.",
       val2_title:   "Experiencia",
-      val2_desc:    "Más de 10 años sirviendo a familias y empresas del estado de Washington. Conocemos el mercado local de adentro hacia afuera.",
+      val2_desc:    "Más de 10 años sirviendo a familias y negocios en Washington. Conocemos el mercado local.",
       val3_title:   "Comunidad",
-      val3_desc:    "Somos parte de las comunidades a las que servimos. Retribuir y construir relaciones duraderas es el núcleo de lo que hacemos."
+      val3_desc:    "Somos parte de las comunidades a las que servimos. Devolver y construir relaciones duraderas es fundamental."
     },
 
-    /* ── Services Page ── */
     services: {
       page_title:  "Nuestros Servicios",
-      page_sub:    "Soluciones integrales de seguros y planificación para la jubilación",
-      intro:       "Como agencia independiente, representamos a múltiples compañías de seguros de alta calificación para encontrar la cobertura correcta al precio correcto para usted.",
-
+      page_sub:    "Soluciones integrales de seguro y planificación de jubilación",
+      intro:       "Como agencia independiente, representamos múltiples compañías de seguros para encontrar la cobertura adecuada al precio correcto.",
       auto_title:   "Seguro de Auto",
-      auto_p1:      "Ya sea que maneje un sedán, SUV, camioneta o vehículo comercial, encontraremos la póliza de seguro de auto adecuada para protegerle en la carretera.",
-      auto_p2:      "Las opciones de cobertura incluyen responsabilidad civil, colisión, integral, motorista no asegurado/insuficientemente asegurado, pagos médicos y asistencia en carretera.",
-
+      auto_p1:      "Ya sea que maneje un sedán, SUV, camioneta o vehículo comercial, encontraremos la póliza correcta para protegerle.",
+      auto_p2:      "Las opciones incluyen responsabilidad, colisión, cobertura integral y asistencia en carretera.",
       home_title:   "Seguro de Hogar",
-      home_p1:      "Su hogar es probablemente su activo más valioso. Nuestras pólizas de seguro para propietarios protegen su vivienda, bienes personales y responsabilidad civil.",
-      home_p2:      "También ofrecemos seguro para inquilinos, seguro para condominios y pólizas para propietarios con inmuebles de inversión.",
-
-      biz_title:    "Seguro de Negocio",
-      biz_p1:       "Proteja su negocio de lo inesperado. Ofrecemos responsabilidad civil general, propiedad comercial, pólizas para dueños de negocios (BOP), compensación laboral y auto comercial.",
-      biz_p2:       "Ya sea que sea trabajador independiente o una pequeña empresa en crecimiento, adaptaremos una póliza a su industria específica y perfil de riesgo.",
-
+      home_p1:      "Su hogar probablemente es su activo más valioso. Nuestras pólizas protegen su vivienda, bienes y responsabilidad.",
+      home_p2:      "También ofrecemos seguros para inquilinos, condominios y propietarios de inmuebles de inversión.",
+      biz_title:    "Seguro Comercial",
+      biz_p1:       "Proteja su negocio de lo inesperado con responsabilidad general, propiedad comercial y más.",
+      biz_p2:       "Ya sea propietario único o pequeña empresa en crecimiento, adaptaremos la póliza a su industria.",
       life_title:   "Seguro de Vida",
-      life_p1:      "El seguro de vida es la base de un plan financiero sólido. Ofrecemos pólizas de vida a plazo, entera, universal e indexada universal.",
-      life_p2:      "Le ayudaremos a determinar el tipo y monto de cobertura adecuados para proteger a su familia y cumplir sus metas financieras a largo plazo.",
-
-      health_title: "Seguro Médico",
-      health_p1:    "Asistimos a individuos, familias y pequeñas empresas con la inscripción en seguros médicos, incluyendo planes del mercado ACA / ObamaCare, planes de salud a corto plazo y cobertura de salud grupal.",
-      health_p2:    "Nuestros agentes están certificados para guiarle durante los períodos de inscripción abierta y especial para encontrar el plan más rentable.",
-
+      life_p1:      "El seguro de vida es la base de un plan financiero sólido. Ofrecemos pólizas de vida a término, entera y universal.",
+      life_p2:      "Le ayudaremos a determinar el tipo y monto correcto de cobertura para su familia.",
+      health_title: "Seguro de Salud",
+      health_p1:    "Asistimos a individuos, familias y pequeñas empresas con inscripción en seguro de salud.",
+      health_p2:    "Nuestros agentes están certificados para guiarle durante los períodos de inscripción.",
       ltc_title:    "Seguro de Cuidado a Largo Plazo",
-      ltc_p1:       "El seguro de cuidado a largo plazo ayuda a cubrir el costo de vida asistida, atención en residencia de ancianos o servicios de atención domiciliaria — costos no cubiertos por el seguro médico ni Medicare.",
-      ltc_p2:       "Planificar con anticipación mientras está saludable puede proteger sus ahorros y dar tranquilidad a su familia.",
-
-      medicare_title: "Medicare y Planificación para la Jubilación",
-      medicare_p1:    "Navegar Medicare puede ser complejo. Proporcionamos orientación clara e imparcial sobre Medicare Suplementario (Medigap), Medicare Advantage y los planes de medicamentos recetados Part D.",
-      medicare_p2:    "También ofrecemos planificación de ingresos para la jubilación para ayudarle a aprovechar al máximo sus opciones de Seguro Social, IRA y anualidades.",
-
+      ltc_p1:       "El seguro de cuidado a largo plazo ayuda a cubrir costos de vida asistida o atención en el hogar.",
+      ltc_p2:       "Planificar con anticipación puede proteger sus ahorros y dar tranquilidad a su familia.",
+      medicare_title: "Medicare y Planificación de Jubilación",
+      medicare_p1:    "Navegar Medicare puede ser complejo. Brindamos orientación clara sobre Medicare Supplement y Medicare Advantage.",
+      medicare_p2:    "También ofrecemos planificación de ingresos de jubilación para maximizar su Seguro Social, IRA y anualidades.",
       cta_title: "¿Preguntas sobre Cobertura?",
-      cta_sub:   "Estamos aquí para ayudar — en inglés y coreano. Contáctenos hoy para una consulta gratuita sin compromiso."
+      cta_sub:   "Estamos aquí para ayudar — en inglés y coreano. Contáctenos para una consulta gratuita."
     },
 
-    /* ── Locations Page ── */
     locations: {
       page_title:  "Nuestras Ubicaciones",
-      page_sub:    "Tres oficinas convenientes en el área metropolitana Seattle-Tacoma",
+      page_sub:    "Tres oficinas convenientes en el área de Seattle–Tacoma",
       phone_label: "Teléfono",
       hours_label: "Horario",
       hours_value: "Lunes – Viernes: 9:00 AM – 6:00 PM",
       closed:      "Cerrado Sábado y Domingo",
       directions:  "Cómo Llegar",
-      lynnwood:    "Oficina de Lynnwood",
-      federal_way: "Oficina de Federal Way",
-      tacoma:      "Oficina de Tacoma"
+      lynnwood:    "Oficina Lynnwood",
+      federal_way: "Oficina Federal Way",
+      tacoma:      "Oficina Tacoma / Lakewood"
     },
 
-    /* ── Contact Page ── */
     contact: {
       page_title:    "Contáctenos",
-      page_sub:      "Estamos aquí para ayudar — comuníquese cuando quiera",
-      info_title:    "Póngase en Contacto",
+      page_sub:      "Estamos aquí para ayudar — contáctenos en cualquier momento",
+      info_title:    "Comuníquese con Nosotros",
       phone_label:   "Teléfono",
       hours_label:   "Horario de Oficina",
       hours_value:   "Lunes – Viernes: 9:00 AM – 6:00 PM",
@@ -543,30 +531,29 @@ const TRANSLATIONS = {
       email_ph:      "su@correo.com",
       phone_fl:      "Número de Teléfono",
       phone_ph:      "Su número de teléfono",
-      office_label:  "Oficina de Preferencia",
+      office_label:  "Oficina Preferida",
       office_any:    "Cualquier Oficina",
       office_lw:     "Lynnwood",
       office_fw:     "Federal Way",
-      office_ta:     "Tacoma",
+      office_ta:     "Tacoma / Lakewood",
       service_label: "Servicio de Interés",
       service_any:   "Seleccione un servicio",
       service_auto:  "Seguro de Auto",
       service_home:  "Seguro de Hogar",
-      service_biz:   "Seguro de Negocio",
+      service_biz:   "Seguro Comercial",
       service_life:  "Seguro de Vida",
-      service_health:"Seguro Médico / ACA",
+      service_health:"Seguro de Salud / ACA",
       service_ltc:   "Seguro de Cuidado a Largo Plazo",
       service_med:   "Medicare y Jubilación",
       msg_label:     "Mensaje",
       msg_ph:        "¿Cómo podemos ayudarle?",
       submit:        "Enviar Mensaje",
-      success:       "¡Gracias! Nos pondremos en contacto con usted pronto.",
-      note:          "Respondemos en un día hábil. Todas las consultas son confidenciales."
+      success:       "¡Gracias! Nos comunicaremos con usted pronto.",
+      note:          "Respondemos dentro de 1 día hábil. Todas las consultas son confidenciales."
     },
 
-    /* ── Footer ── */
     footer: {
-      tagline:      "Su socio de confianza en seguros en el estado de Washington",
+      tagline:      "Su socio de seguros de confianza en Washington",
       quick_links:  "Enlaces Rápidos",
       contact_us:   "Contáctenos",
       hours:        "Lun – Vie: 9:00 AM – 6:00 PM",
@@ -576,7 +563,7 @@ const TRANSLATIONS = {
 
 
   /* ============================================================
-     CHINESE SIMPLIFIED  /  简体中文
+     CHINESE (SIMPLIFIED)  /  简体中文
      ============================================================ */
   zh: {
     nav: {
@@ -588,175 +575,162 @@ const TRANSLATIONS = {
     },
 
     hero: {
-      eyebrow:   "华盛顿州持牌保险代理机构",
-      title:     "守护您最在乎的一切",
-      subtitle:  "自2013年起，我们专注服务华盛顿州的韩裔及多元文化社区。诚实建议，实惠保障。",
+      eyebrow:   "华盛顿州持牌保险机构",
+      title:     "保护您最重要的一切",
+      subtitle:  "自2013年起服务韩裔美国人及多元文化社区。诚实建议，实惠保障。",
       cta_quote: "免费获取报价",
-      cta_learn: "了解服务"
+      cta_learn: "我们的服务"
     },
 
     trust: {
-      licensed:  "华盛顿州持牌机构",
+      licensed:  "华盛顿州持牌保险机构",
       since:     "自2013年起服务客户",
       bilingual: "英语与韩语双语服务"
     },
 
     services_home: {
       title:    "我们的保险服务",
-      subtitle: "为您的生活、家庭和事业量身定制全面的保障方案。",
+      subtitle: "为您的生活、家庭和企业量身定制全面保障方案。",
       learn:    "了解更多",
       auto:        "汽车保险",
-      auto_desc:   "以具有竞争力的价格提供全面保险、碰撞险及责任险。",
+      auto_desc:   "以具竞争力的价格为您的车辆提供全面险、碰撞险和责任险。",
       home:        "房屋保险",
-      home_desc:   "保护您的住宅及财产免受火灾、盗窃、天气损害等侵害。",
+      home_desc:   "保护您的住宅和财物免受火灾、盗窃、天气损害等风险。",
       business:    "商业保险",
-      business_desc: "通过综合责任险、商业财产险和工伤赔偿险，全面保护您的企业。",
+      business_desc: "为您的企业提供综合责任险、商业财产险和工伤赔偿险。",
       life:        "人寿保险",
-      life_desc:   "通过定期、终身及万能人寿保险，为家人提供经济保障。",
-      health:      "医疗保险",
-      health_desc: "ACA / 奥巴马医改注册、团体医保及个人保险方案。",
+      life_desc:   "通过定期寿险、终身寿险和万能寿险为家人提供财务保障。",
+      health:      "健康保险",
+      health_desc: "ACA / 奥巴马医改注册、团体健康计划和个人保险方案。",
       ltc:         "长期护理保险",
-      ltc_desc:    "提前规划辅助生活、护理院或居家护理等长期护理费用。",
+      ltc_desc:    "提前规划辅助生活、护理院或居家护理费用。",
       medicare:    "医疗保险与退休规划",
-      medicare_desc: "提供联邦医疗保险注册指导及退休规划，保障您的未来。"
+      medicare_desc: "医疗保险注册指导和退休规划，保障您的未来。"
     },
 
     about_home: {
       title:   "关于 Ace Insurance",
-      text1:   "Ace Insurance & Retirement Services由Danny Kim于2013年创立，长期以来是华盛顿州家庭和企业值得信赖的保险合作伙伴。我们专注于以双语个性化服务，服务韩裔及多元文化社区。",
-      text2:   "作为独立代理机构，我们与多家顶级保险公司合作，为您找到性价比最高的保障方案——而非千篇一律的标准套餐。",
+      text1:   "Ace Insurance & Retirement Services 由 Danny Kim 于2013年创立，多年来一直是华盛顿州家庭和企业的可信赖合作伙伴。",
+      text2:   "作为独立机构，我们与多家顶级保险公司合作，为您寻找最优价格的最佳保障。",
       cta:     "了解我们的故事"
     },
 
     locations_home: {
       title:   "我们的办公室",
       phone:   "电话",
-      hours:   "周一至周五：上午9时 – 下午6时",
-      maps:    "获取导航"
+      hours:   "周一至周五：上午9时至下午6时",
+      maps:    "获取路线"
     },
 
     cta_banner: {
-      title:    "准备好购买保险了吗？",
-      subtitle: "立即致电，获取免费、无义务报价。我们提供英语和韩语服务。",
+      title:    "准备好获得保障了吗？",
+      subtitle: "今天致电我们获取免费报价。我们提供英语和韩语服务。",
       or:       "或发送消息给我们"
     },
 
-    /* ── About Page ── */
     about: {
       page_title:  "关于我们",
-      page_sub:    "自2013年起，您值得信赖的保险伙伴",
+      page_sub:    "自2013年起您值得信赖的保险合作伙伴",
       story_title: "我们的故事",
-      story_p1:    "Ace Insurance & Retirement Services, Inc.由Danny Kim于2013年创立，使命明确：为华盛顿州的韩裔及多元文化社区提供诚实、实惠的保险和退休解决方案。",
-      story_p2:    "从一间办公室起步，我们已发展至服务Lynnwood、Federal Way、Tacoma等地的客户。作为独立机构，我们为您工作，而非效忠于某一保险公司。我们比较多家A级保险公司的报价，为您的需求和预算找到最合适的方案。",
-      story_p3:    "我们提供视频通话、短信、电子邮件或当面咨询——以最方便您的方式为您服务。我们的团队精通英语和韩语。",
+      story_p1:    "Ace Insurance & Retirement Services, Inc. 由 Danny Kim 于2013年创立，使命清晰：为华盛顿州的韩裔美国人和多元文化社区提供诚实、实惠的保险和退休解决方案。",
+      story_p2:    "我们从一间办公室起步，现已发展为服务林伍德、联邦路、塔科马等地区的客户。我们的独立性意味着我们为您工作。",
+      story_p3:    "我们提供视频通话、短信、电子邮件或面对面咨询。我们的团队流利使用英语和韩语。",
       founder_label: "Danny Kim",
-      founder_title: "创始人兼首席保险代理人",
-      community_title: "我们的社区承诺",
-      community_p1: "我们很荣幸为华盛顿西部的韩裔社区及所有多元文化家庭提供服务。保险可能令人困惑——用第二语言理解则更具挑战。因此，我们提供完整的英韩双语服务，确保每位客户完全理解其保障内容。",
-      community_p2: "我们相信，无论背景或语言，每个人都应该享有高质量的保险和健全的退休规划。",
+      founder_title: "创始人兼首席代理人",
+      community_title: "我们对社区的承诺",
+      community_p1: "我们自豪地服务于韩裔美国社区和华盛顿西部所有多元文化家庭。",
+      community_p2: "我们相信每个人都应该获得优质保险和完善退休规划，无论背景或语言如何。",
       values_title: "我们的价值观",
       val1_title:   "诚信",
-      val1_desc:    "我们给予您诚实的建议，即使这意味着推荐价格较低的选项。您的信任是我们最宝贵的资产。",
+      val1_desc:    "我们给您诚实的建议，即使这意味着推荐价格更低的选项。",
       val2_title:   "经验",
-      val2_desc:    "超过10年服务华盛顿州家庭和企业的丰富经验。我们深入了解当地市场。",
+      val2_desc:    "服务华盛顿州家庭和企业超过10年，我们深知当地市场。",
       val3_title:   "社区",
-      val3_desc:    "我们是所服务社区的一份子。回馈社区、建立长期关系是我们工作的核心。"
+      val3_desc:    "我们是所服务社区的一部分，回馈社区和建立持久关系是我们的核心。"
     },
 
-    /* ── Services Page ── */
     services: {
-      page_title:  "服务项目",
+      page_title:  "我们的服务",
       page_sub:    "全面的保险和退休规划解决方案",
-      intro:       "作为独立代理机构，我们代理多家顶级保险公司，可为您找到最合适价格的最优保障。",
-
+      intro:       "作为独立机构，我们代理多家顶级保险公司，为您找到合适的保障和价格。",
       auto_title:   "汽车保险",
-      auto_p1:      "无论您驾驶轿车、SUV、卡车还是商用车辆，我们都将为您找到最合适的汽车保险方案，保障您的行车安全。",
-      auto_p2:      "保障选项包括责任险、碰撞险、全险、无保险/保额不足驾驶人险、医疗费用险及道路救援。",
-
+      auto_p1:      "无论您驾驶轿车、SUV、卡车还是商用车，我们将为您找到合适的汽车保险。",
+      auto_p2:      "保险选项包括责任险、碰撞险、全面险、无保险驾驶人险和道路救援。",
       home_title:   "房屋保险",
-      home_p1:      "您的房屋可能是您最有价值的资产。我们的房主保险保障您的住宅、个人财产及责任。",
-      home_p2:      "我们还提供租客保险、共管公寓保险及投资性房产房东保险。",
-
+      home_p1:      "您的房屋可能是您最有价值的资产。我们的房主保险保护您的住所、个人财产和责任。",
+      home_p2:      "我们还提供租房者保险、公寓保险和投资物业房东保险。",
       biz_title:    "商业保险",
-      biz_p1:       "保护您的企业免受意外影响。我们提供综合责任险、商业财产险、商业业主保险(BOP)、工伤赔偿险和商用汽车险。",
-      biz_p2:       "无论您是个体经营者还是成长中的小企业，我们都将根据您的行业特点和风险状况定制保险方案。",
-
+      biz_p1:       "保护您的企业免受意外风险。我们提供综合责任险、商业财产险、企业主保单和工伤赔偿险。",
+      biz_p2:       "无论您是个体经营者还是成长中的小企业，我们将根据您的行业定制保险方案。",
       life_title:   "人寿保险",
-      life_p1:      "人寿保险是稳健财务规划的基础。我们提供定期寿险、终身寿险、万能寿险和指数型万能寿险。",
-      life_p2:      "我们将帮助您确定合适的保险类型和保额，以保护家人并实现长期财务目标。",
-
-      health_title: "医疗保险",
-      health_p1:    "我们协助个人、家庭和小企业参加医疗保险，包括ACA/奥巴马医改市场计划、短期医疗计划和团体医疗保险。",
-      health_p2:    "我们的持证代理人可全程指导您完成公开和特殊注册期的注册，帮您找到最具成本效益的方案。",
-
+      life_p1:      "人寿保险是稳健财务计划的基础。我们提供定期寿险、终身寿险和万能寿险。",
+      life_p2:      "我们将帮助您确定正确的保险类型和金额，以保护您的家人并实现长期财务目标。",
+      health_title: "健康保险",
+      health_p1:    "我们协助个人、家庭和小企业办理健康保险注册，包括ACA市场计划和团体健康保险。",
+      health_p2:    "我们的代理人获得认证，可在开放注册和特别注册期间为您提供指导。",
       ltc_title:    "长期护理保险",
-      ltc_p1:       "长期护理保险有助于承担辅助生活机构、护理院或居家护理服务的费用——这些费用不在医疗保险或联邦医疗保险的保障范围内。",
-      ltc_p2:       "趁身体健康时提前规划，可以保护您的积蓄，让家人安心。",
-
-      medicare_title: "联邦医疗保险与退休规划",
-      medicare_p1:    "联邦医疗保险的体系较为复杂。我们提供关于Medicare补充险(Medigap)、Medicare Advantage及D部分处方药计划的清晰、客观指导。",
-      medicare_p2:    "我们还提供退休收入规划，帮助您充分利用社会安全福利、IRA及年金选项。",
-
+      ltc_p1:       "长期护理保险有助于支付辅助生活、护理院或居家护理服务的费用。",
+      ltc_p2:       "在健康时提前规划可以保护您的储蓄，让家人安心。",
+      medicare_title: "医疗保险与退休规划",
+      medicare_p1:    "了解医疗保险可能很复杂。我们提供关于医疗补充险和医疗优势计划的清晰、公正的指导。",
+      medicare_p2:    "我们还提供退休收入规划，帮助您充分利用社会保障、IRA和年金选项。",
       cta_title: "对保障有疑问？",
-      cta_sub:   "我们以英语和韩语为您提供帮助。立即联系我们，获取免费咨询。"
+      cta_sub:   "我们随时为您提供英语和韩语帮助。立即联系我们获取免费咨询。"
     },
 
-    /* ── Locations Page ── */
     locations: {
-      page_title:  "办公地点",
-      page_sub:    "西雅图-塔科马大都市区的三个便利办公室",
+      page_title:  "我们的办公地点",
+      page_sub:    "在大西雅图-塔科马地区的三个便利办公室",
       phone_label: "电话",
       hours_label: "营业时间",
-      hours_value: "周一至周五：上午9:00 – 下午6:00",
-      closed:      "周六及周日休息",
-      directions:  "获取导航",
-      lynnwood:    "Lynnwood 办公室",
-      federal_way: "Federal Way 办公室",
-      tacoma:      "Tacoma 办公室"
+      hours_value: "周一至周五：上午9时至下午6时",
+      closed:      "周六和周日休息",
+      directions:  "获取路线",
+      lynnwood:    "林伍德办公室",
+      federal_way: "联邦路办公室",
+      tacoma:      "塔科马/莱克伍德办公室"
     },
 
-    /* ── Contact Page ── */
     contact: {
       page_title:    "联系我们",
-      page_sub:      "我们随时准备为您提供帮助",
+      page_sub:      "我们随时为您提供帮助",
       info_title:    "与我们联系",
       phone_label:   "电话",
       hours_label:   "办公时间",
-      hours_value:   "周一至周五：上午9:00 – 下午6:00",
+      hours_value:   "周一至周五：上午9时至下午6时",
       form_title:    "给我们发消息",
       name_label:    "全名",
       name_ph:       "您的全名",
-      email_label:   "电子邮件",
-      email_ph:      "您的邮箱地址",
+      email_label:   "电子邮件地址",
+      email_ph:      "您的电子邮件",
       phone_fl:      "电话号码",
       phone_ph:      "您的电话号码",
       office_label:  "首选办公室",
-      office_any:    "任意办公室",
-      office_lw:     "Lynnwood",
-      office_fw:     "Federal Way",
-      office_ta:     "Tacoma",
+      office_any:    "任何办公室",
+      office_lw:     "林伍德",
+      office_fw:     "联邦路",
+      office_ta:     "塔科马/莱克伍德",
       service_label: "感兴趣的服务",
-      service_any:   "请选择服务",
+      service_any:   "选择服务",
       service_auto:  "汽车保险",
       service_home:  "房屋保险",
       service_biz:   "商业保险",
       service_life:  "人寿保险",
-      service_health:"医疗保险 / ACA",
+      service_health:"健康保险 / ACA",
       service_ltc:   "长期护理保险",
-      service_med:   "联邦医疗保险与退休规划",
+      service_med:   "医疗保险与退休",
       msg_label:     "留言",
-      msg_ph:        "请问有什么可以帮助您？",
+      msg_ph:        "我们能如何帮助您？",
       submit:        "发送消息",
-      success:       "谢谢！我们将尽快与您联系。",
-      note:          "我们将在1个工作日内回复。所有咨询均严格保密。"
+      success:       "谢谢！我们将尽快回复您。",
+      note:          "我们在1个工作日内回复。所有咨询均保密。"
     },
 
-    /* ── Footer ── */
     footer: {
       tagline:      "华盛顿州值得信赖的保险合作伙伴",
       quick_links:  "快速链接",
       contact_us:   "联系我们",
-      hours:        "周一至周五：上午9时 – 下午6时",
+      hours:        "周一至周五：上午9时至下午6时",
       copyright:    "© 2025 Ace Insurance & Retirement Services, Inc. 版权所有。"
     }
   }

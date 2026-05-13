@@ -50,12 +50,17 @@ function applyLanguage(lang) {
     if (value !== null) el.title = value;
   });
 
-  // Sync dropdown selection
+  // Sync language select dropdown
   var sel = document.getElementById('langSelect');
   if (sel) sel.value = lang;
 
+  // Also update legacy lang-btn active state if present
+  document.querySelectorAll('.lang-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+  });
+
   // Update html[lang] for SEO and screen readers
-  var langMap = { en: 'en', es: 'es', zh: 'zh-Hans', ko: 'ko', vi: 'vi' };
+  var langMap = { en: 'en', es: 'es', zh: 'zh-Hans', ko: 'ko' };
   document.documentElement.lang = langMap[lang] || 'en';
 }
 
@@ -130,51 +135,53 @@ document.addEventListener('DOMContentLoaded', function() {
 /* Make applyLanguage available to inline onclick handlers in HTML */
 window.applyLanguage = applyLanguage;
 
-/* ── Services Stack: Vikoone-style stacked card scroll animation ── */
+/* ── Services Showcase: scroll-driven split-panel animation ──── */
 
-function initServicesStack() {
-  var wrapper = document.querySelector('.svc-stack');
+function initServicesShowcase() {
+  var wrapper = document.querySelector('.services-showcase');
   if (!wrapper) return;
 
-  var cards     = Array.from(wrapper.querySelectorAll('.svc-card'));
-  var dots      = Array.from(wrapper.querySelectorAll('.svc-dot'));
-  var counterEl = wrapper.querySelector('.svc-counter-n');
-  var numCards  = cards.length;
+  var viewport   = wrapper.querySelector('.showcase-viewport');
+  var slides     = Array.from(wrapper.querySelectorAll('.showcase-slide'));
+  var dots       = Array.from(wrapper.querySelectorAll('.showcase-dot'));
+  var counter    = wrapper.querySelector('.showcase-counter-current');
+  var scrollHint = wrapper.querySelector('.showcase-scroll-hint');
+  var numSlides  = slides.length;
+  var activeIndex = 0;
 
-  /* Mobile: CSS handles the layout — no JS sticky logic needed */
-  if (window.innerWidth < 768) return;
-
-  /* Later cards sit on top of earlier ones */
-  cards.forEach(function(card, i) { card.style.zIndex = i + 1; });
-
-  function pad(n) { return String(n + 1).padStart(2, '0'); }
-
-  function update() {
-    var rect     = wrapper.getBoundingClientRect();
-    var scrolled = -rect.top;                         /* px scrolled into section */
-    var progress = scrolled / window.innerHeight;     /* 0 → numCards */
-
-    cards.forEach(function(card, i) {
-      if (i === 0) {
-        /* First card: always pinned at top */
-        card.style.transform = 'translateY(0)';
-        return;
-      }
-      /* Card i slides in from 100% → 0% during progress (i-1) → i */
-      var slot = Math.max(0, Math.min(1, progress - (i - 1)));
-      card.style.transform = 'translateY(' + ((1 - slot) * 100).toFixed(3) + '%)';
-    });
-
-    /* Update dots + counter */
-    var activeIdx = Math.max(0, Math.min(numCards - 1, Math.floor(progress)));
-    dots.forEach(function(d, i) { d.classList.toggle('is-active', i === activeIdx); });
-    if (counterEl) counterEl.textContent = pad(activeIdx);
+  /* On mobile, skip sticky scroll — CSS handles the layout */
+  var isMobile = window.innerWidth < 768;
+  if (isMobile) {
+    /* Make all slides visible on mobile */
+    slides.forEach(function(s) { s.classList.add('is-active'); });
+    return;
   }
 
-  window.addEventListener('scroll', update, { passive: true });
-  update(); /* initial paint */
+  function pad(n) {
+    return String(n + 1).padStart(2, '0');
+  }
 
-  /* Dot click: smooth-scroll to that card's entry point */
+  function setSlide(index) {
+    if (index === activeIndex) return;
+
+    /* Remove active from old slide */
+    slides[activeIndex].classList.remove('is-active');
+    if (dots[activeIndex]) dots[activeIndex].classList.remove('is-active');
+
+    activeIndex = index;
+
+    /* Activate new slide */
+    slides[activeIndex].classList.add('is-active');
+    if (dots[activeIndex]) dots[activeIndex].classList.add('is-active');
+
+    /* Update counter */
+    if (counter) counter.textContent = pad(activeIndex);
+
+    /* Hide scroll hint after first scroll */
+    if (scrollHint && activeIndex > 0) scrollHint.style.display = 'none';
+  }
+
+  /* Dot navigation: click scrolls to that slide's position */
   dots.forEach(function(dot, i) {
     dot.addEventListener('click', function() {
       window.scrollTo({
@@ -183,10 +190,23 @@ function initServicesStack() {
       });
     });
   });
+
+  /* Scroll handler: calculate which slide is current */
+  window.addEventListener('scroll', function() {
+    var scrolled = window.scrollY - wrapper.offsetTop;
+    var vh = window.innerHeight;
+
+    /* Each service occupies 1 × vh of scroll distance */
+    var index = Math.floor(scrolled / vh);
+    index = Math.max(0, Math.min(numSlides - 1, index));
+
+    setSlide(index);
+  }, { passive: true });
 }
 
+/* Add to existing DOMContentLoaded */
 document.addEventListener('DOMContentLoaded', function() {
-  initServicesStack();
+  initServicesShowcase();
 });
 
 /* ── Cursor-following gradient glow ─────────────────────────── */
@@ -246,145 +266,4 @@ function initParallaxArtifacts() {
 
 document.addEventListener('DOMContentLoaded', function() {
   initParallaxArtifacts();
-});
-
-/* ══════════════════════════════════════════════════════════════
-   PREMIUM INTERACTIONS — Sapphire Nightfall Whisper
-   Custom cursor · Scroll progress · Word reveal · Magnetic CTA
-   ══════════════════════════════════════════════════════════════ */
-
-/* ── Cursor background tint ──────────────────────────────────── */
-function initCursorBg() {
-  document.addEventListener('mousemove', function() {
-    document.body.style.background = '#e8f3fb';
-  }, { passive: true });
-  document.addEventListener('mouseleave', function() {
-    document.body.style.background = '#ffffff';
-  });
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-  initCursorBg();
-});
-
-/* ── Custom cursor ───────────────────────────────────────────── */
-function initCustomCursor() {
-  var dot  = document.querySelector('.cursor-dot');
-  var ring = document.querySelector('.cursor-ring');
-  if (!dot || !ring) return;
-
-  var mx = window.innerWidth / 2, my = window.innerHeight / 2;
-  var rx = mx, ry = my;
-
-  /* Dot follows exactly */
-  document.addEventListener('mousemove', function(e) {
-    mx = e.clientX; my = e.clientY;
-    dot.style.left = mx + 'px';
-    dot.style.top  = my + 'px';
-  }, { passive: true });
-
-  /* Ring follows with lerp */
-  (function lerpRing() {
-    rx += (mx - rx) * 0.12;
-    ry += (my - ry) * 0.12;
-    ring.style.left = rx + 'px';
-    ring.style.top  = ry + 'px';
-    requestAnimationFrame(lerpRing);
-  })();
-
-  /* Hover state on interactive elements */
-  document.querySelectorAll('a, button, .btn, .svc-dot, .nav-toggle, input, select, textarea').forEach(function(el) {
-    el.addEventListener('mouseenter', function() { document.body.classList.add('cursor-hover'); });
-    el.addEventListener('mouseleave', function() { document.body.classList.remove('cursor-hover'); });
-  });
-
-  /* Hide on leave */
-  document.addEventListener('mouseleave', function() {
-    dot.style.opacity = '0'; ring.style.opacity = '0';
-  });
-  document.addEventListener('mouseenter', function() {
-    dot.style.opacity = '1'; ring.style.opacity = '1';
-  });
-}
-
-/* ── Scroll progress bar ─────────────────────────────────────── */
-function initScrollProgress() {
-  var bar = document.querySelector('.scroll-progress');
-  if (!bar) return;
-
-  window.addEventListener('scroll', function() {
-    var pct = window.scrollY / (document.body.scrollHeight - window.innerHeight);
-    bar.style.transform = 'scaleX(' + Math.min(pct, 1) + ')';
-  }, { passive: true });
-}
-
-/* ── Hero word-by-word entrance animation ────────────────────── */
-function initHeroTextReveal() {
-  var h1 = document.querySelector('.hero h1');
-  if (!h1) return;
-
-  /* Split into word spans, preserving italic <em> */
-  var html = h1.innerHTML;
-  /* Wrap each text-node word in a span */
-  h1.innerHTML = html.replace(/(<[^>]+>)|([^<\s]+)/g, function(match, tag, word) {
-    if (tag)  return tag; /* preserve tags */
-    if (word) return '<span class="hw" style="display:inline-block;opacity:0;transform:translateY(24px);transition:opacity 0.7s cubic-bezier(0.16,1,0.3,1),transform 0.7s cubic-bezier(0.16,1,0.3,1)">' + word + '</span> ';
-    return match;
-  });
-
-  /* Stagger the reveal */
-  var words = h1.querySelectorAll('.hw');
-  words.forEach(function(w, i) {
-    setTimeout(function() {
-      w.style.opacity  = '1';
-      w.style.transform = 'translateY(0)';
-    }, 120 + i * 80);
-  });
-
-  /* Also fade in eyebrow + p */
-  var eyebrow = document.querySelector('.hero-eyebrow');
-  var sub     = document.querySelector('.hero p');
-  var cta     = document.querySelector('.hero-cta');
-  var scroll  = document.querySelector('.hero-scroll');
-  [eyebrow, sub, cta, scroll].forEach(function(el, i) {
-    if (!el) return;
-    el.style.opacity   = '0';
-    el.style.transform = 'translateY(20px)';
-    el.style.transition = 'opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1)';
-    setTimeout(function() {
-      el.style.opacity   = '1';
-      el.style.transform = 'translateY(0)';
-    }, 500 + i * 160);
-  });
-}
-
-/* ── Magnetic CTA button ─────────────────────────────────────── */
-function initMagneticButtons() {
-  document.querySelectorAll('.btn-primary, .btn-outline').forEach(function(btn) {
-    btn.addEventListener('mousemove', function(e) {
-      var rect = btn.getBoundingClientRect();
-      var cx = rect.left + rect.width / 2;
-      var cy = rect.top  + rect.height / 2;
-      var dx = (e.clientX - cx) * 0.30;
-      var dy = (e.clientY - cy) * 0.30;
-      btn.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) translateY(-2px)';
-    });
-    btn.addEventListener('mouseleave', function() {
-      btn.style.transform = '';
-    });
-  });
-}
-
-/* ── Section background parallax (subtle) ────────────────────── */
-function initSectionParallax() {
-  var sections = document.querySelectorAll('.hero::before, .page-hero, .cta-banner');
-  /* handled via CSS radial gradients — no JS needed */
-}
-
-/* ── Boot all premium features ───────────────────────────────── */
-document.addEventListener('DOMContentLoaded', function() {
-  initCustomCursor();
-  initScrollProgress();
-  initHeroTextReveal();
-  initMagneticButtons();
 });

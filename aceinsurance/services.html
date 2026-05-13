@@ -7,7 +7,7 @@
   <title>Services | Ace Insurance & Retirement Services</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -28,7 +28,7 @@
       <li><a href="locations.html" data-i18n="nav.locations">Locations</a></li>
       <li><a href="contact.html"   data-i18n="nav.contact">Contact</a></li>
     </ul>
-    <div class="lang-toggle">
+    <div class="lang-toggle" role="group" aria-label="Language selector">
       <select id="langSelect" class="lang-select" onchange="applyLanguage(this.value)" aria-label="Select language">
         <option value="en">EN</option>
         <option value="es">ES</option>
@@ -187,26 +187,12 @@
   </div>
   <div class="footer-bottom">
     <p data-i18n="footer.copyright">© 2025 Ace Insurance & Retirement Services, Inc. All rights reserved.</p>
-    <p style="margin-top:0.5rem;font-size:0.8rem;">
-      <a href="terms-of-service.html" style="color:inherit;opacity:0.7;">Terms of Service</a>
-      &nbsp;|&nbsp;
-      <a href="privacy-policy.html" style="color:inherit;opacity:0.7;">Privacy Policy</a>
-      &nbsp;|&nbsp;
-      <a href="sms-subscribe.html" style="color:inherit;opacity:0.7;">SMS Alerts</a>
-      &nbsp;|&nbsp;
-      <a href="ace-only.html" style="color:inherit;opacity:0.35;">Ace Only</a>
-    </p>
   </div>
 </footer>
 
 <a href="#" class="back-to-top" id="backToTop" aria-label="Back to top">
   <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
 </a>
-
-<div class="site-grain"    aria-hidden="true"></div>
-<div class="scroll-progress" aria-hidden="true"></div>
-<div class="cursor-dot"    aria-hidden="true"></div>
-<div class="cursor-ring"   aria-hidden="true"></div>
 
 <script src="js/translations.js"></script>
 <script src="js/main.js"></script>
