@@ -1,0 +1,26 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/ace-voice-ai', '.']
+    dir: 'ace-voice-ai'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/ace-voice-ai']
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ace-voice-ai
+      - --image=gcr.io/$PROJECT_ID/ace-voice-ai
+      - --region=us-west1
+      - --platform=managed
+      - --port=8080
+      - --min-instances=1        # prevents cold starts; Twilio WebSocket times out in <5s
+      - --max-instances=10
+      - --timeout=3600           # 1-hour max; default 300s kills long calls
+      - --allow-unauthenticated
+      - --set-env-vars=NODE_ENV=production
+
+images:
+  - 'gcr.io/$PROJECT_ID/ace-voice-ai'

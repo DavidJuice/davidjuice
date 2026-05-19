@@ -1,0 +1,26 @@
+{
+  "name": "ace-voice-ai",
+  "version": "1.0.0",
+  "description": "Bilingual (KO/EN) Voice AI for Ace Insurance & Retirement Services",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test tests/conversation.test.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0",
+    "@deepgram/sdk": "^3.9.0",
+    "axios": "^1.7.0",
+    "dotenv": "^16.4.0",
+    "express": "^4.19.0",
+    "googleapis": "^144.0.0",
+    "twilio": "^5.3.0",
+    "winston": "^3.13.0",
+    "ws": "^8.17.0"
+  }
+}
