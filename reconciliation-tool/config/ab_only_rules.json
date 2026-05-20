@@ -38,6 +38,10 @@
   "policy_types_annuity":  ["ANNUITY"],
   "policy_types_home":     ["HOME", "HOMEOWNERS"],
   "policy_types_auto":     ["AUTO", "AUTOMOBILE"],
+  "product_name_substrings": {
+    "dsnp": ["DUAL SNP", "DSNP", "D-SNP", "DUAL ELIGIBLE"],
+    "csnp": ["CHRONIC SNP", "CSNP", "C-SNP", "CHRONIC CONDITION SNP"]
+  },
   "forbidden_active_combinations": [
     { "id": "rule2_aca_with_part_c",   "categories": ["aca", "part_c"],  "message": "active ACA (Indv. Health) and active Part C cannot coexist" },
     { "id": "rule2_aca_with_apple",    "categories": ["aca", "apple"],   "message": "active ACA (Indv. Health) and active Apple Health cannot coexist" },

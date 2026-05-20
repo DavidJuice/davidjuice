@@ -1,0 +1,144 @@
+<script>
+window.RECON = window.RECON || {};
+
+(function () {
+  var DS = {
+    uploads: { ab_individual: false, ab_policy: false }
+  };
+
+  function renderUploadZones() {
+    var box = document.getElementById('ds_uploads');
+    box.innerHTML = '';
+    [
+      { src: 'ab_individual', label: 'AgencyBloc Individual Report (required)' },
+      { src: 'ab_policy',     label: 'AgencyBloc Policy Report (optional)' }
+    ].forEach(function (item) {
+      var z = document.createElement('div');
+      z.className = 'dropzone';
+      z.id = 'ds_dz_' + item.src;
+      z.dataset.source = item.src;
+      z.innerHTML =
+        '<div class="label">' + item.label + '</div>' +
+        '<div class="muted">Drag a CSV here, or <a href="#" class="pickfile">click to choose</a></div>' +
+        '<div class="filename"></div>' +
+        '<div class="upload-error"></div>';
+      box.appendChild(z);
+      RECON.wireDropZone(z.id, item.src, function () {
+        google.script.run
+          .withSuccessHandler(function (res) {
+            if (res && res.errors && res.errors.length) {
+              z.querySelector('.upload-error').textContent = res.errors.join('  •  ');
+              DS.uploads[item.src] = false;
+            } else {
+              z.querySelector('.upload-error').textContent = '';
+              DS.uploads[item.src] = true;
+            }
+            updateRunButton();
+          })
+          .withFailureHandler(function (err) {
+            z.querySelector('.upload-error').textContent = String(err.message || err);
+            DS.uploads[item.src] = false;
+            updateRunButton();
+          })
+          .validateAndRecordUpload(RECON.state.runId, item.src);
+      });
+    });
+  }
+
+  function updateRunButton() {
+    document.getElementById('ds_btn_run').disabled = !DS.uploads.ab_individual;
+  }
+
+  function parseCsvField(id) {
+    var raw = document.getElementById(id).value || '';
+    return raw.split(/[,;]+/).map(function (s) { return s.trim(); }).filter(function (s) { return !!s; });
+  }
+
+  function readCriteria() {
+    var ageMinRaw = document.getElementById('ds_age_min').value;
+    var ageMaxRaw = document.getElementById('ds_age_max').value;
+    var genderEls = document.querySelectorAll('#ds_genders input[type=checkbox]');
+    var genders = [];
+    genderEls.forEach(function (cb) { if (cb.checked) genders.push(cb.value); });
+    return {
+      age_min:             ageMinRaw === '' ? null : Number(ageMinRaw),
+      age_max:             ageMaxRaw === '' ? null : Number(ageMaxRaw),
+      genders:             genders,
+      counties:            parseCsvField('ds_counties'),
+      cities:              parseCsvField('ds_cities'),
+      states:              parseCsvField('ds_states'),
+      zips:                parseCsvField('ds_zips'),
+      languages:           parseCsvField('ds_languages'),
+      countries:           parseCsvField('ds_countries'),
+      medicaid:            document.getElementById('ds_medicaid').value,
+      is_dsnp:             document.getElementById('ds_is_dsnp').value,
+      is_csnp:             document.getElementById('ds_is_csnp').value,
+      coverage_types:      parseCsvField('ds_coverage_types'),
+      carriers:            parseCsvField('ds_carriers'),
+      policy_statuses:     parseCsvField('ds_policy_statuses'),
+      individual_types:    parseCsvField('ds_individual_types'),
+      individual_statuses: parseCsvField('ds_individual_statuses'),
+      servicing_agents:    parseCsvField('ds_servicing_agents')
+    };
+  }
+
+  function renderGenderChoices() {
+    var box = document.getElementById('ds_genders');
+    if (!box) return;
+    box.innerHTML = '';
+    ['Male', 'Female', 'Other', '(blank)'].forEach(function (g) {
+      var lbl = document.createElement('label');
+      lbl.style.marginRight = '8px';
+      var cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.value = g === '(blank)' ? '' : g;
+      lbl.appendChild(cb);
+      lbl.appendChild(document.createTextNode(' ' + g));
+      box.appendChild(lbl);
+    });
+  }
+
+  function runSearch() {
+    var btn = document.getElementById('ds_btn_run');
+    var statusEl = document.getElementById('ds_status');
+    var resultEl = document.getElementById('ds_result');
+    btn.disabled = true;
+    statusEl.textContent = 'Searching…';
+    resultEl.innerHTML = '';
+    google.script.run
+      .withSuccessHandler(function (res) {
+        statusEl.textContent = 'Done.';
+        resultEl.innerHTML =
+          '<p>' + res.client_count + ' matching client(s) • ' + res.policy_pair_count + ' (client, active policy) pair(s)</p>' +
+          '<p><a href="' + res.url + '" target="_blank">Open results sheet →</a></p>';
+        btn.disabled = false;
+      })
+      .withFailureHandler(function (err) {
+        statusEl.textContent = '';
+        resultEl.innerHTML = '<div class="upload-error">' + (err.message || err) + '</div>';
+        btn.disabled = false;
+      })
+      .dataSearch_run(RECON.state.runId, readCriteria());
+  }
+
+  RECON.startDataSearch = function () {
+    if (!RECON.state) RECON.state = {};
+    renderGenderChoices();
+    if (!RECON.state.runId) {
+      google.script.run
+        .withSuccessHandler(function (res) {
+          RECON.state.runId = res.runId;
+          renderUploadZones();
+        })
+        .beginNewRun();
+    } else {
+      renderUploadZones();
+    }
+  };
+
+  window.addEventListener('load', function () {
+    var btn = document.getElementById('ds_btn_run');
+    if (btn) btn.addEventListener('click', runSearch);
+  });
+})();
+</script>

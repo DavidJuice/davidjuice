@@ -72,7 +72,20 @@ function runAllTests() {
     'test_iep_mode_medsup_pdp_requires_both',
     'test_iep_mode_either_part_c_or_medsup_pdp',
     'test_iep_mode_either_flags_both_paths_when_present',
-    'test_iep_mode_any_coverage_catches_unusual_paths'
+    'test_iep_mode_any_coverage_catches_unusual_paths',
+    // Data Search
+    'test_ds_age_computation',
+    'test_ds_dsnp_detected_by_medicaid_plus_part_c',
+    'test_ds_dsnp_detected_by_product_name_substring',
+    'test_ds_dsnp_false_when_no_signal',
+    'test_ds_csnp_detected_by_product_name_substring',
+    'test_ds_age_range_filter',
+    'test_ds_county_filter_case_insensitive',
+    'test_ds_language_filter',
+    'test_ds_medicaid_yes_filter',
+    'test_ds_coverage_type_filter_requires_policy_join',
+    'test_ds_multiple_active_policies_summary_and_pairs',
+    'test_ds_client_with_no_policies_still_appears_outer_join'
   ];
   fns.forEach(function (name) {
     var t0 = Date.now();

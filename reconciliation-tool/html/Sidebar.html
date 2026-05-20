@@ -17,8 +17,7 @@
         </button>
         <button class="tool-card" data-target="screen_datasearch">
           <div class="tool-title">Data Search</div>
-          <div class="tool-desc">Search clients across age, gender, county, language, Medicaid, etc.</div>
-          <div class="tool-status">Configuration pending</div>
+          <div class="tool-desc">Search clients by age, location, language, Medicaid, DSNP/CSNP, coverage type, carrier, status. Outer-joins Individual + Policy.</div>
         </button>
         <button class="tool-card" data-target="screen_plogsync">
           <div class="tool-title">Plog Sync</div>
@@ -65,17 +64,72 @@
       </div>
     </div>
 
-    <!-- Data Search tool (placeholder) -->
+    <!-- Data Search tool -->
     <div id="screen_datasearch" class="screen hidden">
       <button class="link-back" data-target="screen_toolselector">&larr; Back to tools</button>
       <h2>Data Search</h2>
-      <div class="banner-info">
-        <strong>Configuration pending.</strong>
-        <p>Before this tool can run, please send the admin: the AgencyBloc <em>Customer report</em>
-        column list and the output fields you want in the search results sheet.</p>
-        <p>Planned filters: age range, gender, county, ZIP, city, primary language, country, Medicaid.
-        Each search creates a fresh results Sheet so older searches stay intact.</p>
+      <p class="muted">Build a filtered list of clients from the AgencyBloc Individual + Policy reports. Output is a fresh Sheet with one tab listing matching clients and a second tab listing each (client, active policy) pair.</p>
+
+      <h3 style="margin-top: 12px;">1. Upload reports</h3>
+      <p class="muted">Individual is required. Policy is optional — only needed if you filter on coverage / carrier / DSNP.</p>
+      <div id="ds_uploads"></div>
+
+      <h3 style="margin-top: 12px;">2. Search criteria</h3>
+
+      <details open>
+        <summary style="cursor: pointer;">Age &amp; demographics</summary>
+        <div class="row" style="margin-top: 6px;">
+          <label>Age min <input type="number" id="ds_age_min" min="0" max="120" style="width: 70px;" /></label>
+          <label>Age max <input type="number" id="ds_age_max" min="0" max="120" style="width: 70px;" /></label>
+        </div>
+        <p class="muted" style="margin: 6px 0 2px;">Gender</p>
+        <div id="ds_genders" class="row"></div>
+      </details>
+
+      <details>
+        <summary style="cursor: pointer;">Location</summary>
+        <label>County <input type="text" id="ds_counties" placeholder="King, Pierce" style="width: 100%; box-sizing: border-box;" /></label>
+        <label>City <input type="text" id="ds_cities" placeholder="Seattle, Bellevue" style="width: 100%; box-sizing: border-box;" /></label>
+        <label>State <input type="text" id="ds_states" placeholder="WA" style="width: 100%; box-sizing: border-box;" /></label>
+        <label>Zip <input type="text" id="ds_zips" placeholder="98101, 98109" style="width: 100%; box-sizing: border-box;" /></label>
+        <label>Primary language <input type="text" id="ds_languages" placeholder="English, Spanish" style="width: 100%; box-sizing: border-box;" /></label>
+        <label>Country <input type="text" id="ds_countries" placeholder="United States" style="width: 100%; box-sizing: border-box;" /></label>
+      </details>
+
+      <details>
+        <summary style="cursor: pointer;">Medicaid &amp; SNP</summary>
+        <div class="row" style="margin-top: 6px;">
+          <label>Medicaid
+            <select id="ds_medicaid"><option value="all">All</option><option value="yes">Yes</option><option value="no">No</option></select>
+          </label>
+          <label>DSNP
+            <select id="ds_is_dsnp"><option value="all">All</option><option value="yes">Yes</option><option value="no">No</option></select>
+          </label>
+          <label>CSNP
+            <select id="ds_is_csnp"><option value="all">All</option><option value="yes">Yes</option><option value="no">No</option></select>
+          </label>
+        </div>
+      </details>
+
+      <details>
+        <summary style="cursor: pointer;">Coverage &amp; carrier</summary>
+        <label>Coverage types <input type="text" id="ds_coverage_types" placeholder="Part C, MedSup, ACA(Indv. Health)" style="width: 100%; box-sizing: border-box;" /></label>
+        <label>Carriers <input type="text" id="ds_carriers" placeholder="United Healthcare, Humana" style="width: 100%; box-sizing: border-box;" /></label>
+        <label>Policy statuses <input type="text" id="ds_policy_statuses" placeholder="Active, Pending" style="width: 100%; box-sizing: border-box;" /></label>
+      </details>
+
+      <details>
+        <summary style="cursor: pointer;">AB status &amp; agent</summary>
+        <label>Individual types <input type="text" id="ds_individual_types" placeholder="Client, Prospect" style="width: 100%; box-sizing: border-box;" /></label>
+        <label>Individual statuses <input type="text" id="ds_individual_statuses" placeholder="Enrolled, Contacted" style="width: 100%; box-sizing: border-box;" /></label>
+        <label>Servicing agents <input type="text" id="ds_servicing_agents" placeholder="Alice, Bob" style="width: 100%; box-sizing: border-box;" /></label>
+      </details>
+
+      <div class="row" style="margin-top: 12px;">
+        <button id="ds_btn_run" disabled>Run search</button>
+        <span id="ds_status" class="muted"></span>
       </div>
+      <div id="ds_result"></div>
     </div>
 
     <!-- Medicare IEP Tracker tool -->
@@ -166,5 +220,6 @@
     <?!= include('Step2_Agents') ?>
     <?!= include('Step4_Progress') ?>
     <?!= include('MedicareIEP') ?>
+    <?!= include('DataSearch') ?>
   </body>
 </html>
