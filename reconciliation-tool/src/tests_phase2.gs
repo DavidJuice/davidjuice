@@ -42,9 +42,9 @@ function test_normalize_carrier_humana_wa() {
 function abRulesTestCfg_() {
   return {
     individual_types: {
-      'prospect':  { allowed_statuses: ['NOT CONTACTED YET', 'CONTACTED'] },
-      'lead':      { allowed_statuses: ['APP SUBMITTED'] },
-      'client':    { allowed_statuses: ['ENROLLED'] },
+      'lead':      { allowed_statuses: ['NOT CONTACTED YET'] },
+      'prospect':  { allowed_statuses: ['CONTACTED', 'MBI APPLIED', 'APP SUBMITTED'] },
+      'client':    { allowed_statuses: ['APP SUBMITTED', 'ENROLLED'] },
       'x-client':  { allowed_statuses: '*' }
     },
     individual_type_aliases: { 'x client': 'x-client' },
@@ -78,14 +78,51 @@ function test_rule1_type_status_consistency() {
   var cfg = abRulesTestCfg_();
   var inds = [
     { individual_type: 'prospect', status: 'CONTACTED', __src_row: 2 },
-    { individual_type: 'prospect', status: 'ENROLLED',  __src_row: 3 }, // violation
+    { individual_type: 'prospect', status: 'ENROLLED',  __src_row: 3 }, // violation: Enrolled is Client-only
     { individual_type: 'client',   status: 'ENROLLED',  __src_row: 4 },
-    { individual_type: 'client',   status: 'NOT CONTACTED YET', __src_row: 5 } // violation
+    { individual_type: 'client',   status: 'NOT CONTACTED YET', __src_row: 5 } // violation: NCY is Lead-only
   ];
   var v = rule1_typeStatusConsistency(inds, cfg);
   assertEqual(v.length, 2);
   assertEqual(v[0].rule_id, 'rule1_type_status');
   assertEqual(v[0].severity, SEVERITY.WARNING);
+}
+
+function test_rule1_app_submitted_valid_for_both_prospect_and_client() {
+  // "App Submitted" is the transition state: an individual can carry it as
+  // either Prospect (app filed, not yet approved) or Client (app filed,
+  // marked converted). Rule 1 must accept both.
+  var cfg = abRulesTestCfg_();
+  var inds = [
+    { individual_type: 'prospect', status: 'APP SUBMITTED', __src_row: 2 },
+    { individual_type: 'client',   status: 'APP SUBMITTED', __src_row: 3 }
+  ];
+  var v = rule1_typeStatusConsistency(inds, cfg);
+  assertEqual(v.length, 0);
+}
+
+function test_rule1_mbi_applied_is_prospect_only() {
+  var cfg = abRulesTestCfg_();
+  var inds = [
+    { individual_type: 'prospect', status: 'MBI APPLIED', __src_row: 2 }, // OK
+    { individual_type: 'lead',     status: 'MBI APPLIED', __src_row: 3 }, // violation
+    { individual_type: 'client',   status: 'MBI APPLIED', __src_row: 4 }  // violation
+  ];
+  var v = rule1_typeStatusConsistency(inds, cfg);
+  assertEqual(v.length, 2);
+}
+
+function test_rule1_legacy_cancelled_status_flagged_when_type_not_x_client() {
+  // Real AB data carries some legacy "Cancelled" statuses (e.g. on rows
+  // imported from older systems). It's not in the official enum, so Rule 1
+  // should still flag it when the individual is anything other than X-Client.
+  var cfg = abRulesTestCfg_();
+  // x-client uses '*' in the test cfg so it's never flagged.
+  var inds = [
+    { individual_type: 'client', status: 'CANCELLED', __src_row: 2 }
+  ];
+  var v = rule1_typeStatusConsistency(inds, cfg);
+  assertEqual(v.length, 1);
 }
 
 function test_rule2_part_c_combinations() {

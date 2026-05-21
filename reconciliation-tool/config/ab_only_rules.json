@@ -1,9 +1,9 @@
 {
   "version": 2,
   "individual_types": {
-    "prospect":  { "allowed_statuses": ["NOT CONTACTED YET", "CONTACTED"] },
-    "lead":      { "allowed_statuses": ["APP SUBMITTED"] },
-    "client":    { "allowed_statuses": ["ENROLLED"] },
+    "lead":      { "allowed_statuses": ["NOT CONTACTED YET"] },
+    "prospect":  { "allowed_statuses": ["CONTACTED", "MBI APPLIED", "APP SUBMITTED"] },
+    "client":    { "allowed_statuses": ["APP SUBMITTED", "ENROLLED"] },
     "x-client":  { "allowed_statuses": [
       "AOR",
       "DECEASED",
