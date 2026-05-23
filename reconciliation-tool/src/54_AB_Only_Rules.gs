@@ -53,8 +53,19 @@ function rule1_typeStatusConsistency(individuals, cfg) {
     var type = aliases[typeRaw] || typeRaw;
     var spec = typeMap[type];
     if (!spec) continue; // unknown type — leave alone
-    if (spec.allowed_statuses === '*') continue;
     var status = String(rec.status || '').trim().toUpperCase();
+
+    // A known type with no status is a data-quality gap (e.g. a Prospect
+    // imported without a stage). Flag it regardless of which statuses the
+    // type allows — every individual should carry one.
+    if (!status) {
+      out.push(violation_('rule1_blank_status', SEVERITY.WARNING,
+        "individual type '" + typeRaw + "' has a blank status",
+        rec));
+      continue;
+    }
+
+    if (spec.allowed_statuses === '*') continue;
     var allowed = (spec.allowed_statuses || []).map(function (s) { return String(s).toUpperCase(); });
     if (allowed.indexOf(status) === -1) {
       out.push(violation_('rule1_type_status', SEVERITY.WARNING,

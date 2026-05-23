@@ -112,6 +112,22 @@ function test_rule1_mbi_applied_is_prospect_only() {
   assertEqual(v.length, 2);
 }
 
+function test_rule1_blank_status_flagged_for_known_type() {
+  // A populated Individual Type with no Status is a data gap and must be
+  // flagged with its own rule id (distinct from a wrong-status mismatch),
+  // including for the wildcard x-client type.
+  var cfg = abRulesTestCfg_();
+  var inds = [
+    { individual_type: 'prospect', status: '',          __src_row: 2 }, // flagged
+    { individual_type: 'client',   status: '',          __src_row: 3 }, // flagged
+    { individual_type: 'x client', status: '',          __src_row: 4 }, // flagged (alias→x-client, before wildcard skip)
+    { individual_type: '',         status: 'CONTACTED', __src_row: 5 }  // no type → skipped
+  ];
+  var v = rule1_typeStatusConsistency(inds, cfg);
+  assertEqual(v.length, 3);
+  assertEqual(v[0].rule_id, 'rule1_blank_status');
+}
+
 function test_rule1_legacy_cancelled_status_flagged_when_type_not_x_client() {
   // Real AB data carries some legacy "Cancelled" statuses (e.g. on rows
   // imported from older systems). It's not in the official enum, so Rule 1

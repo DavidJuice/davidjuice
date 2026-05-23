@@ -38,6 +38,7 @@ function runAllTests() {
     'test_rule1_type_status_consistency',
     'test_rule1_app_submitted_valid_for_both_prospect_and_client',
     'test_rule1_mbi_applied_is_prospect_only',
+    'test_rule1_blank_status_flagged_for_known_type',
     'test_rule1_legacy_cancelled_status_flagged_when_type_not_x_client',
     'test_rule2_part_c_combinations',
     'test_rule3_active_policy_requires_client',
