@@ -1,0 +1,149 @@
+name: MoodApp
+
+options:
+  bundleIdPrefix: com.moodapp
+  deploymentTarget:
+    iOS: "17.0"
+    watchOS: "10.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+  groupSortPosition: top
+
+settings:
+  base:
+    SWIFT_VERSION: "5.10"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: ""
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+
+targets:
+
+  MoodApp:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: MoodApp/Shared
+        excludes:
+          - "**/.DS_Store"
+      - path: MoodApp/iOS
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.moodapp.ios
+        TARGETED_DEVICE_FAMILY: "1,2"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait"
+        INFOPLIST_KEY_NSHealthShareUsageDescription: "Mood uses Health to add context (HRV, sleep, steps) to your check-ins."
+        INFOPLIST_KEY_NSHealthUpdateUsageDescription: "Mood saves your check-ins to Apple Health as State of Mind."
+        INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription: "Mood checks your calendar so it doesn't remind you during meetings."
+        INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "Mood uses your location to attach the local weather to a check-in."
+    info:
+      path: MoodApp/iOS/Info.plist
+      properties:
+        CFBundleURLTypes:
+          - CFBundleURLName: com.moodapp.deeplink
+            CFBundleURLSchemes: [moodapp]
+    entitlements:
+      path: MoodApp/iOS/MoodApp.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.moodapp.shared
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.access: []
+        com.apple.developer.weatherkit: true
+    dependencies:
+      - target: MoodWidget
+      - target: MoodAppWatch
+
+  MoodWidget:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: MoodApp/Widget
+      - path: MoodApp/Shared/Models
+      - path: MoodApp/Shared/Persistence
+      - path: MoodApp/Shared/UI
+      - path: MoodApp/Shared/Assets.xcassets
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.moodapp.ios.widget
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: "Mood"
+        SKIP_INSTALL: YES
+    info:
+      path: MoodApp/Widget/Info.plist
+      properties:
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: MoodApp/Widget/MoodWidget.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.moodapp.shared
+
+  MoodAppWatch:
+    type: application
+    platform: watchOS
+    deploymentTarget: "10.0"
+    sources:
+      - path: MoodApp/Shared/Models
+      - path: MoodApp/Shared/Persistence
+      - path: MoodApp/Shared/Health
+      - path: MoodApp/Shared/Services/MoodLogger.swift
+      - path: MoodApp/Shared/UI
+      - path: MoodApp/Shared/Assets.xcassets
+      - path: MoodApp/watchOS
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.moodapp.ios.watchkitapp
+        TARGETED_DEVICE_FAMILY: "4"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_NSHealthShareUsageDescription: "Mood uses Health to add context to your check-ins."
+        INFOPLIST_KEY_NSHealthUpdateUsageDescription: "Mood saves your check-ins to Apple Health."
+        INFOPLIST_KEY_WKApplication: YES
+        INFOPLIST_KEY_WKCompanionAppBundleIdentifier: com.moodapp.ios
+    entitlements:
+      path: MoodApp/watchOS/MoodAppWatch.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.moodapp.shared
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.access: []
+
+  MoodAppTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: MoodAppTests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.moodapp.ios.tests
+        GENERATE_INFOPLIST_FILE: YES
+    dependencies:
+      - target: MoodApp
+
+schemes:
+  MoodApp:
+    build:
+      targets:
+        MoodApp: all
+        MoodWidget: all
+        MoodAppWatch: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - MoodAppTests
+
+  MoodAppWatch:
+    build:
+      targets:
+        MoodAppWatch: all
+    run:
+      config: Debug

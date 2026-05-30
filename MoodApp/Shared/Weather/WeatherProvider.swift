@@ -23,7 +23,7 @@ final class WeatherProvider: NSObject, CLLocationManagerDelegate {
 
     /// Capped at ~3s so we never delay a save noticeably.
     func currentWeather(timeout: TimeInterval = 3) async -> (condition: String, temperatureCelsius: Double)? {
-        await withTaskGroup(of: (String, Double)?.self) { group in
+        let result: (String, Double)? = await withTaskGroup(of: (String, Double)?.self) { group in
             group.addTask { @MainActor in
                 guard let location = await self.currentLocation() else { return nil }
                 do {
@@ -40,10 +40,12 @@ final class WeatherProvider: NSObject, CLLocationManagerDelegate {
                 try? await Task.sleep(for: .seconds(timeout))
                 return nil
             }
-            let result = await group.next() ?? nil
+            let next = await group.next() ?? nil
             group.cancelAll()
-            return result
+            return next
         }
+        guard let result else { return nil }
+        return (condition: result.0, temperatureCelsius: result.1)
     }
 
     private func currentLocation() async -> CLLocation? {

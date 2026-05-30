@@ -9,6 +9,7 @@ struct RootView: View {
     @AppStorage("notif.morning") private var morningMinutes = 9 * 60
     @AppStorage("notif.evening") private var eveningMinutes = 20 * 60
     @AppStorage("notif.skipEvents") private var skipEvents = false
+    @AppStorage("hasOnboarded") private var hasOnboarded = false
 
     @State private var isCheckingIn = false
     @State private var showSettings = false
@@ -37,6 +38,9 @@ struct RootView: View {
             if url.scheme == "moodapp", url.host == "checkin" {
                 isCheckingIn = true
             }
+        }
+        .fullScreenCover(isPresented: .constant(!hasOnboarded)) {
+            OnboardingView(onComplete: { hasOnboarded = true })
         }
     }
 
