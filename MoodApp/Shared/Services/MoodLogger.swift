@@ -8,10 +8,12 @@ import SwiftData
 final class MoodLogger {
     private let modelContext: ModelContext
     private let healthKit: HealthKitManager
+    private let weather: WeatherProvider?
 
-    init(modelContext: ModelContext, healthKit: HealthKitManager) {
+    init(modelContext: ModelContext, healthKit: HealthKitManager, weather: WeatherProvider? = nil) {
         self.modelContext = modelContext
         self.healthKit = healthKit
+        self.weather = weather
     }
 
     @discardableResult
@@ -23,7 +25,11 @@ final class MoodLogger {
         source: MoodSource,
         date: Date = .now
     ) async -> MoodEntry {
-        let context = await healthKit.captureContext(at: date)
+        var context = await healthKit.captureContext(at: date)
+        if let snapshot = await weather?.currentWeather() {
+            context.weatherCondition = snapshot.condition
+            context.temperatureCelsius = snapshot.temperatureCelsius
+        }
         let entry = MoodEntry(
             timestamp: date,
             valence: valence,

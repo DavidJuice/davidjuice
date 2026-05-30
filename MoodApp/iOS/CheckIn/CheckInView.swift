@@ -8,6 +8,7 @@ struct CheckInView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(HealthKitManager.self) private var healthKit
+    @Environment(WeatherProvider.self) private var weather
 
     @State private var model = CheckInModel()
     @FocusState private var noteFocused: Bool
@@ -109,7 +110,7 @@ struct CheckInView: View {
     }
 
     private func save() async {
-        let logger = MoodLogger(modelContext: modelContext, healthKit: healthKit)
+        let logger = MoodLogger(modelContext: modelContext, healthKit: healthKit, weather: weather)
         await model.save(using: logger)
         dismiss()
     }

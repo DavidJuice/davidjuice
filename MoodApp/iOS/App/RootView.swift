@@ -32,6 +32,12 @@ struct RootView: View {
             // A fresh check-in should suppress the next imminent reminder.
             if !presenting { Task { await reschedule() } }
         }
+        .onOpenURL { url in
+            // Widget tap → moodapp://checkin
+            if url.scheme == "moodapp", url.host == "checkin" {
+                isCheckingIn = true
+            }
+        }
     }
 
     private func bootstrap() async {
