@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FLITEDECK — The World's First Smart Handlebar | FLITE</title>
+  <meta name="description" content="FLITEDECK is an intelligent carbon handlebar with an integrated computer, GPS, touchscreen and sensors. The cockpit of the future, engineered for cycling." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml" />
+</head>
+<body>
+  <!-- ============ NAV ============ -->
+  <header class="nav" id="nav">
+    <div class="nav__inner container">
+      <a href="#top" class="nav__logo" aria-label="FLITE home">
+        <svg viewBox="0 0 40 40" class="nav__logo-mark" aria-hidden="true">
+          <path d="M20 3 L34 11 V29 L20 37 L6 29 V11 Z" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M14 27 V13 H27 M14 20 H24" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+        </svg>
+        <span>FLITE</span>
+      </a>
+      <nav class="nav__links" aria-label="Primary">
+        <a href="#product">FLITEDECK</a>
+        <a href="#features">Features</a>
+        <a href="#display">Display</a>
+        <a href="#tech">Technology</a>
+        <a href="#specs">Specs</a>
+      </nav>
+      <a href="#preorder" class="btn btn--primary nav__cta">Pre-order</a>
+      <button class="nav__burger" id="burger" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============ HERO ============ -->
+  <main id="top">
+    <section class="hero" id="product">
+      <div class="hero__glow" aria-hidden="true"></div>
+      <div class="container hero__inner">
+        <p class="eyebrow reveal">The world's first smart handlebar</p>
+        <h1 class="hero__title reveal">FLITEDECK</h1>
+        <p class="hero__lede reveal">
+          An intelligent carbon cockpit with an integrated computer, GPS, the largest
+          touchscreen in cycling and a suite of sensors — fused into one seamless handlebar.
+        </p>
+        <div class="hero__actions reveal">
+          <a href="#preorder" class="btn btn--primary">Pre-order — from €1,795</a>
+          <a href="#features" class="btn btn--ghost">Explore the cockpit ↓</a>
+        </div>
+
+        <!-- Product visual rendered in CSS/SVG -->
+        <div class="hero__stage reveal">
+          <div class="cockpit">
+            <div class="cockpit__bar"></div>
+            <div class="cockpit__screen">
+              <div class="screen__topbar">
+                <span class="screen__time">09:24</span>
+                <span class="screen__sig"></span>
+              </div>
+              <div class="screen__map">
+                <svg viewBox="0 0 320 120" preserveAspectRatio="none" aria-hidden="true">
+                  <path d="M-10 90 C60 70 80 30 150 40 S260 90 340 30" fill="none" stroke="rgba(80,230,255,.25)" stroke-width="14"/>
+                  <path d="M-10 90 C60 70 80 30 150 40 S260 90 340 30" fill="none" stroke="#41e0ff" stroke-width="3"/>
+                  <circle cx="150" cy="40" r="5" fill="#fff"/>
+                </svg>
+              </div>
+              <div class="screen__metrics">
+                <div class="metric"><b>32.4</b><span>km/h</span></div>
+                <div class="metric"><b>148</b><span>bpm</span></div>
+                <div class="metric"><b>2.1</b><span>km</span></div>
+              </div>
+            </div>
+            <div class="cockpit__stem"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ MARQUEE ============ -->
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee__track">
+        <span>GPS Navigation</span><span>·</span><span>Touchscreen</span><span>·</span>
+        <span>Radar</span><span>·</span><span>Theft Alarm</span><span>·</span>
+        <span>Dual-beam Light</span><span>·</span><span>Electronic Bell</span><span>·</span>
+        <span>Cadence</span><span>·</span><span>IP68</span><span>·</span>
+        <span>GPS Navigation</span><span>·</span><span>Touchscreen</span><span>·</span>
+        <span>Radar</span><span>·</span><span>Theft Alarm</span><span>·</span>
+        <span>Dual-beam Light</span><span>·</span><span>Electronic Bell</span><span>·</span>
+        <span>Cadence</span><span>·</span><span>IP68</span><span>·</span>
+      </div>
+    </div>
+
+    <!-- ============ INTRO ============ -->
+    <section class="intro container">
+      <h2 class="intro__head reveal">
+        Everything your ride needs to know —
+        <span class="muted">built into the bars.</span>
+      </h2>
+      <p class="intro__body reveal">
+        FLITEDECK reimagines the cockpit from the ground up. No clamps, no clutter, no tangle of
+        accessories. A single high-end carbon handlebar quietly hides GPS, radar, lighting,
+        a battery and a full-color touchscreen — combining the latest technology with
+        meticulous, high-quality design.
+      </p>
+    </section>
+
+    <!-- ============ FEATURES ============ -->
+    <section class="features container" id="features">
+      <div class="section-head reveal">
+        <span class="kicker">The cockpit</span>
+        <h2>One handlebar. Every sensor.</h2>
+      </div>
+      <div class="feature-grid">
+        <article class="card reveal">
+          <div class="card__icon">◑</div>
+          <h3>Touchscreen display</h3>
+          <p>A high-resolution, fully weatherproof touchscreen spanning the full width of the bar — the largest in cycling.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card__icon">⊕</div>
+          <h3>GPS navigation</h3>
+          <p>Live GPS with smart re-routing, offline maps and environmental alerts, rendered directly in your line of sight.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card__icon">◎</div>
+          <h3>Radar &amp; camera</h3>
+          <p>Rear-approach radar and an integrated camera keep you aware of everything happening around you.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card__icon">⚠</div>
+          <h3>Theft alarm</h3>
+          <p>A motion-sensitive alarm plus GPS tracking deter thieves and help you recover your bike.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card__icon">☀</div>
+          <h3>Dual-beam light</h3>
+          <p>A StVZO-compliant dual-beam headlight is built straight into the carbon, no mounts required.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card__icon">♪</div>
+          <h3>Electronic bell</h3>
+          <p>An integrated electronic bell and accident detection improve your visibility and safety on the road.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============ DISPLAY ============ -->
+    <section class="display" id="display">
+      <div class="container display__inner">
+        <div class="display__copy reveal">
+          <span class="kicker">The display</span>
+          <h2>The largest screen in cycling.</h2>
+          <p>
+            A 180 × 70&nbsp;mm full-color touchscreen stretches across the cockpit, surfacing data
+            from sensors hidden inside the bar — speed, cadence, heart rate, navigation, radar
+            and lighting — all in a single, glanceable view.
+          </p>
+          <ul class="ticks">
+            <li>High-resolution, fully weatherproof glass</li>
+            <li>IP68 — rated for every condition</li>
+            <li>Glove-friendly multi-touch</li>
+          </ul>
+        </div>
+        <div class="display__visual reveal">
+          <div class="bigscreen">
+            <div class="bigscreen__row">
+              <div class="tile tile--lg">
+                <span class="tile__label">SPEED</span>
+                <span class="tile__val">32.4<i>km/h</i></span>
+              </div>
+              <div class="tile">
+                <span class="tile__label">POWER</span>
+                <span class="tile__val">241<i>w</i></span>
+              </div>
+            </div>
+            <div class="bigscreen__map">
+              <svg viewBox="0 0 400 160" preserveAspectRatio="none" aria-hidden="true">
+                <path d="M-10 120 C80 100 90 40 180 60 S320 120 420 40" fill="none" stroke="rgba(65,224,255,.2)" stroke-width="18"/>
+                <path d="M-10 120 C80 100 90 40 180 60 S320 120 420 40" fill="none" stroke="#41e0ff" stroke-width="3.5"/>
+                <circle cx="180" cy="60" r="6" fill="#fff"/>
+              </svg>
+              <span class="bigscreen__chip">↑ 400 m · Turn right</span>
+            </div>
+            <div class="bigscreen__row">
+              <div class="tile"><span class="tile__label">CADENCE</span><span class="tile__val">92<i>rpm</i></span></div>
+              <div class="tile"><span class="tile__label">HR</span><span class="tile__val">148<i>bpm</i></span></div>
+              <div class="tile"><span class="tile__label">DIST</span><span class="tile__val">24.7<i>km</i></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TECH / CONNECTIVITY ============ -->
+    <section class="tech container" id="tech">
+      <div class="section-head reveal">
+        <span class="kicker">Connectivity</span>
+        <h2>Connected to everything.</h2>
+        <p class="section-head__sub">Pairs with third-party sensors, electronic drivetrains and iOS &amp; Android apps — over every protocol that matters.</p>
+      </div>
+      <div class="chip-grid reveal">
+        <span class="techchip">GPS</span>
+        <span class="techchip">Wi-Fi</span>
+        <span class="techchip">Bluetooth</span>
+        <span class="techchip">ANT+</span>
+        <span class="techchip">5G eSIM</span>
+        <span class="techchip">Offline maps</span>
+        <span class="techchip">USB-C</span>
+        <span class="techchip">App integration</span>
+      </div>
+    </section>
+
+    <!-- ============ SPECS ============ -->
+    <section class="specs" id="specs">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="kicker">Engineering</span>
+          <h2>The numbers.</h2>
+        </div>
+        <div class="spec-grid">
+          <div class="spec reveal"><b>&lt;800<span>g</span></b><p>Total system weight including light, battery &amp; computer</p></div>
+          <div class="spec reveal"><b>180×70<span>mm</span></b><p>Full-color weatherproof touchscreen</p></div>
+          <div class="spec reveal"><b>30<span>h</span></b><p>Runtime per charge in normal use</p></div>
+          <div class="spec reveal"><b>24<span>sizes</span></b><p>Cockpit configurations to fit every rider</p></div>
+          <div class="spec reveal"><b>IP68</b><p>Fully waterproof, all-weather rated</p></div>
+          <div class="spec reveal"><b>100<span>%</span></b><p>High-end carbon construction</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PRE-ORDER ============ -->
+    <section class="cta" id="preorder">
+      <div class="cta__glow" aria-hidden="true"></div>
+      <div class="container cta__inner reveal">
+        <span class="kicker">Be first</span>
+        <h2>The future of the cockpit is here.</h2>
+        <p>Reserve your FLITEDECK and join the riders shaping the next era of cycling technology.</p>
+        <form class="cta__form" onsubmit="return false;">
+          <input type="email" placeholder="you@email.com" aria-label="Email address" required />
+          <button class="btn btn--primary" type="submit">Pre-order now</button>
+        </form>
+        <p class="cta__fine">From €1,795 · Limited first production run · Ships worldwide</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <div class="footer__brand">
+        <a href="#top" class="nav__logo">
+          <svg viewBox="0 0 40 40" class="nav__logo-mark" aria-hidden="true">
+            <path d="M20 3 L34 11 V29 L20 37 L6 29 V11 Z" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M14 27 V13 H27 M14 20 H24" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+          </svg>
+          <span>FLITE</span>
+        </a>
+        <p>The smart handlebar. Engineered for the ride.</p>
+      </div>
+      <div class="footer__cols">
+        <div>
+          <h4>Product</h4>
+          <a href="#features">Features</a>
+          <a href="#display">Display</a>
+          <a href="#specs">Specs</a>
+          <a href="#preorder">Pre-order</a>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <a href="#">About</a>
+          <a href="#">Press</a>
+          <a href="#">Support</a>
+          <a href="#">Contact</a>
+        </div>
+        <div>
+          <h4>Follow</h4>
+          <a href="#">Instagram</a>
+          <a href="#">YouTube</a>
+          <a href="#">LinkedIn</a>
+          <a href="#">Newsletter</a>
+        </div>
+      </div>
+    </div>
+    <div class="container footer__bottom">
+      <span>© 2026 FLITE. All rights reserved.</span>
+      <span class="footer__note">Recreation built for demonstration — not affiliated with FLITE.</span>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
