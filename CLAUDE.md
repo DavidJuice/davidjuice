@@ -9,19 +9,20 @@ Two unrelated projects sit side-by-side at the repo root: `AppUsageTracker/` and
 ```
 MoodApp/
   SETUP.md                Manual Xcode-project setup instructions
-  Shared/                 Code in every target (iOS, watchOS, widget)
-    Models/               SwiftData @Models + supporting enums
+  Shared/                 Code in every target (iOS, watchOS, widget, complication)
+    Models/               SwiftData @Models + supporting enums (incl. CopingOutcome, WeeklySummary)
     Persistence/          MoodDataStore — the ModelContainer factory
     Health/               HealthKitManager + HKStateOfMind mapping (iOS 18+)
-    Services/MoodLogger   The single write path used by both check-in flows
+    Services/             MoodLogger (single write path) + CopingRecommender
     Weather/              WeatherKit + CoreLocation provider (iOS only in practice)
     Insights/             On-device InsightEngine — pure stats, no Core ML yet
+    AI/                   WeeklySummaryGenerator — Foundation Models (iOS 26+)
     Notifications/        Rolling-window scheduler + EventKit busy checker
     UI/                   FlowLayout + Color extensions
     Assets.xcassets/      Valence color ramp + AppIcon slot
-  iOS/                    iPhone app: App entry, RootView, CheckIn, Dashboard, Onboarding, Settings
-  watchOS/                Watch app: Crown-driven check-in flow
-  Widget/                 WidgetKit extension (Lock Screen + Home Screen)
+  iOS/                    iPhone app: App entry, RootView, CheckIn, Dashboard, Onboarding, Settings, Coping
+  watchOS/                Watch app (Crown check-in) + Complication/ (separate extension target)
+  Widget/                 iOS WidgetKit extension (Lock Screen + Home Screen)
 
 MoodAppTests/             XCTest tests for the pure-logic types
 project.yml               XcodeGen spec — generates the .xcodeproj
@@ -56,10 +57,10 @@ Then open `MoodApp.xcodeproj` and run the `MoodApp` scheme. Tests live under the
 
 ## Known gaps from the MVP spec
 
-- **Apple Intelligence weekly summary** is a V2 spec item, not built.
 - **Core ML model** is not yet bundled — `InsightEngine` does the equivalent statistically. The structure is set up so a Core ML model can replace it without changing callers.
 - **Onboarding flow** ships 4 screens but doesn't gate notification/Health permissions hard (user can swipe past).
 - **`SettingsView` "Delete all"** removes our HealthKit samples on iOS 18+ but cannot revoke the user's Health read grants — that's only doable in the Health app.
+- **Foundation Models API call shape** in `WeeklySummaryGenerator.swift` is written from spec recall against iOS 26; the names (`SystemLanguageModel`, `LanguageModelSession.respond`) may need a one-line tweak when first compiled.
 
 ## Branch + git
 

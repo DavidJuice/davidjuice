@@ -5,6 +5,8 @@ import SwiftData
 /// note progressively reveal once a valence is chosen, keeping the fast path to
 /// two taps (valence → Save).
 struct CheckInView: View {
+    var onSave: (MoodEntry) -> Void = { _ in }
+
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(HealthKitManager.self) private var healthKit
@@ -111,7 +113,9 @@ struct CheckInView: View {
 
     private func save() async {
         let logger = MoodLogger(modelContext: modelContext, healthKit: healthKit, weather: weather)
-        await model.save(using: logger)
+        if let entry = await model.save(using: logger) {
+            onSave(entry)
+        }
         dismiss()
     }
 }

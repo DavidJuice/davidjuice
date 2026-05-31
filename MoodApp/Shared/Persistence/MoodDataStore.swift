@@ -12,6 +12,8 @@ enum MoodDataStore {
     static let schema = Schema([
         MoodEntry.self,
         CachedInsight.self,
+        CopingOutcome.self,
+        WeeklySummary.self,
     ])
 
     /// Production container, backed by the shared App Group.

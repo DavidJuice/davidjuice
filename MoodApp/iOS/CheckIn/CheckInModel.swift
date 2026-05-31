@@ -30,10 +30,11 @@ final class CheckInModel {
         self.factor = (self.factor == factor) ? nil : factor
     }
 
-    func save(using logger: MoodLogger) async {
-        guard let valence else { return }
+    @discardableResult
+    func save(using logger: MoodLogger) async -> MoodEntry? {
+        guard let valence else { return nil }
         isSaving = true
-        await logger.log(
+        let entry = await logger.log(
             valence: valence,
             feeling: feeling,
             factor: factor,
@@ -41,5 +42,6 @@ final class CheckInModel {
             source: .iPhone
         )
         isSaving = false
+        return entry
     }
 }

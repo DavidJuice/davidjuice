@@ -13,6 +13,8 @@ struct RootView: View {
 
     @State private var isCheckingIn = false
     @State private var showSettings = false
+    @State private var pendingCopingEntry: MoodEntry?
+    @State private var showCoping = false
 
     var body: some View {
         NavigationStack {
@@ -26,13 +28,24 @@ struct RootView: View {
                     }
                 }
         }
-        .sheet(isPresented: $isCheckingIn) { CheckInView() }
-        .sheet(isPresented: $showSettings) { SettingsView() }
-        .task { await bootstrap() }
-        .onChange(of: isCheckingIn) { _, presenting in
-            // A fresh check-in should suppress the next imminent reminder.
-            if !presenting { Task { await reschedule() } }
+        .sheet(isPresented: $isCheckingIn, onDismiss: {
+            // Defer to onDismiss so the coping sheet doesn't race the check-in sheet's close.
+            if pendingCopingEntry != nil { showCoping = true }
+            Task { await reschedule() }
+        }) {
+            CheckInView { entry in
+                if entry.valence.rawValue <= 2 {
+                    pendingCopingEntry = entry
+                }
+            }
         }
+        .sheet(isPresented: $showSettings) { SettingsView() }
+        .sheet(isPresented: $showCoping, onDismiss: { pendingCopingEntry = nil }) {
+            if let pendingCopingEntry {
+                CopingSuggestionView(entry: pendingCopingEntry)
+            }
+        }
+        .task { await bootstrap() }
         .onOpenURL { url in
             // Widget tap → moodapp://checkin
             if url.scheme == "moodapp", url.host == "checkin" {

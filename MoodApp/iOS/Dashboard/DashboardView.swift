@@ -7,6 +7,8 @@ struct DashboardView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \MoodEntry.timestamp, order: .reverse) private var entries: [MoodEntry]
     @Query(sort: \CachedInsight.weekOf, order: .reverse) private var insights: [CachedInsight]
+    @Query(sort: \CopingOutcome.suggestedAt, order: .reverse) private var outcomes: [CopingOutcome]
+    @Query(sort: \WeeklySummary.weekOf, order: .reverse) private var summaries: [WeeklySummary]
 
     @State private var range: ChartRange = .week
 
@@ -21,6 +23,10 @@ struct DashboardView: View {
         ScrollView {
             VStack(spacing: 20) {
                 checkInCard
+                if let pending = pendingFollowUp {
+                    cardContainer { CopingFollowUpTile(outcome: pending) }
+                }
+                summaryCard
                 insightCard
                 chartCard
                 recentList
@@ -29,6 +35,27 @@ struct DashboardView: View {
         }
         .navigationTitle("Today")
         .task(id: entries.count) { refreshInsightIfNeeded() }
+        .task(id: entries.count) { await refreshSummaryIfNeeded() }
+    }
+
+    @ViewBuilder
+    private var summaryCard: some View {
+        if #available(iOS 26.0, *), let summary = thisWeekSummary {
+            cardContainer { WeeklySummaryTile(summary: summary) }
+        }
+    }
+
+    private var pendingFollowUp: CopingOutcome? {
+        let now = Date.now
+        return outcomes.first { outcome in
+            outcome.helped == nil && now.timeIntervalSince(outcome.suggestedAt) >= 24 * 3600
+        }
+    }
+
+    private var thisWeekSummary: WeeklySummary? {
+        let calendar = Calendar.current
+        let weekOf = calendar.dateInterval(of: .weekOfYear, for: .now)?.start ?? .now
+        return summaries.first { calendar.isDate($0.weekOf, inSameDayAs: weekOf) }
     }
 
     private var checkInCard: some View {
@@ -140,6 +167,20 @@ struct DashboardView: View {
         guard !insights.contains(where: { calendar.isDate($0.weekOf, inSameDayAs: weekOf) }) else { return }
         guard let insight = InsightEngine().makeInsight(from: entries) else { return }
         modelContext.insert(insight)
+        try? modelContext.save()
+    }
+
+    /// Generates this week's AI summary once, on iOS 26+ with Foundation Models available.
+    private func refreshSummaryIfNeeded() async {
+        guard #available(iOS 26.0, *) else { return }
+        guard entries.count >= InsightEngine.minimumEntries else { return }
+        let calendar = Calendar.current
+        let weekOf = calendar.dateInterval(of: .weekOfYear, for: .now)?.start ?? .now
+        guard !summaries.contains(where: { calendar.isDate($0.weekOf, inSameDayAs: weekOf) }) else { return }
+        let thisWeek = entries.filter { $0.timestamp >= weekOf }
+        guard let text = await WeeklySummaryGenerator().summarize(entries: thisWeek, weekOf: weekOf) else { return }
+        let summary = WeeklySummary(weekOf: weekOf, text: text)
+        modelContext.insert(summary)
         try? modelContext.save()
     }
 }

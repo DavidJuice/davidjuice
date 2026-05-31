@@ -97,6 +97,8 @@ targets:
       - path: MoodApp/Shared/UI
       - path: MoodApp/Shared/Assets.xcassets
       - path: MoodApp/watchOS
+        excludes:
+          - "Complication/**"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.moodapp.ios.watchkitapp
@@ -113,6 +115,35 @@ targets:
           - group.com.moodapp.shared
         com.apple.developer.healthkit: true
         com.apple.developer.healthkit.access: []
+    dependencies:
+      - target: MoodWatchComplication
+
+  MoodWatchComplication:
+    type: app-extension
+    platform: watchOS
+    deploymentTarget: "10.0"
+    sources:
+      - path: MoodApp/watchOS/Complication
+      - path: MoodApp/Shared/Models
+      - path: MoodApp/Shared/Persistence
+      - path: MoodApp/Shared/UI
+      - path: MoodApp/Shared/Assets.xcassets
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.moodapp.ios.watchkitapp.complication
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: "Mood"
+        SKIP_INSTALL: YES
+    info:
+      path: MoodApp/watchOS/Complication/Info.plist
+      properties:
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: MoodApp/watchOS/Complication/MoodWatchComplication.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.moodapp.shared
 
   MoodAppTests:
     type: bundle.unit-test
@@ -134,6 +165,7 @@ schemes:
         MoodApp: all
         MoodWidget: all
         MoodAppWatch: all
+        MoodWatchComplication: all
     run:
       config: Debug
     test:
