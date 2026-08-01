@@ -1,0 +1,281 @@
+//@version=6
+// ─────────────────────────────────────────────────────────────────────────────
+// Financials Overlay — revenue, net income, EBITDA and friends ON the price
+// chart, not in a pane underneath it.
+//
+// The problem this solves: TradingView's built-in financial indicators live in
+// their own pane, because revenue is measured in billions and price in tens or
+// hundreds. Plotting both against the price scale would put the financial line
+// somewhere off the top of the screen.
+//
+// Two ways around that, both supported here:
+//
+//   "Fit to price range" (default) — the financial series are linearly mapped
+//       into a band of the chart's price range. Shape and relative size are
+//       preserved, every point is labelled with its REAL value, and a small
+//       value axis is drawn so the band's heights can be read as numbers.
+//
+//   "Raw values" — plots the true numbers and leaves the scaling to
+//       TradingView. Add the indicator, then right-click its plot →
+//       "Pin to scale" → "No Scale (Full screen)". The financials get their own
+//       auto-fitted scale while price keeps the right-hand one. Nothing is
+//       rescaled by this script, so this is the mode to trust when the exact
+//       geometry matters.
+//
+// Either way, the Data Window and the info table report the real published
+// figures, never the mapped ones.
+// ─────────────────────────────────────────────────────────────────────────────
+
+indicator("Financials Overlay", "Fin Overlay", overlay = true, max_labels_count = 500, max_polylines_count = 100)
+
+// The dropdown carries friendly names; f_id() maps them to TradingView's
+// financial_id strings. "Custom…" takes any id from TradingView's financial
+// data list, so this is not limited to the metrics named here.
+f_id(simple string _sel, simple string _custom) =>
+    switch _sel
+        "Revenue"              => "TOTAL_REVENUE"
+        "Net income"           => "NET_INCOME"
+        "Gross profit"         => "GROSS_PROFIT"
+        "Operating income"     => "OPER_INCOME"
+        "EBITDA"               => "EBITDA"
+        "Free cash flow"       => "FREE_CASH_FLOW"
+        "Cash from operations" => "CASH_F_OPERATING_ACTIVITIES"
+        "Operating expenses"   => "OPERATING_EXPENSES"
+        "R&D expenses"         => "RESEARCH_AND_DEV"
+        "Total assets"         => "TOTAL_ASSETS"
+        "Total equity"         => "TOTAL_EQUITY"
+        "Total debt"           => "TOTAL_DEBT"
+        "Cash & equivalents"   => "CASH_N_EQUIVALENTS"
+        "EPS (basic)"          => "EARNINGS_PER_SHARE_BASIC"
+        "EPS (diluted)"        => "EARNINGS_PER_SHARE_DILUTED"
+        "Book value per share" => "BOOK_VALUE_PER_SHARE"
+        "Shares outstanding"   => "TOTAL_SHARES_OUTSTANDING"
+        "Market cap"           => "MARKET_CAP_BASIC"
+        => _custom
+
+// ── Data ─────────────────────────────────────────────────────────────────────
+GD = "Data"
+
+period = input.string("FY", "Reporting period", options = ["FY", "FQ", "FH", "TTM"], group = GD, tooltip = "FY = fiscal year, FQ = quarter, FH = half-year, TTM = trailing twelve months.\n\nNot every metric publishes on every period — TTM in particular covers only a handful. If a metric comes back empty, try FY.")
+
+// ── Metric slots ─────────────────────────────────────────────────────────────
+G1 = "Metric 1"
+G2 = "Metric 2"
+G3 = "Metric 3"
+G4 = "Metric 4"
+
+on1     = input.bool(true, "Show", group = G1, inline = "a")
+sel1    = input.string("Revenue", "", options = ["Revenue", "Net income", "Gross profit", "Operating income", "EBITDA", "Free cash flow", "Cash from operations", "Operating expenses", "R&D expenses", "Total assets", "Total equity", "Total debt", "Cash & equivalents", "EPS (basic)", "EPS (diluted)", "Book value per share", "Shares outstanding", "Market cap", "Custom…"], group = G1, inline = "a")
+col1    = input.color(#ea580c, "", group = G1, inline = "a")
+custom1 = input.string("", "Custom financial id", group = G1)
+
+on2     = input.bool(true, "Show", group = G2, inline = "a")
+sel2    = input.string("Net income", "", options = ["Revenue", "Net income", "Gross profit", "Operating income", "EBITDA", "Free cash flow", "Cash from operations", "Operating expenses", "R&D expenses", "Total assets", "Total equity", "Total debt", "Cash & equivalents", "EPS (basic)", "EPS (diluted)", "Book value per share", "Shares outstanding", "Market cap", "Custom…"], group = G2, inline = "a")
+col2    = input.color(#199e70, "", group = G2, inline = "a")
+custom2 = input.string("", "Custom financial id", group = G2)
+
+on3     = input.bool(false, "Show", group = G3, inline = "a")
+sel3    = input.string("EBITDA", "", options = ["Revenue", "Net income", "Gross profit", "Operating income", "EBITDA", "Free cash flow", "Cash from operations", "Operating expenses", "R&D expenses", "Total assets", "Total equity", "Total debt", "Cash & equivalents", "EPS (basic)", "EPS (diluted)", "Book value per share", "Shares outstanding", "Market cap", "Custom…"], group = G3, inline = "a")
+col3    = input.color(#a855f7, "", group = G3, inline = "a")
+custom3 = input.string("", "Custom financial id", group = G3)
+
+on4     = input.bool(false, "Show", group = G4, inline = "a")
+sel4    = input.string("Free cash flow", "", options = ["Revenue", "Net income", "Gross profit", "Operating income", "EBITDA", "Free cash flow", "Cash from operations", "Operating expenses", "R&D expenses", "Total assets", "Total equity", "Total debt", "Cash & equivalents", "EPS (basic)", "EPS (diluted)", "Book value per share", "Shares outstanding", "Market cap", "Custom…"], group = G4, inline = "a")
+col4    = input.color(#0ea5e9, "", group = G4, inline = "a")
+custom4 = input.string("", "Custom financial id", group = G4)
+
+// ── Scale ────────────────────────────────────────────────────────────────────
+GS = "Scale"
+
+mode = input.string("Fit to price range", "Overlay mode", options = ["Fit to price range", "Raw values (pin to scale)"], group = GS, tooltip = "Fit to price range: metrics are mapped into a band of the price range and labelled with their real values.\n\nRaw values: plots the true numbers unscaled — then right-click the plot, Pin to scale → No Scale, and TradingView gives them their own auto-fitted scale.")
+
+sharedScale = input.bool(true, "One shared scale for all metrics", group = GS, tooltip = "On: metrics keep their size relative to each other, so net income visibly sits at a fraction of revenue — the single left axis of the reference layout.\n\nOff: each metric is fitted to the band on its own, which shows shape but throws the comparison away.")
+
+zeroAnchor = input.bool(true, "Anchor the scale at zero", group = GS, tooltip = "Keeps the bottom of the value scale at 0 rather than at the smallest reported figure, so growth is not exaggerated.")
+
+bandLoPct = input.float(3, "Band bottom (% of price range)", minval = -50, maxval = 150, step = 1, group = GS)
+bandHiPct = input.float(72, "Band top (% of price range)", minval = -50, maxval = 150, step = 1, group = GS)
+
+// ── Display ──────────────────────────────────────────────────────────────────
+GV = "Display"
+
+showLabels = input.bool(true, "Value labels on each report", group = GV)
+maxLabels  = input.int(14, "Max labels per metric", minval = 2, maxval = 120, group = GV, tooltip = "Reports are thinned evenly above this count so quarterly data does not bury the chart. The most recent report is always labelled.")
+showAxis   = input.bool(true, "Value axis for the band", group = GV, tooltip = "Draws reference values to the right of the last bar so heights in the band can be read. Only meaningful with a shared scale.")
+showTable  = input.bool(true, "Latest-values table", group = GV)
+lineWidth  = input.int(2, "Line width", minval = 1, maxval = 5, group = GV)
+prefix     = input.string("$", "Value prefix", group = GV, tooltip = "Blank this for metrics that are not money, such as shares outstanding.")
+labelBg    = input.color(#080e1bee, "Label background", group = GV, inline = "l")
+labelFg    = input.color(#f4f7ff, "Label text", group = GV, inline = "l")
+
+// ── Fetch ────────────────────────────────────────────────────────────────────
+// request.financial is called unconditionally from the global scope for all
+// four slots; the "Show" toggles only affect drawing. ignore_invalid_symbol
+// keeps a mistyped custom id from killing the script — it comes back as na and
+// the "no data" warning explains what happened.
+id1 = f_id(sel1, custom1)
+id2 = f_id(sel2, custom2)
+id3 = f_id(sel3, custom3)
+id4 = f_id(sel4, custom4)
+
+raw1 = request.financial(syminfo.tickerid, id1, period, barmerge.gaps_off, ignore_invalid_symbol = true)
+raw2 = request.financial(syminfo.tickerid, id2, period, barmerge.gaps_off, ignore_invalid_symbol = true)
+raw3 = request.financial(syminfo.tickerid, id3, period, barmerge.gaps_off, ignore_invalid_symbol = true)
+raw4 = request.financial(syminfo.tickerid, id4, period, barmerge.gaps_off, ignore_invalid_symbol = true)
+
+// ── Model ────────────────────────────────────────────────────────────────────
+type Metric
+    string       name
+    string       fid
+    color        col
+    bool         on
+    float        cur
+    float        seen
+    array<int>   xs
+    array<float> vs
+
+var array<Metric> metrics = array.from(Metric.new(sel1, id1, col1, on1, na, na, array.new<int>(), array.new<float>()), Metric.new(sel2, id2, col2, on2, na, na, array.new<int>(), array.new<float>()), Metric.new(sel3, id3, col3, on3, na, na, array.new<int>(), array.new<float>()), Metric.new(sel4, id4, col4, on4, na, na, array.new<int>(), array.new<float>()))
+
+// Record a point whenever a new figure is published. Comparing against a stored
+// value rather than the history operator stays correct when a company reports
+// the same number twice in a row.
+f_track(Metric m, float v) =>
+    m.cur := v
+    if not na(v) and (na(m.seen) or v != m.seen)
+        m.seen := v
+        array.push(m.xs, bar_index)
+        array.push(m.vs, v)
+
+f_track(array.get(metrics, 0), raw1)
+f_track(array.get(metrics, 1), raw2)
+f_track(array.get(metrics, 2), raw3)
+f_track(array.get(metrics, 3), raw4)
+
+// Price extremes across everything loaded, accumulated forward so the mapping
+// can be computed once on the last bar and applied identically to every point.
+// A rolling window would re-map old points and distort the shape of the line.
+var float pHi = na
+var float pLo = na
+pHi := na(pHi) ? high : math.max(pHi, high)
+pLo := na(pLo) ? low : math.min(pLo, low)
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+f_fmt(float v) =>
+    string out = "—"
+    if not na(v)
+        a = math.abs(v)
+        sgn = v < 0 ? "-" : ""
+        if a >= 1e12
+            out := sgn + prefix + str.tostring(a / 1e12, "#.##") + "T"
+        else if a >= 1e9
+            out := sgn + prefix + str.tostring(a / 1e9, "#.##") + "B"
+        else if a >= 1e6
+            out := sgn + prefix + str.tostring(a / 1e6, "#.##") + "M"
+        else if a >= 1e3
+            out := sgn + prefix + str.tostring(a / 1e3, "#.##") + "K"
+        else
+            out := sgn + prefix + str.tostring(a, "#.##")
+    out
+
+// Map a reported value into the price band. A flat series has no range to map,
+// so it is parked in the middle rather than dividing by zero.
+f_y(float v, float lo, float span, float bandBottom, float bandTop) =>
+    span > 0 ? bandBottom + (v - lo) / span * (bandTop - bandBottom) : (bandTop + bandBottom) / 2
+
+// ── Raw mode plots ───────────────────────────────────────────────────────────
+rawMode = mode == "Raw values (pin to scale)"
+
+plot(rawMode and on1 ? raw1 : na, "Metric 1", color = col1, linewidth = lineWidth)
+plot(rawMode and on2 ? raw2 : na, "Metric 2", color = col2, linewidth = lineWidth)
+plot(rawMode and on3 ? raw3 : na, "Metric 3", color = col3, linewidth = lineWidth)
+plot(rawMode and on4 ? raw4 : na, "Metric 4", color = col4, linewidth = lineWidth)
+
+// Always expose the true figures to the Data Window, so hovering reports what
+// the company published rather than a mapped position.
+plot(raw1, "Metric 1 value", color = na, display = display.data_window)
+plot(raw2, "Metric 2 value", color = na, display = display.data_window)
+plot(raw3, "Metric 3 value", color = na, display = display.data_window)
+plot(raw4, "Metric 4 value", color = na, display = display.data_window)
+
+// ── Fit mode: everything is drawn once, on the last bar ──────────────────────
+var array<polyline> drawnLines = array.new<polyline>()
+var array<label> drawnLabels = array.new<label>()
+
+f_clear() =>
+    for p in drawnLines
+        polyline.delete(p)
+    array.clear(drawnLines)
+    for l in drawnLabels
+        label.delete(l)
+    array.clear(drawnLabels)
+
+if barstate.islast
+    f_clear()
+
+    if not rawMode
+        // Value range across whichever metrics are switched on.
+        float gLo = na
+        float gHi = na
+        for m in metrics
+            if m.on and array.size(m.vs) > 0
+                lo = array.min(m.vs)
+                hi = array.max(m.vs)
+                gLo := na(gLo) ? lo : math.min(gLo, lo)
+                gHi := na(gHi) ? hi : math.max(gHi, hi)
+
+        bandBottom = pLo + (pHi - pLo) * bandLoPct / 100.0
+        bandTop = pLo + (pHi - pLo) * bandHiPct / 100.0
+
+        for m in metrics
+            if m.on
+                n = array.size(m.vs)
+                if n == 0
+                    // Nothing came back at all. Say so, rather than leaving the
+                    // user staring at a chart with a line silently missing.
+                    array.push(drawnLabels, label.new(bar_index, bandTop, "No data: " + m.fid + " (" + period + ")", xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left, color = labelBg, textcolor = m.col, size = size.small))
+                else
+                    vLo = sharedScale ? gLo : array.min(m.vs)
+                    vHi = sharedScale ? gHi : array.max(m.vs)
+                    lo = zeroAnchor ? math.min(nz(vLo, 0), 0) : vLo
+                    span = vHi - lo
+
+                    pts = array.new<chart.point>()
+                    for i = 0 to n - 1
+                        array.push(pts, chart.point.from_index(array.get(m.xs, i), f_y(array.get(m.vs, i), lo, span, bandBottom, bandTop)))
+                    // Carry the last published figure forward to the current bar.
+                    array.push(pts, chart.point.from_index(bar_index, f_y(array.get(m.vs, n - 1), lo, span, bandBottom, bandTop)))
+
+                    array.push(drawnLines, polyline.new(pts, curved = false, closed = false, xloc = xloc.bar_index, line_color = m.col, line_style = line.style_solid, line_width = lineWidth))
+
+                    if showLabels
+                        // Thin evenly from the right, so the newest report is
+                        // always the one that keeps its label.
+                        step = math.max(1, int(math.ceil(n * 1.0 / maxLabels)))
+                        for i = 0 to n - 1
+                            if (n - 1 - i) % step == 0
+                                v = array.get(m.vs, i)
+                                array.push(drawnLabels, label.new(array.get(m.xs, i), f_y(v, lo, span, bandBottom, bandTop), f_fmt(v), xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_down, color = labelBg, textcolor = labelFg, size = size.small))
+
+        // A small value axis, so a height in the band reads as a number.
+        if showAxis and sharedScale and not na(gLo) and not na(gHi)
+            aLo = zeroAnchor ? math.min(gLo, 0) : gLo
+            aSpan = gHi - aLo
+            if aSpan > 0
+                for k = 0 to 4
+                    frac = k / 4.0
+                    array.push(drawnLabels, label.new(bar_index + 12, bandBottom + frac * (bandTop - bandBottom), f_fmt(aLo + frac * aSpan), xloc = xloc.bar_index, yloc = yloc.price, style = label.style_none, textcolor = color.new(chart.fg_color, 35), size = size.small))
+
+// ── Latest values ────────────────────────────────────────────────────────────
+var table info = table.new(position.top_right, 2, 5, border_width = 1)
+
+if showTable and barstate.islast
+    table.clear(info, 0, 0, 1, 4)
+    table.cell(info, 0, 0, "Financials · " + period, text_color = chart.fg_color, text_size = size.small, bgcolor = color.new(chart.bg_color, 20))
+    table.cell(info, 1, 0, syminfo.currency, text_color = color.new(chart.fg_color, 40), text_size = size.small, bgcolor = color.new(chart.bg_color, 20))
+
+    int row = 1
+    for m in metrics
+        if m.on and row <= 4
+            table.cell(info, 0, row, m.name, text_color = m.col, text_size = size.small, text_halign = text.align_left, bgcolor = color.new(chart.bg_color, 20))
+            table.cell(info, 1, row, na(m.cur) ? "no data" : f_fmt(m.cur), text_color = chart.fg_color, text_size = size.small, text_halign = text.align_right, bgcolor = color.new(chart.bg_color, 20))
+            row += 1
