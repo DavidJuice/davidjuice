@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>StockScope — price vs revenue &amp; net income</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='3' fill='%230d1524'/><path d='M2 12l4-5 3 3 5-7' stroke='%234763ff' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>"
+    />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">StockScope</span>
+      </a>
+
+      <form class="search" id="search-form" role="search" autocomplete="off">
+        <label class="sr-only" for="search-input">Search a ticker or company</label>
+        <input
+          id="search-input"
+          type="text"
+          placeholder="Search a ticker or company — AAPL, Adobe, NVDA…"
+          role="combobox"
+          aria-expanded="false"
+          aria-controls="search-results"
+          aria-autocomplete="list"
+          spellcheck="false"
+        />
+        <ul class="search-results" id="search-results" role="listbox" hidden></ul>
+      </form>
+
+      <span class="source-badge" id="source-badge" title="Active data source"></span>
+    </header>
+
+    <main id="main">
+      <p class="notice notice-demo" id="demo-banner" role="status" hidden></p>
+      <p class="notice notice-error" id="error-banner" role="alert" hidden></p>
+
+      <section class="quote" id="quote" hidden>
+        <div class="quote-id">
+          <span class="quote-avatar" id="quote-avatar" aria-hidden="true"></span>
+          <div>
+            <h1 class="quote-name" id="quote-name"></h1>
+            <p class="quote-meta" id="quote-meta"></p>
+          </div>
+        </div>
+        <div class="quote-price">
+          <span class="quote-last" id="quote-last"></span>
+          <span class="quote-change" id="quote-change"></span>
+        </div>
+      </section>
+
+      <div class="controls" id="controls" hidden>
+        <div class="control-group" role="group" aria-label="Time range">
+          <button type="button" class="chip" data-range="1y">1Y</button>
+          <button type="button" class="chip" data-range="5y">5Y</button>
+          <button type="button" class="chip is-active" data-range="10y">10Y</button>
+          <button type="button" class="chip" data-range="max">MAX</button>
+        </div>
+
+        <div class="control-group" role="group" aria-label="Scale">
+          <button type="button" class="chip is-active" data-scale="dual">Actuals</button>
+          <button type="button" class="chip" data-scale="indexed">Indexed to 100</button>
+        </div>
+
+        <div class="control-group control-group-end">
+          <label class="switch">
+            <input type="checkbox" id="toggle-labels" checked />
+            <span>Value labels</span>
+          </label>
+          <button type="button" class="chip" id="toggle-table" aria-expanded="false">
+            Table view
+          </button>
+        </div>
+      </div>
+
+      <figure class="chart-card" id="chart-card" hidden>
+        <figcaption class="chart-head">
+          <h2 class="chart-title" id="chart-title"></h2>
+          <ul class="legend" id="legend"></ul>
+        </figcaption>
+        <div class="chart-body" id="chart-body">
+          <div class="chart-tooltip" id="chart-tooltip" role="status" hidden></div>
+        </div>
+        <p class="chart-note" id="chart-note"></p>
+      </figure>
+
+      <section class="stats" id="stats" hidden aria-label="Summary statistics"></section>
+
+      <section class="table-wrap" id="table-wrap" hidden aria-label="Annual figures">
+        <table class="data-table" id="data-table"></table>
+      </section>
+
+      <section class="empty" id="empty">
+        <h2>Search a ticker to begin</h2>
+        <p>
+          One chart, three lines: the stock price against the revenue and net income underneath
+          it. Try <button type="button" class="link" data-example="ADBE">ADBE</button>,
+          <button type="button" class="link" data-example="NVDA">NVDA</button> or
+          <button type="button" class="link" data-example="MSFT">MSFT</button>.
+        </p>
+      </section>
+    </main>
+
+    <script type="module" src="/js/app.js"></script>
+  </body>
+</html>
