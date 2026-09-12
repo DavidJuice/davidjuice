@@ -1,0 +1,38 @@
+:root {
+  --bg: #ffffff; --fg: #14181f; --muted: #5b6472; --line: #e3e7ee;
+  --verified: #1a7f52; --review: #b4690e; --conflict: #b42318; --missing: #8892a0;
+  --accent: #1d4ed8;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+  font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+a { color: var(--accent); }
+main { max-width: 1100px; margin: 0 auto; padding: 24px 20px 64px; }
+nav { border-bottom: 1px solid var(--line); padding: 12px 20px; display: flex; gap: 18px;
+  align-items: center; flex-wrap: wrap; }
+nav b { margin-right: 8px; }
+h1 { font-size: 20px; margin: 20px 0 4px; }
+h2 { font-size: 15px; margin: 28px 0 8px; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--muted); }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line);
+  vertical-align: top; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.badge { font-size: 11px; padding: 2px 7px; border-radius: 999px; border: 1px solid;
+  white-space: nowrap; }
+.badge.verified { color: var(--verified); border-color: var(--verified); }
+.badge.extracted, .badge.needs_review { color: var(--review); border-color: var(--review); }
+.badge.conflict, .badge.rejected { color: var(--conflict); border-color: var(--conflict); }
+.badge.missing { color: var(--missing); border-color: var(--missing); }
+.src { font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted);
+  background: #f7f8fa; border-left: 2px solid var(--line); padding: 6px 8px; margin-top: 6px;
+  white-space: pre-wrap; }
+button { font: inherit; padding: 6px 12px; border: 1px solid var(--line); border-radius: 6px;
+  background: #fff; cursor: pointer; }
+button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+input, textarea, select { font: inherit; padding: 7px 9px; border: 1px solid var(--line);
+  border-radius: 6px; width: 100%; }
+.notice { border: 1px solid var(--review); color: var(--review); border-radius: 6px;
+  padding: 8px 12px; font-size: 12px; margin: 12px 0; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.muted { color: var(--muted); }

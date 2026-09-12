@@ -1,0 +1,30 @@
+{"id":"exact-01","category":"exact_benefit","lang":"en","q":"What is the specialist copay?","expect":{"benefit_code":"specialist_copay","value":35,"frequency":"per_visit","must_cite":true}}
+{"id":"exact-02","category":"exact_benefit","lang":"en","q":"What is the in-network maximum out-of-pocket?","expect":{"benefit_code":"moop_in_network","value":5900,"frequency":"per_year","must_cite":true}}
+{"id":"exact-03","category":"exact_benefit","lang":"en","q":"What is the primary care copay?","expect":{"benefit_code":"pcp_copay","value":0,"frequency":"per_visit","must_cite":true}}
+{"id":"exact-04","category":"exact_benefit","lang":"en","q":"What is the Part D drug deductible?","expect":{"benefit_code":"drug_deductible","value":615,"frequency":"per_year","must_cite":true}}
+{"id":"exact-05","category":"exact_benefit","lang":"en","q":"Is there a Part B giveback?","expect":{"benefit_code":"part_b_giveback","value":50,"frequency":"per_month","must_cite":true}}
+{"id":"nuance-01","category":"nuance","lang":"en","q":"Does the comprehensive dental allowance include implants?","expect":{"route":"evidence","must_cite":true}}
+{"id":"nuance-02","category":"nuance","lang":"en","q":"Does the OTC benefit roll over to the next quarter?","expect":{"route":"evidence","must_cite":true}}
+{"id":"nuance-03","category":"nuance","lang":"en","q":"Are transportation trips one-way or round trip?","expect":{"route":"evidence","must_cite":true}}
+{"id":"nuance-04","category":"nuance","lang":"en","q":"Is the emergency room copay waived if I am admitted?","expect":{"route":"evidence","must_cite":true,"contains":"admitted"}}
+{"id":"nuance-05","category":"nuance","lang":"en","q":"Does acupuncture require prior authorization?","expect":{"route":"evidence"}}
+{"id":"nuance-06","category":"nuance","lang":"en","q":"Who qualifies for the SSBCI benefit?","expect":{"route":"evidence"}}
+{"id":"cross-01","category":"cross_plan","lang":"en","q":"Which 2026 plans have the lowest MOOP?","expect":{"route":"structured","order_by":"moop_in_network","direction":"asc"}}
+{"id":"cross-02","category":"cross_plan","lang":"en","q":"Compare specialist copays across Snohomish plans in 2026","expect":{"route":"structured","county":"Snohomish"}}
+{"id":"filter-01","category":"filters","lang":"en","q":"Show 2026 plans with dental at least $2,000","expect":{"filters":[["dental_comprehensive_max","gte",2000]]}}
+{"id":"filter-02","category":"filters","lang":"en","q":"Show 2026 Snohomish plans with $0 PCP and MOOP below $5,000","expect":{"filters":[["pcp_copay","eq",0],["moop_in_network","lte",5000]],"county":"Snohomish"}}
+{"id":"filter-03","category":"filters","lang":"en","q":"Which 2026 plans have at least $100 per month in OTC?","expect":{"filters":[["otc_allowance","gte",100]],"frequency":"per_month"}}
+{"id":"filter-04","category":"filters","lang":"en","q":"Show 2026 $0 premium plans with dental over $2,000","expect":{"filters":[["monthly_premium","eq",0],["dental_comprehensive_max","gte",2000]]}}
+{"id":"year-01","category":"plan_year","lang":"en","q":"Compare this plan from 2026 to 2027","expect":{"route":"compare_years","years":[2026,2027]}}
+{"id":"ko-01","category":"korean","lang":"ko","q":"전문의 진료비가 얼마예요?","expect":{"benefit_code":"specialist_copay","value":35,"must_cite":true}}
+{"id":"ko-02","category":"korean","lang":"ko","q":"OTC가 매달 얼마예요?","expect":{"benefit_code":"otc_allowance","frequency":"per_month"}}
+{"id":"ko-03","category":"korean","lang":"ko","q":"치과 $2,000 이상인 2026 플랜 찾아줘","expect":{"filters":[["dental_comprehensive_max","gte",2000]]}}
+{"id":"ko-04","category":"korean","lang":"ko","q":"본인부담 상한이 가장 낮은 플랜은?","expect":{"order_by":"moop_in_network","direction":"asc"}}
+{"id":"neg-01","category":"negative_evidence","lang":"en","q":"Does this plan include pest control?","expect":{"refused":true}}
+{"id":"neg-02","category":"negative_evidence","lang":"en","q":"What is the utilities allowance?","expect":{"refused":true}}
+{"id":"neg-03","category":"negative_evidence","lang":"en","q":"How many home support hours are covered?","expect":{"refused":true}}
+{"id":"adv-year-01","category":"adversarial_year","lang":"en","q":"What is the 2027 specialist copay?","corpus":"2026_only","expect":{"refused":true,"must_not_contain":"35"}}
+{"id":"adv-year-02","category":"adversarial_year","lang":"en","q":"What is the 2027 MOOP?","corpus":"2026_only","expect":{"refused":true,"must_not_contain":"5,900"}}
+{"id":"adv-plan-01","category":"adversarial_plan","lang":"en","q":"What is the specialist copay for Choice Plan 3?","corpus":"plan2_only","expect":{"refused":true}}
+{"id":"adv-freq-01","category":"adversarial_frequency","lang":"en","q":"Which plans give $100 per month in OTC?","corpus":"otc_is_quarterly","expect":{"results_empty":true}}
+{"id":"adv-unit-01","category":"adversarial_unit","lang":"en","q":"What is the inpatient hospital cost per stay?","expect":{"must_state_frequency":true}}
