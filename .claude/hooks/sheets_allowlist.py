@@ -2,7 +2,7 @@
 """PreToolUse hook: restrict Google Sheets MCP calls to allowlisted spreadsheet IDs. Fails closed."""
 import json, sys
 
-ALLOWED = {"1HeKXGGbrkEmdy4t_Me0A0uB7F7TFzNBZriYdYSK15e8"}
+ALLOWED = {"1zY09tw1dp0EHTTXubXLN0ufuNIQyY5WipU7Gj4rWCpw"}
 ID_KEYS = ("spreadsheetId", "spreadsheet_id", "destinationSpreadsheetId", "destination_spreadsheet_id")
 
 def ids(obj):
